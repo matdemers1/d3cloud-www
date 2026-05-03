@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "d3cloud-www",
+  "compatibility_date": "2026-05-01",
+  "main": "src/worker.ts",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+  "observability": {
+    "enabled": true
+  }
+  // Apex Custom Domain "d3cloud.io" is configured via Cloudflare API
+  // (PUT /accounts/<acct>/workers/domains) after the first deploy.
+  // Do NOT add a wildcard route — that would intercept qr.d3cloud.io.
+}

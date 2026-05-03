@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Independent software studio building privacy-first everyday tools."
+    />
+    <meta name="theme-color" content="#0a0a0f" />
+    <title>Demers Design and Development</title>
+    <script>
+      // Apply theme before paint to prevent flash
+      (function () {
+        try {
+          var stored = localStorage.getItem('d3cloud-theme');
+          var prefersDark = window.matchMedia(
+            '(prefers-color-scheme: dark)',
+          ).matches;
+          var resolved =
+            stored === 'dark' ||
+            (stored === 'light' ? false : prefersDark) ||
+            (!stored && prefersDark);
+          if (resolved) document.documentElement.classList.add('dark');
+        } catch (_) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

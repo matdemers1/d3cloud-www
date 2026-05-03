@@ -1,0 +1,63 @@
+# CLAUDE.md — d3cloud-www
+
+Apex landing site for **Demers Design and Development** at `d3cloud.io`. Single-page React SPA. **No backend, no database, no auth.** Mirrors [`d3-qr`](../d3-qr/) exactly — same stack, same Worker pattern, same Tailwind v4 setup.
+
+Read this before doing any work. The full planning docs live in the D3 Cloud Vault — start there for architecture context.
+
+## Vault Documentation
+
+| Doc | Path |
+|-----|------|
+| Discovery & Requirements | `../D3 Cloud Vault/d3cloud.io/Discovery & Requirements.md` |
+| Architecture | `../D3 Cloud Vault/d3cloud.io/Architecture.md` |
+| Scope of Work | `../D3 Cloud Vault/d3cloud.io/Scope of Work.md` |
+| ADRs | `../D3 Cloud Vault/d3cloud.io/ADR-*.md` |
+| Project Overview | `../D3 Cloud Vault/Master Notes/Overviews/d3cloud.io Overview.md` |
+
+When picking up a new development session, run `/start-development d3cloud-www` to load this context.
+
+## Key Conventions
+
+- **No backend, ever.** Pure static SPA. See `ADR-001 — Static SPA on Cloudflare Workers`.
+- **No router, no state library.** One page with anchor links. Props-only state. See `ADR-002`.
+- **No analytics, no telemetry on this site.** CSP `connect-src 'self'` enforces it. (This is *not* a public stance about future projects.)
+- **Mirror d3-qr exactly.** Same Vite/Tailwind/Worker config so the family of `*.d3cloud.io` sites stays coherent.
+- **Apex Custom Domain only — never a wildcard route.** A wildcard `*.d3cloud.io/*` would break `qr.d3cloud.io`.
+- **Theme storage key is `d3cloud-theme`** (not `d3qr-theme`).
+- **System font stack only.** Zero font requests, instant render.
+- **Bundle budget: 150kb gzipped.** No QR/PDF libs to weigh us down.
+- **No co-author footer in commits.**
+
+## Build & Dev Commands
+
+```bash
+npm install
+npm run dev          # http://localhost:5173
+npm run build        # outputs dist/
+npm run preview      # preview the production build
+npm run lint         # eslint
+npm run format       # prettier --write .
+npx wrangler deploy  # manual deploy (auto-deploy from main not yet wired)
+```
+
+## Architecture (one-paragraph version)
+
+User loads the page once from Cloudflare Workers (Static Assets binding). The `src/worker.ts` Worker runs first (`run_worker_first: true`), calls `env.ASSETS.fetch()` to serve the React bundle, and attaches CSP/HSTS/X-Frame-Options/etc. to every response. The page is a single React component tree with five sections (Hero, Projects, Principles, About, Footer) connected by anchor links. Theme is the only state, persisted to localStorage and applied by an inline `<head>` script before paint to prevent FOUC.
+
+## Stack
+
+- React 19 + Vite 7 + TypeScript
+- Tailwind CSS v4 (CSS-first config — `@import 'tailwindcss'` + `@custom-variant dark` + `@theme inline`)
+- Cloudflare Workers (Static Assets binding, `run_worker_first: true`)
+
+## What NOT to Do
+
+- Don't add a backend, an API endpoint, or a database
+- Don't add `react-router` or any other router
+- Don't add a state management library (Zustand, Redux, etc.)
+- Don't add analytics, telemetry, or tracking scripts
+- Don't add a wildcard Worker route on `*.d3cloud.io` (would break `qr.d3cloud.io`)
+- Don't add `connect-src` exceptions to the CSP
+- Don't add `dangerouslySetInnerHTML` anywhere
+- Don't change the theme storage key from `d3cloud-theme`
+- Don't touch `qr.d3cloud.io` deployment when working on this project
