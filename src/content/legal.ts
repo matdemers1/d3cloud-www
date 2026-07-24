@@ -21,7 +21,7 @@ const EFFECTIVE = 'July 24, 2026';
  * deletion, and how consent is revoked. Each section below exists to satisfy
  * one of those clauses — don't trim them without re-reading the guideline.
  */
-export const DAYPART_PRIVACY: LegalDoc = {
+export const CLEARWHEN_PRIVACY: LegalDoc = {
   title: 'Clearwhen — Privacy Policy',
   effective: EFFECTIVE,
   intro:
@@ -164,7 +164,7 @@ function termsFor(appName: string, extra: LegalSection[] = []): LegalDoc {
   };
 }
 
-export const DAYPART_TERMS = termsFor('Clearwhen', [
+export const CLEARWHEN_TERMS = termsFor('Clearwhen', [
   {
     heading: 'Weather information is not a guarantee',
     paragraphs: [
@@ -184,6 +184,6 @@ export const QR_TERMS = termsFor('D3 QR', [
 ]);
 
 export const LEGAL_DOCS: Record<string, Record<string, LegalDoc>> = {
-  daypart: { privacy: DAYPART_PRIVACY, terms: DAYPART_TERMS },
+  clearwhen: { privacy: CLEARWHEN_PRIVACY, terms: CLEARWHEN_TERMS },
   qr: { privacy: QR_PRIVACY, terms: QR_TERMS },
 };

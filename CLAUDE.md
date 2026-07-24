@@ -19,7 +19,7 @@ When picking up a new development session, run `/start-development d3cloud-www` 
 ## Key Conventions
 
 - **No backend, ever.** Pure static SPA. See `ADR-001 — Static SPA on Cloudflare Workers`.
-- **Lightweight hand-rolled router** (`src/router.tsx`, History API, no dependency) for per-app pages: `/daypart`, `/daypart/privacy|terms|support`, same under `/qr`. See `ADR-004` (supersedes `ADR-002`). **Still no routing library.**
+- **Lightweight hand-rolled router** (`src/router.tsx`, History API, no dependency) for per-app pages: `/clearwhen`, `/clearwhen/privacy|terms|support`, same under `/qr`. See `ADR-004` (supersedes `ADR-002`). **Still no routing library.**
 - **No analytics, no telemetry on this site.** CSP `connect-src 'self'` enforces it. (This is *not* a public stance about future projects.)
 - **Mirror d3-qr exactly.** Same Vite/Tailwind/Worker config so the family of `*.d3cloud.io` sites stays coherent.
 - **Apex Custom Domain only — never a wildcard route.** A wildcard `*.d3cloud.io/*` would break `qr.d3cloud.io`.
@@ -56,7 +56,7 @@ User loads the page once from Cloudflare Workers (Static Assets binding). The `s
 
 - Don't add a backend, an API endpoint, or a database
 - Don't add `react-router` or any other routing library — `src/router.tsx` is deliberate and sufficient
-- Don't change `/daypart/privacy`, `/daypart/terms` or `/daypart/support` — those URLs ship inside the released Daypart binary and in its App Store listing; add a redirect instead of renaming
+- Don't change `/clearwhen/privacy`, `/clearwhen/terms` or `/clearwhen/support` — those URLs ship inside the Clearwhen binary and in its App Store listing; add a redirect instead of renaming. `/daypart/*` is kept as a redirect for an early build that shipped the old path.
 - Don't add a state management library (Zustand, Redux, etc.)
 - Don't add analytics, telemetry, or tracking scripts
 - Don't add a wildcard Worker route on `*.d3cloud.io` (would break `qr.d3cloud.io`)
