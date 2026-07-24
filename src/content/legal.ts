@@ -22,29 +22,29 @@ const EFFECTIVE = 'July 24, 2026';
  * one of those clauses — don't trim them without re-reading the guideline.
  */
 export const DAYPART_PRIVACY: LegalDoc = {
-  title: 'Daypart — Privacy Policy',
+  title: 'Clearwhen — Privacy Policy',
   effective: EFFECTIVE,
   intro:
-    'Daypart has no accounts, no analytics, no advertising, and no third-party tracking SDKs. There is no Daypart server. This policy explains the one piece of data the app handles and exactly what happens to it.',
+    'Clearwhen has no accounts, no analytics, no advertising, and no third-party tracking SDKs. There is no Clearwhen server. This policy explains the one piece of data the app handles and exactly what happens to it.',
   sections: [
     {
       heading: 'What we collect',
       paragraphs: [
-        `${STUDIO} does not collect, store, or receive any personal data from Daypart. We operate no servers and have no database, so there is nowhere for your information to go.`,
+        `${STUDIO} does not collect, store, or receive any personal data from Clearwhen. We operate no servers and have no database, so there is nowhere for your information to go.`,
       ],
     },
     {
       heading: 'How your location is used',
       paragraphs: [
-        'With your permission, Daypart reads your device location for exactly one purpose: asking a weather service for a forecast at that spot. Location access is "While Using the App" only.',
+        'With your permission, Clearwhen reads your device location for exactly one purpose: asking a weather service for a forecast at that spot. Location access is "While Using the App" only.',
         'Your coordinates are sent to Apple Weather (Apple\'s WeatherKit service) and, in the United States, to the National Weather Service at api.weather.gov. They are used to answer that single request and are never sent anywhere else.',
-        'Your coordinates are never attached to an account, a user ID, an advertising identifier, or any other persistent identifier, because Daypart does not create any.',
+        'Your coordinates are never attached to an account, a user ID, an advertising identifier, or any other persistent identifier, because Clearwhen does not create any.',
       ],
     },
     {
       heading: 'Third parties',
       paragraphs: [
-        'Daypart relies on two weather data providers. Each handles requests under its own privacy policy:',
+        'Clearwhen relies on two weather data providers. Each handles requests under its own privacy policy:',
       ],
       bullets: [
         'Apple Weather (WeatherKit) — apple.com/legal/privacy',
@@ -60,19 +60,19 @@ export const DAYPART_PRIVACY: LegalDoc = {
     {
       heading: 'Retention and deletion',
       paragraphs: [
-        'Because we never receive your data, we have nothing to retain and nothing to delete on your behalf. Everything Daypart stores lives on your device and is removed completely when you delete the app.',
+        'Because we never receive your data, we have nothing to retain and nothing to delete on your behalf. Everything Clearwhen stores lives on your device and is removed completely when you delete the app.',
       ],
     },
     {
       heading: 'Withdrawing consent',
       paragraphs: [
-        'You can revoke location access at any time in iOS Settings → Privacy & Security → Location Services → Daypart. Daypart keeps working — add any city by name instead. Notifications can be turned off in Settings → Notifications → Daypart, or from inside the app.',
+        'You can revoke location access at any time in iOS Settings → Privacy & Security → Location Services → Clearwhen. Clearwhen keeps working — add any city by name instead. Notifications can be turned off in Settings → Notifications → Clearwhen, or from inside the app.',
       ],
     },
     {
       heading: 'Children',
       paragraphs: [
-        'Daypart is rated 4+ and is safe for all ages. It collects no data from anyone, including children.',
+        'Clearwhen is rated 4+ and is safe for all ages. It collects no data from anyone, including children.',
       ],
     },
     {
@@ -164,12 +164,12 @@ function termsFor(appName: string, extra: LegalSection[] = []): LegalDoc {
   };
 }
 
-export const DAYPART_TERMS = termsFor('Daypart', [
+export const DAYPART_TERMS = termsFor('Clearwhen', [
   {
     heading: 'Weather information is not a guarantee',
     paragraphs: [
-      'Forecasts shown in Daypart come from Apple Weather and the US National Weather Service. Forecasting is inherently uncertain, and Daypart summarizes it further into your chosen time windows.',
-      'Do not rely on Daypart for decisions where weather affects safety — severe storm response, aviation, marine navigation, or any emergency. For official watches and warnings, always consult the National Weather Service directly at weather.gov.',
+      'Forecasts shown in Clearwhen come from Apple Weather and the US National Weather Service. Forecasting is inherently uncertain, and Clearwhen summarizes it further into your chosen time windows.',
+      'Do not rely on Clearwhen for decisions where weather affects safety — severe storm response, aviation, marine navigation, or any emergency. For official watches and warnings, always consult the National Weather Service directly at weather.gov.',
     ],
   },
 ]);

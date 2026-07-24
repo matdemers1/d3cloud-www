@@ -17,11 +17,11 @@ export interface Project {
 
 export const PROJECTS: Project[] = [
   {
-    slug: 'daypart',
-    name: 'Daypart',
+    slug: 'clearwhen',
+    name: 'Clearwhen',
     tagline: 'Weather for the parts of your day that matter.',
     blurb:
-      '"Rain today" isn\'t an answer. Daypart breaks the forecast into the windows you actually live in — the commute, the workday, the dog walk — and gives you a straight verdict for each one, plus exactly when the weather turns.',
+      '"Rain today" isn\'t an answer. Clearwhen breaks the forecast into the windows you actually live in — the commute, the workday, the dog walk — and gives you a straight verdict for each one, plus exactly when the weather turns.',
     status: 'Coming soon',
     platforms: ['iPhone', 'Apple Watch', 'Widgets'],
     highlights: [

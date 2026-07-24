@@ -23,12 +23,22 @@ function NotFound() {
   );
 }
 
+/**
+ * Paths that changed after launch. `/daypart/*` was live and is baked into an
+ * early build of the app, so it has to keep resolving rather than 404.
+ */
+const RENAMED: Record<string, string> = { daypart: 'clearwhen' };
+
 /** Resolves a pathname to a page plus the document title it should set. */
 function resolve(path: string): { view: ReactNode; title: string } {
   const segments = path.split('/').filter(Boolean);
 
   if (segments.length === 0) {
     return { view: <Home />, title: STUDIO };
+  }
+
+  if (RENAMED[segments[0]]) {
+    segments[0] = RENAMED[segments[0]];
   }
 
   const project = projectBySlug(segments[0]);
