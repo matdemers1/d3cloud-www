@@ -1,25 +1,75 @@
-import { Logo } from './components/Logo';
+import { useEffect, type ReactNode } from 'react';
+import { Layout } from './components/Layout';
+import { Home } from './pages/Home';
+import { ProjectPage } from './pages/Project';
+import { LegalPage, SupportPage } from './pages/Legal';
+import { LEGAL_DOCS } from './content/legal';
+import { projectBySlug, STUDIO } from './content/projects';
+import { Link, useRouter } from './router';
+
+function NotFound() {
+  return (
+    <div className="py-10">
+      <h1 className="mb-3 text-3xl font-semibold tracking-tight">
+        Page not found
+      </h1>
+      <p className="mb-6 text-text-muted">
+        That address doesn&apos;t exist — it may have moved.
+      </p>
+      <Link to="/" className="text-accent hover:underline">
+        Back to all projects →
+      </Link>
+    </div>
+  );
+}
+
+/** Resolves a pathname to a page plus the document title it should set. */
+function resolve(path: string): { view: ReactNode; title: string } {
+  const segments = path.split('/').filter(Boolean);
+
+  if (segments.length === 0) {
+    return { view: <Home />, title: STUDIO };
+  }
+
+  const project = projectBySlug(segments[0]);
+  if (!project) {
+    return { view: <NotFound />, title: `Not found — ${STUDIO}` };
+  }
+
+  if (segments.length === 1) {
+    return {
+      view: <ProjectPage project={project} />,
+      title: `${project.name} — ${STUDIO}`,
+    };
+  }
+
+  const page = segments[1];
+
+  if (page === 'support') {
+    return {
+      view: <SupportPage project={project} />,
+      title: `${project.name} Support — ${STUDIO}`,
+    };
+  }
+
+  const doc = LEGAL_DOCS[project.slug]?.[page];
+  if (doc) {
+    return {
+      view: <LegalPage doc={doc} project={project} />,
+      title: `${doc.title} — ${STUDIO}`,
+    };
+  }
+
+  return { view: <NotFound />, title: `Not found — ${STUDIO}` };
+}
 
 export function App() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-      <Logo size={56} className="mb-6 text-text-primary" />
-      <h1 className="mb-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-        Demers Design and Development
-      </h1>
-      <p className="mb-8 max-w-xl text-base text-text-muted sm:text-lg">
-        Independent software studio building privacy-first everyday tools.
-      </p>
-      <p className="text-sm text-text-muted">
-        Currently shipping{' '}
-        <a
-          href="https://qr.d3cloud.io"
-          className="text-accent underline-offset-4 hover:underline"
-        >
-          D3 QR
-        </a>
-        . The full site is being built — check back soon.
-      </p>
-    </main>
-  );
+  const { path } = useRouter();
+  const { view, title } = resolve(path);
+
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
+
+  return <Layout>{view}</Layout>;
 }
