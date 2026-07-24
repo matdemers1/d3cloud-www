@@ -27,6 +27,7 @@ When picking up a new development session, run `/start-development d3cloud-www` 
 - **System font stack only.** Zero font requests, instant render.
 - **Bundle budget: 150kb gzipped.** No QR/PDF libs to weigh us down.
 - **No co-author footer in commits.**
+- **Deploy via git push to `main`.** GitHub Actions builds and deploys to Cloudflare Workers. Do not deploy by hand — a manual `wrangler deploy` puts a laptop build on the live site that doesn't match `main`.
 
 ## Build & Dev Commands
 
@@ -37,7 +38,8 @@ npm run build        # outputs dist/
 npm run preview      # preview the production build
 npm run lint         # eslint
 npm run format       # prettier --write .
-npx wrangler deploy  # manual deploy (auto-deploy from main not yet wired)
+# Deploys happen in CI: push to main -> .github/workflows/deploy.yml
+# npx wrangler deploy   # manual fallback only
 ```
 
 ## Architecture (one-paragraph version)
