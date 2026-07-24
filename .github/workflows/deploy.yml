@@ -1,0 +1,52 @@
+name: Deploy
+
+# Push to main → build → deploy to Cloudflare Workers.
+#
+# Replaces the manual `npx wrangler deploy` that every d3cloud Worker had been
+# shipped with until now. The build runs here, not on a laptop, so what's on
+# d3cloud.io always matches what's on main.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN   scoped token with Workers Scripts:Write on the account
+#   CLOUDFLARE_ACCOUNT_ID  the account the Worker lives in
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # `npm run build` is `tsc -b && vite build`, so this type-checks too.
+      # A broken build must never reach the live site.
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
