@@ -25,7 +25,7 @@ export const CLEARWHEN_PRIVACY: LegalDoc = {
   title: 'Clearwhen — Privacy Policy',
   effective: EFFECTIVE,
   intro:
-    'Clearwhen has no accounts, no analytics, no advertising, and no third-party tracking SDKs. There is no Clearwhen server. This policy explains the one piece of data the app handles and exactly what happens to it.',
+    'Clearwhen has no accounts, no analytics, no advertising, and no third-party tracking SDKs. There is no Clearwhen server. This policy explains the data the app can access and exactly what happens to it.',
   sections: [
     {
       heading: 'What we collect',
@@ -39,6 +39,14 @@ export const CLEARWHEN_PRIVACY: LegalDoc = {
         'With your permission, Clearwhen reads your device location for exactly one purpose: asking a weather service for a forecast at that spot. Location access is "While Using the App" only.',
         'Your coordinates are sent to Apple Weather (Apple\'s WeatherKit service) and, in the United States, to the National Weather Service at api.weather.gov. They are used to answer that single request and are never sent anywhere else.',
         'Your coordinates are never attached to an account, a user ID, an advertising identifier, or any other persistent identifier, because Clearwhen does not create any.',
+      ],
+    },
+    {
+      heading: 'How your calendar is used',
+      paragraphs: [
+        'Calendar access is off by default and entirely optional. Turning on "Show calendar events" in Settings lets Clearwhen read the events on the days you are looking at, so it can show the forecast during each one.',
+        'Your events are read on your device and never leave it. They are not uploaded, not sent to either weather provider, not written to Clearwhen\'s cache, and never modified — Clearwhen only reads. Event titles and times are held in memory while a screen is open and discarded when it closes.',
+        'Turning the setting off stops all calendar access immediately. You can also revoke it at any time in iOS Settings.',
       ],
     },
     {
