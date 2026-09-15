@@ -10,19 +10,8 @@
     />
     <meta name="theme-color" content="#0a0a0f" />
     <title>Demers Design and Development</title>
-    <script>
-      // Apply theme before paint to prevent flash. @d3cloud/ui keys off
-      // data-theme; with no stored choice it is left unset so the system
-      // follows prefers-color-scheme on its own.
-      (function () {
-        try {
-          var stored = localStorage.getItem('d3cloud-theme');
-          if (stored === 'dark' || stored === 'light') {
-            document.documentElement.setAttribute('data-theme', stored);
-          }
-        } catch (_) {}
-      })();
-    </script>
+    <!-- Blocking on purpose: it must set data-theme before first paint. -->
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>
