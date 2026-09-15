@@ -55,7 +55,7 @@ function resolve(path: string): { view: ReactNode; title: string } {
 
   const page = segments[1];
 
-  if (page === 'support') {
+  if (page === 'support' && LEGAL_DOCS[project.slug]) {
     return {
       view: <SupportPage project={project} />,
       title: `${project.name} Support — ${STUDIO}`,

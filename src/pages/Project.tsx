@@ -1,7 +1,11 @@
 import { Link } from '../router';
 import { CONTACT_EMAIL, type Project } from '../content/projects';
+import { LEGAL_DOCS } from '../content/legal';
 
 export function ProjectPage({ project }: { project: Project }) {
+  // Libraries like D3 UI have no privacy policy, terms or support page to link.
+  const hasLegal = Boolean(LEGAL_DOCS[project.slug]);
+
   return (
     <>
       <Link
@@ -70,29 +74,81 @@ export function ProjectPage({ project }: { project: Project }) {
         </ul>
       </section>
 
+      {project.changelog && project.changelog.length > 0 && (
+        <section className="mb-10">
+          <h2 className="mb-3 text-xs font-semibold tracking-widest text-text-muted uppercase">
+            What&rsquo;s new
+          </h2>
+          <ol className="space-y-6">
+            {project.changelog.map((release) => (
+              <li key={release.version}>
+                <div className="mb-1 flex flex-wrap items-baseline gap-x-3">
+                  <span className="text-sm font-semibold">
+                    {release.version}
+                  </span>
+                  <time
+                    className="text-xs text-text-muted"
+                    dateTime={release.date}
+                  >
+                    {new Date(`${release.date}T00:00:00`).toLocaleDateString(
+                      undefined,
+                      {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      },
+                    )}
+                  </time>
+                </div>
+                <p className="mb-2 text-sm text-text-muted">
+                  {release.summary}
+                </p>
+                <ul className="space-y-1.5">
+                  {release.notes.map((note) => (
+                    <li
+                      key={note}
+                      className="flex gap-2 text-sm text-text-muted"
+                    >
+                      <span aria-hidden="true" className="select-none">
+                        &middot;
+                      </span>
+                      <span>{note}</span>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       <section className="rounded-xl border border-border bg-elevated p-6">
         <h2 className="mb-2 text-sm font-semibold">Privacy</h2>
-        <p className="mb-4 text-sm text-text-muted">{project.privacyLine}</p>
-        <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-          <Link
-            to={`/${project.slug}/privacy`}
-            className="text-accent hover:underline"
-          >
-            Privacy Policy
-          </Link>
-          <Link
-            to={`/${project.slug}/terms`}
-            className="text-accent hover:underline"
-          >
-            Terms of Use
-          </Link>
-          <Link
-            to={`/${project.slug}/support`}
-            className="text-accent hover:underline"
-          >
-            Support
-          </Link>
-        </div>
+        <p className={`text-sm text-text-muted ${hasLegal ? 'mb-4' : ''}`}>
+          {project.privacyLine}
+        </p>
+        {hasLegal && (
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            <Link
+              to={`/${project.slug}/privacy`}
+              className="text-accent hover:underline"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to={`/${project.slug}/terms`}
+              className="text-accent hover:underline"
+            >
+              Terms of Use
+            </Link>
+            <Link
+              to={`/${project.slug}/support`}
+              className="text-accent hover:underline"
+            >
+              Support
+            </Link>
+          </div>
+        )}
       </section>
 
       <p className="mt-8 text-sm text-text-muted">
