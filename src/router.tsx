@@ -5,8 +5,10 @@ import {
   useEffect,
   useMemo,
   useState,
+  type MouseEvent,
   type ReactNode,
 } from 'react';
+import { Link as UiLink, type LinkVariant } from '@d3cloud/ui';
 
 /**
  * The smallest router that does the job: History API + popstate, no dependency.
@@ -59,35 +61,47 @@ export function useRouter(): RouterValue {
   return useContext(RouterContext);
 }
 
+/**
+ * Click handler for any anchor that should navigate in-app — the library's
+ * `Link` and `Card` both render a real `<a href>`, so they only need this.
+ */
+export function useNavigateOnClick(
+  to: string,
+): (event: MouseEvent<HTMLElement>) => void {
+  const { navigate } = useRouter();
+  return (event) => {
+    // Let modified clicks (new tab, download) behave natively.
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+    event.preventDefault();
+    navigate(to);
+  };
+}
+
 interface LinkProps {
   to: string;
   children: ReactNode;
+  variant?: LinkVariant;
   className?: string;
 }
 
-export function Link({ to, children, className }: LinkProps) {
-  const { navigate } = useRouter();
+export function Link({ to, children, variant, className }: LinkProps) {
   return (
-    <a
+    <UiLink
       href={to}
+      variant={variant}
       className={className}
-      onClick={(event) => {
-        // Let modified clicks (new tab, download) behave natively.
-        if (
-          event.defaultPrevented ||
-          event.button !== 0 ||
-          event.metaKey ||
-          event.ctrlKey ||
-          event.shiftKey ||
-          event.altKey
-        ) {
-          return;
-        }
-        event.preventDefault();
-        navigate(to);
-      }}
+      onClick={useNavigateOnClick(to)}
     >
       {children}
-    </a>
+    </UiLink>
   );
 }

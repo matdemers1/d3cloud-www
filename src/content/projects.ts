@@ -1,3 +1,12 @@
+export interface Screenshot {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  /** Shown shorter than the rest — a watch face beside phones, at its own scale. */
+  compact?: boolean;
+}
+
 export interface Project {
   /** URL segment: /daypart, /qr */
   slug: string;
@@ -12,7 +21,10 @@ export interface Project {
   highlights: string[];
   /** One-line summary of what the app collects, echoed on the home card. */
   privacyLine: string;
+  /** The product's own colour, shown as a small decorative mark. */
   accent: string;
+  /** Served from public/screenshots/<slug>/. Dimensions are the file's own. */
+  screenshots?: Screenshot[];
   /** Newest first. Rendered on the project page as "What's new". */
   changelog?: {
     version: string;
@@ -41,6 +53,39 @@ export const PROJECTS: Project[] = [
       'Mac (Apple silicon)',
       'Apple Vision Pro',
     ],
+    screenshots: [
+      {
+        src: '/screenshots/clearwhen/01-week.webp',
+        alt: "Clearwhen home: current conditions in Hoschton, GA, alerts for thunderstorms during Workday and Dog Walk, and today's verdict for each window.",
+        width: 420,
+        height: 912,
+      },
+      {
+        src: '/screenshots/clearwhen/03-day-detail.webp',
+        alt: 'A day in detail: calendar events paired with their forecast, the best time outside, and hour-by-hour weather inside the Commute and Workday windows.',
+        width: 420,
+        height: 912,
+      },
+      {
+        src: '/screenshots/clearwhen/02-week-rows.webp',
+        alt: 'The week ahead as day cards, each with a headline like "Storms 2–8 PM · 6 hrs" and compact chips for that day\'s windows.',
+        width: 420,
+        height: 912,
+      },
+      {
+        src: '/screenshots/clearwhen/04-window-editor.webp',
+        alt: 'Editing the Workday window: name, icon, 9 AM to 5 PM, Monday to Friday.',
+        width: 420,
+        height: 912,
+      },
+      {
+        src: '/screenshots/clearwhen/watch-today.webp',
+        alt: 'Apple Watch app: 68° and clear in Boston, with the Commute window marked Now.',
+        width: 416,
+        height: 496,
+        compact: true,
+      },
+    ],
     highlights: [
       'Up to five custom time windows, with per-weekday scheduling',
       'Worst-case-wins verdicts — if it rains at all in your window, it says rain',
@@ -52,6 +97,7 @@ export const PROJECTS: Project[] = [
     ],
     privacyLine:
       'Location is used only to request a forecast. Calendar access is optional and read on-device. No accounts, no analytics, no tracking.',
+    // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#7EB6FF',
     changelog: [
       {
@@ -88,6 +134,26 @@ export const PROJECTS: Project[] = [
     status: 'Live',
     cta: { label: 'Open D3 QR', href: 'https://qr.d3cloud.io' },
     platforms: ['Web'],
+    screenshots: [
+      {
+        src: '/screenshots/qr/preview.webp',
+        alt: 'D3 QR: a URL and label entered on the left, with its QR code previewed live on the right.',
+        width: 1280,
+        height: 800,
+      },
+      {
+        src: '/screenshots/qr/batch.webp',
+        alt: 'A batch of five URLs in a reorderable table.',
+        width: 1280,
+        height: 800,
+      },
+      {
+        src: '/screenshots/qr/pdf-export.webp',
+        alt: 'PDF settings — page size, header, footer, colours, error correction — beside a preview of the first page, with buttons to download the PDF, PNGs or SVGs.',
+        width: 1280,
+        height: 800,
+      },
+    ],
     highlights: [
       'Bulk generation from a pasted list',
       'Print-ready PDF and image export',
@@ -95,6 +161,7 @@ export const PROJECTS: Project[] = [
       'No account, no sign-up, no limits',
     ],
     privacyLine: 'Collects nothing. There is no backend.',
+    // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#A8E6CF',
   },
   {
@@ -109,6 +176,32 @@ export const PROJECTS: Project[] = [
       href: 'https://matdemers1.github.io/d3-design-system',
     },
     platforms: ['React', 'npm', 'Storybook'],
+    screenshots: [
+      {
+        src: '/screenshots/ui/storybook.webp',
+        alt: 'The D3 UI Storybook, open on the Alert documentation page.',
+        width: 1344,
+        height: 840,
+      },
+      {
+        src: '/screenshots/ui/alerts.webp',
+        alt: 'Alert in its danger, warning, success and info tones.',
+        width: 1048,
+        height: 656,
+      },
+      {
+        src: '/screenshots/ui/form-fields.webp',
+        alt: 'FormField wrapping every control: a search input, a select, an optional textarea and a checkbox.',
+        width: 808,
+        height: 760,
+      },
+      {
+        src: '/screenshots/ui/empty-state.webp',
+        alt: 'EmptyState for a first run: "Nothing here yet", with a single primary action.',
+        width: 968,
+        height: 582,
+      },
+    ],
     highlights: [
       '21 components — primitives, forms, layers and patterns — covered by 361 tests',
       'Every story swept by axe, so a component with stories is a component with an accessibility check',
@@ -118,6 +211,7 @@ export const PROJECTS: Project[] = [
       'Ships the d3-check-usage gate, which bans raw hex, off-scale values and shadows in any app',
     ],
     privacyLine: 'A component library — no telemetry, nothing phones home.',
+    // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#B9A6FF',
     changelog: [
       {

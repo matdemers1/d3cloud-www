@@ -10,13 +10,13 @@ import { Link, useRouter } from './router';
 function NotFound() {
   return (
     <div className="py-10">
-      <h1 className="mb-3 text-3xl font-semibold tracking-tight">
+      <h1 className="mb-3 text-24 font-title text-fg">
         Page not found
       </h1>
-      <p className="mb-6 text-text-muted">
+      <p className="mb-6 text-14 text-fg-muted">
         That address doesn&apos;t exist — it may have moved.
       </p>
-      <Link to="/" className="text-accent hover:underline">
+      <Link to="/">
         Back to all projects →
       </Link>
     </div>

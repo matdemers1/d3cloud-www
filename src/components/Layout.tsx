@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link as UiLink } from '@d3cloud/ui';
 import { Logo } from './Logo';
 import { Link } from '../router';
 import { CONTACT_EMAIL, PROJECTS, STUDIO } from '../content/projects';
@@ -8,12 +9,9 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="flex min-h-full flex-col">
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-5">
-          <Link
-            to="/"
-            className="flex items-center gap-2.5 text-text-primary transition-opacity hover:opacity-70"
-          >
-            <Logo size={26} />
-            <span className="text-sm font-semibold tracking-tight">
+          <Link to="/" variant="muted" className="flex items-center gap-2.5">
+            <Logo size={24} />
+            <span className="text-14 font-semibold">
               Demers Design &amp; Development
             </span>
           </Link>
@@ -26,24 +24,20 @@ export function Layout({ children }: { children: ReactNode }) {
 
       <footer className="border-t border-border">
         <div className="mx-auto max-w-3xl px-6 py-8">
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+          <nav
+            aria-label="Projects"
+            className="flex flex-wrap gap-x-6 gap-y-2 text-14"
+          >
             {PROJECTS.map((project) => (
-              <Link
-                key={project.slug}
-                to={`/${project.slug}`}
-                className="text-text-muted transition-colors hover:text-text-primary"
-              >
+              <Link key={project.slug} to={`/${project.slug}`} variant="muted">
                 {project.name}
               </Link>
             ))}
-            <a
-              href={`mailto:${CONTACT_EMAIL}`}
-              className="text-text-muted transition-colors hover:text-text-primary"
-            >
+            <UiLink href={`mailto:${CONTACT_EMAIL}`} variant="muted">
               Contact
-            </a>
-          </div>
-          <p className="mt-4 text-xs text-text-muted">
+            </UiLink>
+          </nav>
+          <p className="mt-4 text-12 text-fg-muted">
             © {new Date().getFullYear()} {STUDIO}
           </p>
         </div>

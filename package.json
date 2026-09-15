@@ -15,11 +15,12 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "lint": "eslint .",
+    "lint": "eslint . && d3-check-usage src",
     "format": "prettier --write .",
     "deploy": "wrangler deploy"
   },
   "dependencies": {
+    "@d3cloud/ui": "https://github.com/matdemers1/d3-design-system/releases/download/v0.1.1/d3cloud-ui-0.1.1.tgz",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

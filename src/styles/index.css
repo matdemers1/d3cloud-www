@@ -1,37 +1,16 @@
-@import 'tailwindcss';
+/* d3cloud.io on @d3cloud/ui (ADR-005).
+ *
+ * theme.css brings Tailwind, the tokens, Inter and the utilities that read
+ * them (bg-surface, text-fg-muted, text-14, rounded-lg). The components'
+ * own stylesheet arrives with their JS import. It is unlayered, so it beats
+ * Tailwind utilities: put spacing on a wrapper, never on a library component.
+ * Nothing below defines a colour, a size or a font — if a page needs one the
+ * system lacks, the system is what changes. */
+@import '@d3cloud/ui/theme.css';
 
-@custom-variant dark (&:where(.dark, .dark *));
-
-:root {
-  --color-canvas: #ffffff;
-  --color-elevated: #f8fafc;
-  --color-text-primary: #0f172a;
-  --color-text-muted: #475569;
-  --color-accent: #3b82f6;
-  --color-border: #e2e8f0;
-
-  color-scheme: light;
-}
-
-.dark {
-  --color-canvas: #0a0a0f;
-  --color-elevated: #16213e;
-  --color-text-primary: #f1f5f9;
-  --color-text-muted: #94a3b8;
-  --color-accent: #60a5fa;
-  --color-border: #1e293b;
-
-  color-scheme: dark;
-}
-
-@theme inline {
-  --color-canvas: var(--color-canvas);
-  --color-elevated: var(--color-elevated);
-  --color-text-primary: var(--color-text-primary);
-  --color-text-muted: var(--color-text-muted);
-  --color-accent: var(--color-accent);
-  --color-border: var(--color-border);
-}
+/* Tailwind v4 finds content relative to the CSS entry, which now lives in
+   node_modules — point it back at this app. */
+@source '../';
 
 @layer base {
   html,
@@ -41,23 +20,7 @@
   }
 
   body {
-    background-color: var(--color-canvas);
-    color: var(--color-text-primary);
-    font-family:
-      ui-sans-serif,
-      system-ui,
-      -apple-system,
-      'Segoe UI',
-      Roboto,
-      'Helvetica Neue',
-      Arial,
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
-
-  *:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    background-color: var(--color-bg);
+    color: var(--color-text);
   }
 }

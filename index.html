@@ -11,18 +11,15 @@
     <meta name="theme-color" content="#0a0a0f" />
     <title>Demers Design and Development</title>
     <script>
-      // Apply theme before paint to prevent flash
+      // Apply theme before paint to prevent flash. @d3cloud/ui keys off
+      // data-theme; with no stored choice it is left unset so the system
+      // follows prefers-color-scheme on its own.
       (function () {
         try {
           var stored = localStorage.getItem('d3cloud-theme');
-          var prefersDark = window.matchMedia(
-            '(prefers-color-scheme: dark)',
-          ).matches;
-          var resolved =
-            stored === 'dark' ||
-            (stored === 'light' ? false : prefersDark) ||
-            (!stored && prefersDark);
-          if (resolved) document.documentElement.classList.add('dark');
+          if (stored === 'dark' || stored === 'light') {
+            document.documentElement.setAttribute('data-theme', stored);
+          }
         } catch (_) {}
       })();
     </script>

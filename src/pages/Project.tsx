@@ -1,6 +1,17 @@
+import { Badge, Card, Link as UiLink } from '@d3cloud/ui';
 import { Link } from '../router';
 import { CONTACT_EMAIL, type Project } from '../content/projects';
 import { LEGAL_DOCS } from '../content/legal';
+import { ProjectMark } from '../components/ProjectMark';
+import { Screenshots } from '../components/Screenshots';
+
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <h2 className="mb-3 text-11 font-semibold text-fg-muted uppercase">
+      {children}
+    </h2>
+  );
+}
 
 export function ProjectPage({ project }: { project: Project }) {
   // Libraries like D3 UI have no privacy policy, terms or support page to link.
@@ -8,63 +19,59 @@ export function ProjectPage({ project }: { project: Project }) {
 
   return (
     <>
-      <Link
-        to="/"
-        className="mb-8 inline-block text-sm text-text-muted transition-colors hover:text-text-primary"
-      >
-        ← All projects
-      </Link>
+      <div className="mb-8">
+        <Link to="/" variant="muted" className="text-13">
+          ← All projects
+        </Link>
+      </div>
 
       <header className="mb-10">
-        <div className="mb-3 flex flex-wrap items-center gap-3">
-          <span
-            className="size-3 shrink-0 rounded-full"
-            style={{ backgroundColor: project.accent }}
-            aria-hidden="true"
-          />
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            {project.name}
-          </h1>
-          <span className="rounded-full border border-border px-2.5 py-0.5 text-xs text-text-muted">
-            {project.status}
-          </span>
+        <div className="mb-2 flex flex-wrap items-center gap-3">
+          <ProjectMark project={project} size="md" />
+          <h1 className="text-24 font-title text-fg">{project.name}</h1>
+          <Badge>{project.status}</Badge>
         </div>
-        <p className="mb-4 text-lg text-text-primary">{project.tagline}</p>
-        <p className="max-w-2xl text-text-muted">{project.blurb}</p>
+        <p className="mb-3 text-16 font-medium text-fg">{project.tagline}</p>
+        <p className="max-w-prose text-14 text-fg-muted">{project.blurb}</p>
 
         {project.cta && (
           <a
             href={project.cta.href}
-            className="mt-6 inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            className="mt-6 inline-block rounded-md bg-accent px-4 py-2 text-14 font-semibold text-accent-contrast transition-colors hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             {project.cta.label}
           </a>
         )}
       </header>
 
+      {project.screenshots && project.screenshots.length > 0 && (
+        <section className="mb-10" aria-labelledby="screenshots-label">
+          <h2
+            id="screenshots-label"
+            className="mb-3 text-11 font-semibold text-fg-muted uppercase"
+          >
+            Screenshots
+          </h2>
+          <Screenshots shots={project.screenshots} />
+        </section>
+      )}
+
       <section className="mb-10">
-        <h2 className="mb-3 text-xs font-semibold tracking-widest text-text-muted uppercase">
-          Platforms
-        </h2>
-        <div className="flex flex-wrap gap-2">
+        <SectionLabel>Platforms</SectionLabel>
+        <ul className="flex flex-wrap gap-2">
           {project.platforms.map((platform) => (
-            <span
-              key={platform}
-              className="rounded-full border border-border px-3 py-1 text-sm text-text-muted"
-            >
-              {platform}
-            </span>
+            <li key={platform}>
+              <Badge>{platform}</Badge>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       <section className="mb-10">
-        <h2 className="mb-3 text-xs font-semibold tracking-widest text-text-muted uppercase">
-          What it does
-        </h2>
+        <SectionLabel>What it does</SectionLabel>
         <ul className="flex flex-col gap-2">
           {project.highlights.map((highlight) => (
-            <li key={highlight} className="flex gap-3 text-text-primary">
+            <li key={highlight} className="flex gap-3 text-14 text-fg">
               <span className="text-accent" aria-hidden="true">
                 •
               </span>
@@ -76,41 +83,30 @@ export function ProjectPage({ project }: { project: Project }) {
 
       {project.changelog && project.changelog.length > 0 && (
         <section className="mb-10">
-          <h2 className="mb-3 text-xs font-semibold tracking-widest text-text-muted uppercase">
-            What&rsquo;s new
-          </h2>
-          <ol className="space-y-6">
+          <SectionLabel>What’s new</SectionLabel>
+          <ol className="flex flex-col gap-6">
             {project.changelog.map((release) => (
               <li key={release.version}>
                 <div className="mb-1 flex flex-wrap items-baseline gap-x-3">
-                  <span className="text-sm font-semibold">
+                  <span className="text-14 font-semibold text-fg">
                     {release.version}
                   </span>
                   <time
-                    className="text-xs text-text-muted"
+                    className="font-mono text-12 text-fg-muted"
                     dateTime={release.date}
                   >
                     {new Date(`${release.date}T00:00:00`).toLocaleDateString(
                       undefined,
-                      {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      },
+                      { year: 'numeric', month: 'long', day: 'numeric' },
                     )}
                   </time>
                 </div>
-                <p className="mb-2 text-sm text-text-muted">
-                  {release.summary}
-                </p>
-                <ul className="space-y-1.5">
+                <p className="mb-2 text-14 text-fg">{release.summary}</p>
+                <ul className="flex flex-col gap-1.5">
                   {release.notes.map((note) => (
-                    <li
-                      key={note}
-                      className="flex gap-2 text-sm text-text-muted"
-                    >
+                    <li key={note} className="flex gap-2 text-13 text-fg-muted">
                       <span aria-hidden="true" className="select-none">
-                        &middot;
+                        ·
                       </span>
                       <span>{note}</span>
                     </li>
@@ -122,43 +118,23 @@ export function ProjectPage({ project }: { project: Project }) {
         </section>
       )}
 
-      <section className="rounded-xl border border-border bg-elevated p-6">
-        <h2 className="mb-2 text-sm font-semibold">Privacy</h2>
-        <p className={`text-sm text-text-muted ${hasLegal ? 'mb-4' : ''}`}>
+      <Card padding="lg">
+        <h2 className="mb-2 text-14 font-semibold text-fg">Privacy</h2>
+        <p className={`text-13 text-fg-muted ${hasLegal ? 'mb-4' : ''}`}>
           {project.privacyLine}
         </p>
         {hasLegal && (
-          <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-            <Link
-              to={`/${project.slug}/privacy`}
-              className="text-accent hover:underline"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              to={`/${project.slug}/terms`}
-              className="text-accent hover:underline"
-            >
-              Terms of Use
-            </Link>
-            <Link
-              to={`/${project.slug}/support`}
-              className="text-accent hover:underline"
-            >
-              Support
-            </Link>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-13">
+            <Link to={`/${project.slug}/privacy`}>Privacy Policy</Link>
+            <Link to={`/${project.slug}/terms`}>Terms of Use</Link>
+            <Link to={`/${project.slug}/support`}>Support</Link>
           </div>
         )}
-      </section>
+      </Card>
 
-      <p className="mt-8 text-sm text-text-muted">
+      <p className="mt-8 text-13 text-fg-muted">
         Questions?{' '}
-        <a
-          href={`mailto:${CONTACT_EMAIL}`}
-          className="text-accent hover:underline"
-        >
-          {CONTACT_EMAIL}
-        </a>
+        <UiLink href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</UiLink>
       </p>
     </>
   );
