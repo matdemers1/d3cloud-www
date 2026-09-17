@@ -25,6 +25,13 @@ export interface Project {
   accent: string;
   /** Served from public/screenshots/<slug>/. Dimensions are the file's own. */
   screenshots?: Screenshot[];
+  /** For a self-hosted project: how somebody runs it themselves. */
+  selfHost?: {
+    intro: string;
+    code: string;
+    steps: string[];
+    note?: string;
+  };
   /** Newest first. Rendered on the project page as "What's new". */
   changelog?: {
     version: string;
@@ -163,6 +170,89 @@ export const PROJECTS: Project[] = [
     privacyLine: 'Collects nothing. There is no backend.',
     // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#A8E6CF',
+  },
+  {
+    slug: 'auth',
+    name: 'D3 Auth',
+    tagline: 'One sign-in for the apps you host yourself.',
+    blurb:
+      'Self-hosted apps each come with their own login, so a household ends up with five passwords and no way to take somebody\u2019s access away. D3 Auth is a small OpenID Connect provider with one console for the people who can sign in, the apps they can open, and the roles they hold in each \u2014 and every app keeps its own login, so adopting it is never all-or-nothing.',
+    status: 'Live',
+    cta: {
+      label: 'View on GitHub',
+      href: 'https://github.com/matdemers1/d3-auth',
+    },
+    platforms: ['Self-hosted', 'Docker', 'PostgreSQL', 'OpenID Connect'],
+    screenshots: [
+      {
+        src: '/screenshots/auth/01-people.webp',
+        alt: 'The console\u2019s People screen: five accounts with their roles, when they last signed in, and a button to invite somebody.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/auth/02-apps.webp',
+        alt: 'The Apps screen listing Bindery, Immich and Murmur, each with how many people can sign in and how many roles it declares.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/auth/03-connect.webp',
+        alt: 'Connect Immich: every value the app needs \u2014 issuer, discovery URL, client id, auth method, ES256, PKCE \u2014 each with a copy button and a line saying why.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/auth/04-add-an-app.webp',
+        alt: 'Add an app: a card for Immich, which D3 Auth knows how to connect, and one for registering your own app from a manifest.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/auth/05-signin-phone.webp',
+        alt: 'The sign-in screen on a phone: one email field and a Continue button.',
+        width: 390,
+        height: 844,
+        compact: true,
+      },
+    ],
+    highlights: [
+      'Authorization code with PKCE only, on node-oidc-provider \u2014 four OpenID conformance plans run in CI on every push',
+      'Invite-only accounts with passkeys, authenticator codes and trusted devices; nobody can sign themselves up',
+      'Deny by default: no grant, no sign-in \u2014 refused before any consent screen, and written to the audit trail',
+      'Per-app roles in the token, so an app learns its own roles and never what else somebody can open',
+      'Presets for apps it already knows: give Immich\u2019s address and it shows exactly what to paste into Immich',
+      'Nightly offsite backups with a restore drill that boots a second copy of the service to prove the backup works',
+      'Alerts that read the audit trail, and a probe outside the house that emails when the server itself is down',
+      'No telemetry, no phone-home, no dynamic registration, no social login',
+    ],
+    selfHost: {
+      intro:
+        'Docker and a domain that reaches the machine over HTTPS \u2014 a tunnel or a reverse proxy. Three secrets, generated once and kept in a password manager.',
+      code: 'git clone https://github.com/matdemers1/d3-auth.git && cd d3-auth\ncp .env.example .env\n\n# KEK, PEPPER, COOKIE_KEYS, POSTGRES_PASSWORD\nopenssl rand -base64 32\n\ndocker compose up -d\ndocker compose logs server | grep setupCode',
+      steps: [
+        'Open /login/setup, enter the one-time code from the log, and claim the owner account.',
+        'Add an app \u2014 from a preset, or from a manifest that declares its roles.',
+        'Give somebody access and pick their roles. Until you do, every sign-in to that app is refused.',
+      ],
+      note: 'Keep the KEK. It wraps every authenticator secret and signing key at rest, and no backup contains it \u2014 lose it and those are gone.',
+    },
+    privacyLine:
+      'Runs on your machine; nothing is sent anywhere. It holds the accounts you create and an audit trail of what happened, and phones nobody \u2014 no telemetry, no update checks.',
+    // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
+    accent: '#8B7CF6',
+    changelog: [
+      {
+        version: '0.1.0',
+        date: '2026-09-17',
+        summary: 'First public release, under Apache-2.0.',
+        notes: [
+          'Running in production with Immich and a reference Express app signing in through it.',
+          'Passed its own security gate first: four conformance plans, 74 adversarial tests, an ASVS Level 2 self-assessment, Semgrep at zero and a nightly authenticated ZAP scan \u2014 nineteen defects found and fixed, four of them High.',
+          'Console rebuilt on @d3cloud/ui 1.1: sidebar shell, System/Light/Dark, and a strict content security policy with nothing inline.',
+        ],
+      },
+    ],
   },
   {
     slug: 'ui',

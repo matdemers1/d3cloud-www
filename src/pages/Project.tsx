@@ -81,6 +81,33 @@ export function ProjectPage({ project }: { project: Project }) {
         </ul>
       </section>
 
+      {project.selfHost && (
+        <section className="mb-10">
+          <SectionLabel>Run it yourself</SectionLabel>
+          <p className="mb-4 max-w-prose text-14 text-fg-muted">
+            {project.selfHost.intro}
+          </p>
+          <pre className="mb-4 overflow-x-auto rounded-md bg-surface p-4 font-mono text-12 text-fg">
+            <code>{project.selfHost.code}</code>
+          </pre>
+          <ol className="mb-4 flex flex-col gap-2">
+            {project.selfHost.steps.map((step, index) => (
+              <li key={step} className="flex gap-3 text-14 text-fg">
+                <span className="font-mono text-13 text-accent" aria-hidden="true">
+                  {index + 1}.
+                </span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+          {project.selfHost.note && (
+            <Card padding="md">
+              <p className="text-13 text-fg-muted">{project.selfHost.note}</p>
+            </Card>
+          )}
+        </section>
+      )}
+
       {project.changelog && project.changelog.length > 0 && (
         <section className="mb-10">
           <SectionLabel>What’s new</SectionLabel>
