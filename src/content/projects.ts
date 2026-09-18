@@ -293,7 +293,7 @@ export const PROJECTS: Project[] = [
       },
     ],
     highlights: [
-      '21 components — primitives, forms, layers and patterns — covered by 361 tests',
+      '38 components — primitives, forms, layers, the app frame and page patterns — covered by 909 tests',
       'Every story swept by axe, so a component with stories is a component with an accessibility check',
       'Dark-first OKLCH colour on a single violet accent, with a light theme that can be applied per subtree',
       'A 7-step type scale on self-hosted Inter, with JetBrains Mono for metadata',
@@ -304,6 +304,37 @@ export const PROJECTS: Project[] = [
     // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#B9A6FF',
     changelog: [
+      {
+        version: '1.2.0',
+        date: '2026-09-18',
+        summary: 'Table — the component DataList deliberately is not.',
+        notes: [
+          'D-067 settled that a list of like things is rows and not a table, and left the system with nothing for the case a table is actually for: columns that line up, so a value can be compared down one or ordered by it.',
+          'Sorting cycles ascending, descending, then back to the order the caller passed \u2014 the given order is often the meaningful one, and a control that cannot return to it quietly destroys information.',
+          'Virtualization uses spacer rows rather than a transform, so it stays a real table: the browser\u2019s own column sizing and cell semantics still apply, and the row count reported to a screen reader is the whole set rather than the handful in the DOM.',
+          'Measured at 439 rows \u2014 fewer than forty in the DOM across a full scroll, and the 90th-percentile frame under 50ms.',
+        ],
+      },
+      {
+        version: '1.1.0',
+        date: '2026-09-17',
+        summary: 'The frame and the page patterns.',
+        notes: [
+          'v1.0 gave apps good parts and no guidance on putting them together, so every internal app improvised its own shell, lists and forms.',
+          'AppShell, SideNav, Menu and AccountMenu, with System/Light/Dark theming; Page, Stack, Grid, Section and AuthLayout; DescriptionList, DataList, FormActions and FilterBar.',
+          'Nine full-screen patterns with written rules, and strict-CSP support so dialogs work without unsafe-inline.',
+        ],
+      },
+      {
+        version: '1.0.0',
+        date: '2026-09-15',
+        summary: 'The first stable release; the public API is frozen.',
+        notes: [
+          'From here a rename or a removal is a major version (D-063).',
+          'Adopted by Bindery and d3-qr, and verified rendered in both apps, in both themes and with keyboard focus.',
+          'CodeInput arrived with it: one-time codes and recovery codes, one character per box, with a single labelled input underneath so paste, autofill and screen readers see one field.',
+        ],
+      },
       {
         version: '0.1.1',
         date: '2026-09-04',
