@@ -15,7 +15,7 @@ import {
   SecondaryButton,
 } from '../components/Marketing';
 
-const WRAP = 'mx-auto w-full max-w-7xl px-4 sm:px-8 lg:px-24';
+const WRAP = 'mx-auto w-full max-w-7xl px-4 sm:px-8 lg:px-16 xl:px-24';
 
 function Band({
   label,
@@ -34,8 +34,8 @@ function Band({
       aria-labelledby={id}
       className={sunken ? 'border-y border-border bg-bg-sunken' : undefined}
     >
-      <div className={`${WRAP} flex flex-col gap-10 py-20 lg:flex-row lg:gap-24 lg:py-24`}>
-        <div className="flex flex-col gap-4 lg:w-80 lg:shrink-0">
+      <div className={`${WRAP} flex flex-col gap-10 py-20 lg:py-24 xl:flex-row xl:gap-16`}>
+        <div className="flex flex-col gap-4 xl:w-64 xl:shrink-0">
           <Kicker>{label}</Kicker>
           {title && (
             <h2 id={id} className="font-display text-display-md text-fg">
@@ -104,7 +104,7 @@ function Constellation({ project }: { project: Project }) {
           No account, no server, nothing to sign into — a fix that needs nothing else.
         </p>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid gap-4 sm:grid-cols-2">
           {connections.map((connection) => (
             <li key={`${connection.other.slug}-${connection.type}`}>
               <Link
@@ -174,28 +174,26 @@ export function ProjectPage({ project }: { project: Project }) {
 
       {project.selfHost && (
         <Band label="Run it yourself" title="Runs on your machine." sunken>
-          <div className="flex flex-col gap-8 xl:flex-row">
-            <div className="flex flex-col gap-5 xl:w-96 xl:shrink-0">
-              <p className="text-16 text-fg-muted">{project.selfHost.intro}</p>
-              <ol className="flex flex-col gap-3">
-                {project.selfHost.steps.map((step, index) => (
-                  <li key={step} className="flex gap-3 text-14 text-fg">
-                    <span className="font-mono text-13 text-accent" aria-hidden="true">
-                      {index + 1}.
-                    </span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col gap-4">
-              <CodeBlock code={project.selfHost.code} label={`Commands to run ${project.name}`} />
-              {project.selfHost.note && (
-                <p className="rounded-lg border border-border p-4 text-14 text-fg-muted">
-                  {project.selfHost.note}
-                </p>
-              )}
-            </div>
+          {/* Stacked, not side by side: this column is too narrow for prose and
+              a command block to share, and a squeezed block hides the commands. */}
+          <div className="flex max-w-3xl flex-col gap-8">
+            <p className="text-16 text-fg-muted">{project.selfHost.intro}</p>
+            <CodeBlock code={project.selfHost.code} label={`Commands to run ${project.name}`} />
+            <ol className="flex flex-col gap-3">
+              {project.selfHost.steps.map((step, index) => (
+                <li key={step} className="flex gap-3 text-16 text-fg">
+                  <span className="font-mono text-14 text-accent" aria-hidden="true">
+                    {index + 1}.
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+            {project.selfHost.note && (
+              <p className="rounded-lg border border-border-field p-4 text-14 text-fg-muted">
+                {project.selfHost.note}
+              </p>
+            )}
           </div>
         </Band>
       )}

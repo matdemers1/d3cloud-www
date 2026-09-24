@@ -103,7 +103,7 @@ function Footer() {
   const link = `text-fg-muted hover:text-fg ${FOCUS}`;
   return (
     <footer className="border-t border-border bg-bg-sunken">
-      <div className="mx-auto flex max-w-7xl flex-col gap-12 px-4 py-14 sm:px-8 lg:flex-row lg:justify-between lg:px-24">
+      <div className="mx-auto flex max-w-7xl flex-col gap-12 px-4 py-14 sm:px-8 lg:flex-row lg:justify-between lg:px-16 xl:px-24">
         <div className="flex max-w-sm flex-col gap-4">
           <span className="flex items-center gap-3 text-fg">
             <Logo size={28} label={false} />

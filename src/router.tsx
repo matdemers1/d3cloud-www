@@ -48,7 +48,10 @@ export function RouterProvider({ children }: { children: ReactNode }) {
     if (next === normalize(window.location.pathname)) return;
     window.history.pushState({}, '', next);
     setPath(next);
-    window.scrollTo(0, 0);
+    // A new page starts at its top, at once. `instant` overrides the smooth
+    // scrolling index.css gives in-page anchors — left smooth, the jump became a
+    // glide the next render or a stray wheel tick could strand halfway down.
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
 
   const value = useMemo(() => ({ path, navigate }), [path, navigate]);

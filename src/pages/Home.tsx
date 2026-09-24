@@ -19,7 +19,7 @@ import {
 import { useNavigateOnClick } from '../router';
 
 /** The width every section lays out in. */
-const WRAP = 'mx-auto w-full max-w-7xl px-4 sm:px-8 lg:px-24';
+const WRAP = 'mx-auto w-full max-w-7xl px-4 sm:px-8 lg:px-16 xl:px-24';
 
 const PROMISES = [
   'No ads',
@@ -112,13 +112,13 @@ function KindCard({
   return (
     <a
       href={href}
-      className="group flex flex-col gap-8 rounded-lg border border-border bg-surface p-8 transition-colors duration-2 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:flex-row sm:items-center sm:p-10"
+      className="group flex flex-col gap-7 rounded-lg border border-border bg-surface p-8 transition-colors duration-2 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:p-10"
     >
       <MiniSky projects={projects} connected={connected} />
       <span className="flex flex-col gap-3">
         <Kicker>{kicker}</Kicker>
         <span className="font-display text-display-sm text-fg">{title}</span>
-        <span className="text-16 text-fg-muted">{body}</span>
+        <span className="max-w-xl text-16 text-fg-muted">{body}</span>
         <span className="text-14 text-fg">{projects.map((p) => p.name).join(' · ')}</span>
       </span>
     </a>
@@ -142,7 +142,7 @@ function MiniSky({ projects, connected }: { projects: Project[]; connected: bool
     ? edges().filter((e) => slugs.has(e.from.slug) && slugs.has(e.to.slug) && e.type !== 'planned-in')
     : [];
   return (
-    <span aria-hidden="true" className="relative size-36 shrink-0 rounded-full border border-border">
+    <span aria-hidden="true" className="relative size-28 shrink-0 rounded-full border border-border">
       <svg viewBox="0 0 100 100" className="absolute inset-0 size-full" fill="none">
         {lines.map((e) => (
           <line
@@ -309,7 +309,7 @@ function Fix({ project }: { project: Project }) {
   return (
     <article
       aria-label={`${project.name}: the problem, and the fix`}
-      className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[1fr_auto_1.35fr] lg:gap-6"
+      className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[1fr_auto_1.35fr] xl:gap-6"
     >
       <div className="flex flex-col gap-5 rounded-lg border border-dashed border-border-field p-7 sm:p-8">
         <Kicker>The problem</Kicker>
@@ -317,7 +317,7 @@ function Fix({ project }: { project: Project }) {
         <p className="text-16 text-fg">{project.problem}</p>
       </div>
       <div aria-hidden="true" className="flex items-center justify-center text-fg-muted">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="rotate-90 lg:rotate-0">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="rotate-90 xl:rotate-0">
           <path d="M4 12h15M13 6l6 6-6 6" />
         </svg>
       </div>
