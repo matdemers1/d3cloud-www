@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { ThemeProvider } from '@d3cloud/ui';
 import { App } from './App';
 import { RouterProvider } from './router';
 import './styles/index.css';
@@ -9,8 +10,11 @@ if (!root) throw new Error('Missing #root');
 
 createRoot(root).render(
   <StrictMode>
-    <RouterProvider>
-      <App />
-    </RouterProvider>
+    {/* Same key as public/theme-init.js, which set data-theme before paint. */}
+    <ThemeProvider storageKey="d3cloud-theme">
+      <RouterProvider>
+        <App />
+      </RouterProvider>
+    </ThemeProvider>
   </StrictMode>,
 );

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Link as UiLink } from '@d3cloud/ui';
+import { ThemeSwitch, Link as UiLink } from '@d3cloud/ui';
 import { Logo } from './Logo';
 import { Link } from '../router';
 import { CONTACT_EMAIL, PROJECTS, STUDIO } from '../content/projects';
@@ -8,13 +8,16 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-full flex-col">
       <header className="border-b border-border">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-5">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-5">
           <Link to="/" variant="muted" className="flex items-center gap-2.5">
             <Logo size={24} />
             <span className="text-14 font-semibold">
               Demers Design &amp; Development
             </span>
           </Link>
+          <div className="shrink-0">
+            <ThemeSwitch size="sm" />
+          </div>
         </div>
       </header>
 

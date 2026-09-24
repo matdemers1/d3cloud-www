@@ -433,6 +433,24 @@ export const PROJECTS: Project[] = [
     accent: '#B9A6FF',
     changelog: [
       {
+        version: '1.2.2',
+        date: '2026-09-18',
+        summary: 'Finishing the keyboard fix 1.2.1 started.',
+        notes: [
+          'A table with no height limit still scrolls sideways when its columns are wider than the page — the usual case on a dense screen — and 1.2.1 had decided the tab stop from the prop, which left exactly those tables unreachable.',
+          'Whether the scroll region takes focus is now measured against the box it sits in, and re-measured on resize. A table that fits adds no tab stop.',
+        ],
+      },
+      {
+        version: '1.2.1',
+        date: '2026-09-18',
+        summary: 'A bounded Table could only be scrolled with a mouse.',
+        notes: [
+          'Found by running axe over a real app rather than by reading the spec: a height limit makes the table a scroll container, and rows below the fold have to be reachable by keyboard (WCAG 2.1.1).',
+          'The scroll region now takes focus and is named by the table’s own caption.',
+        ],
+      },
+      {
         version: '1.2.0',
         date: '2026-09-18',
         summary: 'Table — the component DataList deliberately is not.',
