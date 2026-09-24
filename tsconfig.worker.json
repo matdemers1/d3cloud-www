@@ -12,5 +12,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["src/worker.ts"]
+  "include": ["src/worker.ts", "src/head.ts", "src/routes.ts", "src/content"]
 }

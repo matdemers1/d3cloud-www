@@ -40,6 +40,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Routes, the Worker's 404s and redirects, the per-page head, and the
+      # theme pre-paint script agreeing with the library's.
+      - name: Test
+        run: npm test
+
       # `npm run build` is `tsc -b && vite build`, so this type-checks too.
       # A broken build must never reach the live site.
       - name: Build
