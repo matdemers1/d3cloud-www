@@ -2,17 +2,17 @@
 
 Apex landing site for **Demers Design and Development** at `d3cloud.io`. Single-page React SPA. **No backend, no database, no auth.** Same stack and Worker pattern as [`d3-qr`](../d3-qr/); styled with the D3 Cloud design system, `@d3cloud/ui` (ADR-005).
 
-Read this before doing any work. The full planning docs live in the D3 Cloud Vault — start there for architecture context.
+Read this before doing any work. The plan lives in Foreman as project `DI` — start with `foreman_brief DI`.
 
 ## Vault Documentation
 
 | Doc | Path |
 |-----|------|
-| Discovery & Requirements | `../D3 Cloud Vault/d3cloud.io/Discovery & Requirements.md` |
-| Architecture | `../D3 Cloud Vault/d3cloud.io/Architecture.md` |
-| Scope of Work | `../D3 Cloud Vault/d3cloud.io/Scope of Work.md` |
-| ADRs | `../D3 Cloud Vault/d3cloud.io/ADR-*.md` |
-| Project Overview | `../D3 Cloud Vault/Master Notes/Overviews/d3cloud.io Overview.md` |
+| Where it stands | `foreman_brief DI` |
+| Architecture | `foreman://DI/architecture` |
+| Phases and tasks | `foreman_get` on a phase, or `foreman_coverage DI` |
+| ADRs | Foreman `DI` — `DI-ADR-001` onward |
+| Overview | `foreman://DI/overview` |
 
 When picking up a new development session, run `/start-development d3cloud-www` to load this context.
 
