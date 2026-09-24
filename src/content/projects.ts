@@ -255,6 +255,134 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
+    slug: 'bindery',
+    name: 'Bindery',
+    tagline: 'Finds the document you can’t find — down to the page.',
+    blurb:
+      'A 100-page service bundle has a DD-214 in it somewhere, and no document manager will tell you which page. Bindery OCRs and indexes every page, cuts bundled PDFs into the documents they really contain without touching the original, and files them against the taxonomy you already have — with every automated decision cheap to inspect and one click to undo.',
+    status: 'Live',
+    cta: {
+      label: 'View on GitHub',
+      href: 'https://github.com/matdemers1/bindery',
+    },
+    platforms: ['Self-hosted', 'Docker', 'PostgreSQL'],
+    screenshots: [
+      {
+        src: '/screenshots/bindery/01-ask.webp',
+        alt: 'Ask: “What do you need to find?”, with a note that every answer shows the page it came from, and that search still works with no AI key.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/bindery/02-search.webp',
+        alt: 'Search, empty and focused: “Search finds the page, not just the file,” with ⌘K to jump straight to a page from anywhere.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/bindery/03-pipeline.webp',
+        alt: 'Pipeline: every file’s stage from received to filed, and the documents waiting for AI review listed separately from the ones that gave up.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/bindery/04-vault.webp',
+        alt: 'The private vault, unlocked: two vaulted photos and a reminder that it locks itself after fifteen minutes.',
+        width: 1440,
+        height: 900,
+      },
+    ],
+    highlights: [
+      'Search returns the page, not the file — every page OCR’d and indexed, answering in 15 ms at 100,000 pages',
+      'Bundled PDFs are split into their real documents as page ranges over the original, which is never modified',
+      'Known forms — DD-214, W-2, a deed — are recognised by rule, not by guesswork',
+      'Claude files against the tags and correspondents you already have; auto-filing is gated on structural signals, never on the model’s own confidence',
+      'Click any field for the sentence and page it came from, and undo any automated decision, un-filing included',
+      'Ask answers only with a citation — an uncited answer is thrown away, and you get the matching pages instead',
+      'A private vault behind a second passphrase: encrypted at rest and invisible to search while locked',
+      'Nothing is ever deleted automatically; nightly backups, an offsite copy and a restore drill that searches the restored archive',
+    ],
+    selfHost: {
+      intro:
+        'Docker and a disk for the originals. No host ports are published — people reach it through a Cloudflare Tunnel.',
+      code: "git clone https://github.com/matdemers1/bindery.git && cd bindery\ncp .env.example .env    # fill in secrets; set HOST_DATA_ROOT\n\nmake build && make up\nmake migrate && make seed-forms\ndocker compose --env-file .env -f infra/docker-compose.yml logs api | grep 'bindery setup'",
+      steps: [
+        'Open Bindery and enter the setup code from the log, then choose the owner’s email and password, enrol an authenticator and save the recovery codes.',
+        'Drop files into the watched folder, or use Add files. Each one is OCR’d, paged, split and indexed.',
+        'Optionally add an Anthropic key in Settings for classification and Ask. Search works without one.',
+      ],
+      note: 'Migrations are applied explicitly with make migrate, never on container boot.',
+    },
+    privacyLine:
+      'Runs on your machine. Nothing leaves it unless you add an AI key — then a document’s text is sent to Claude to be filed. Search never needs it.',
+    // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
+    accent: '#E8B86D',
+  },
+  {
+    slug: 'foreman',
+    name: 'Foreman',
+    tagline: 'The plan of record, checked against what actually shipped.',
+    blurb:
+      'Plans rot. The requirements say one thing, the repository does another, and nobody notices until an audit. Foreman holds requirements, phases, tasks, decisions and audit findings as records rather than documents, and says exactly where plan and reality have come apart — in a web console for you, and over MCP for Claude, as equals.',
+    status: 'Live',
+    cta: {
+      label: 'View on GitHub',
+      href: 'https://github.com/matdemers1/foreman',
+    },
+    platforms: ['Self-hosted', 'Docker', 'PostgreSQL', 'MCP'],
+    screenshots: [
+      {
+        src: '/screenshots/foreman/01-overview.webp',
+        alt: 'A project overview: uncovered requirements, open criticals, drift and blocked work at the top, then the phase in flight with its exit demo, what is next, and what is blocked and why.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/foreman/02-requirements.webp',
+        alt: 'The requirements register: every Must covered, a count of EARS warnings, and each requirement with its priority, phase and the tasks that satisfy it.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/foreman/03-drift.webp',
+        alt: 'Drift: coverage holes, stale tasks, fired tripwires, phase gates that would fail today and uncited decisions, each item named.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/foreman/04-findings.webp',
+        alt: 'The findings inbox across every project, worst first, with each finding’s lens, verification state and the file it points at.',
+        width: 1440,
+        height: 900,
+      },
+    ],
+    highlights: [
+      'Requirements, phases, tasks, decisions, risks and audit findings as records with IDs — cite one anywhere and the backlink is built for you',
+      'An MCP server that is an equal peer to the console: Claude reads where a project stands and records what it did, from inside a coding session',
+      'The server never calls a language model. Claude is a user of Foreman, not a part of it',
+      'Drift is one engine behind every screen that shows it, so the badge and the page it links to cannot disagree',
+      'A phase cannot be marked complete while its exit gate fails, and the refusal names what is in the way',
+      'Requirements are linted against EARS, tuned on 591 real ones — it warns and never blocks',
+      'One findings inbox across every project, and a fix counts only once its commit is known',
+      'App-native sign-in with an authenticator, or Sign in with D3 Auth',
+    ],
+    selfHost: {
+      intro:
+        'Node 22, pnpm and Docker. The dev script writes a local .env with fresh secrets and seeds an example project to explore.',
+      code: 'git clone https://github.com/matdemers1/foreman.git && cd foreman\npnpm install\npnpm dev:up',
+      steps: [
+        'Open http://127.0.0.1:3200 and sign in as the operator named in the generated .env.',
+        'Look around the seeded Example Project, then create your own — or bring in an existing Markdown plan with pnpm run import.',
+        'Connect Claude over MCP: the stdio shim in packages/mcp, or the remote endpoint at /mcp.',
+      ],
+      note: 'For a real deployment, replace the generated secrets and put it behind a tunnel or reverse proxy. docs/runbooks covers deploying, backups and the restore drill.',
+    },
+    privacyLine:
+      'Runs on your machine and calls no AI model itself. It talks to GitHub only if you connect it, and to your own mail relay for alerts.',
+    // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
+    accent: '#F2937A',
+  },
+  {
     slug: 'ui',
     name: 'D3 UI',
     tagline: 'One design system and component library for every D3 app.',
