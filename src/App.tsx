@@ -4,9 +4,14 @@ import { Home } from './pages/Home';
 import { ProjectPage } from './pages/Project';
 import { LegalPage, SupportPage } from './pages/Legal';
 import { LEGAL_DOCS } from './content/legal';
-import { projectBySlug } from './content/projects';
+import { projectBySlug, type Project } from './content/projects';
 import { NOT_FOUND_TITLE, resolveRoute } from './routes';
 import { Link, useRouter } from './router';
+
+/** Reading pages — legal text, support, not found — keep a readable measure. */
+function Narrow({ children }: { children: ReactNode }) {
+  return <div className="mx-auto w-full max-w-3xl px-4 py-14 sm:px-6 sm:py-20">{children}</div>;
+}
 
 function NotFound() {
   return (
@@ -18,16 +23,21 @@ function NotFound() {
         That address doesn&apos;t exist — it may have moved.
       </p>
       <Link to="/">
-        Back to all projects →
+        Back to D3 Cloud →
       </Link>
     </div>
   );
 }
 
 /** Resolves a pathname to a page plus the document title it should set. */
-function resolve(path: string): { view: ReactNode; title: string; canonical?: string } {
+function resolve(path: string): {
+  view: ReactNode;
+  title: string;
+  canonical?: string;
+  project?: Project;
+} {
   const route = resolveRoute(path);
-  if (!route) return { view: <NotFound />, title: NOT_FOUND_TITLE };
+  if (!route) return { view: <Narrow><NotFound /></Narrow>, title: NOT_FOUND_TITLE };
 
   const { meta } = route;
   const project = meta.slug ? projectBySlug(meta.slug) : undefined;
@@ -37,18 +47,28 @@ function resolve(path: string): { view: ReactNode; title: string; canonical?: st
     return { view: <Home />, title: meta.title, canonical };
   }
   if (meta.kind === 'project') {
-    return { view: <ProjectPage project={project} />, title: meta.title, canonical };
+    return { view: <ProjectPage project={project} />, title: meta.title, canonical, project };
   }
   if (meta.kind === 'support') {
-    return { view: <SupportPage project={project} />, title: meta.title, canonical };
+    return {
+      view: <Narrow><SupportPage project={project} /></Narrow>,
+      title: meta.title,
+      canonical,
+      project,
+    };
   }
   const doc = LEGAL_DOCS[project.slug][meta.doc!];
-  return { view: <LegalPage doc={doc} project={project} />, title: meta.title, canonical };
+  return {
+    view: <Narrow><LegalPage doc={doc} project={project} /></Narrow>,
+    title: meta.title,
+    canonical,
+    project,
+  };
 }
 
 export function App() {
   const { path } = useRouter();
-  const { view, title, canonical } = resolve(path);
+  const { view, title, canonical, project } = resolve(path);
 
   useEffect(() => {
     document.title = title;
@@ -60,5 +80,5 @@ export function App() {
     if (canonical) window.history.replaceState({}, '', canonical);
   }, [canonical]);
 
-  return <Layout>{view}</Layout>;
+  return <Layout project={project}>{view}</Layout>;
 }

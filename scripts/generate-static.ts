@@ -14,17 +14,33 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
-import { STUDIO } from '../src/content/projects';
+import { BRAND, PROJECTS } from '../src/content/projects';
+import { edges } from '../src/content/ecosystem';
 import { OG_IMAGE } from '../src/head';
-import { ORIGIN, TAGLINE, allRoutes } from '../src/routes';
+import { ORIGIN, allRoutes } from '../src/routes';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = resolve(root, process.argv[2] ?? 'dist');
 const require = createRequire(import.meta.url);
 
-// The site's own mark (src/components/Logo.tsx), drawn in the accent.
-const LOGO = (colour: string) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="${colour}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 18 L10 32 L22 46"/><path d="M42 18 L54 32 L42 46"/><path d="M36 14 L28 50"/></svg>`;
+// The site's own mark, the planisphere (src/components/Logo.tsx, DI-ADR-006).
+const LOGO = (ink: string, star: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="26" stroke="${ink}" stroke-width="3.5"/><path d="M21 20 L40 25 L28 43" stroke="${ink}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="21" cy="20" r="3.4" fill="${ink}"/><circle cx="28" cy="43" r="3.4" fill="${ink}"/><circle cx="40" cy="25" r="5.5" fill="${star}"/></svg>`;
+
+/** The map, small: every star at its declared place, every declared line. */
+const SKY = (size: number) => {
+  const lines = edges()
+    .map(
+      (e) =>
+        `<line x1="${e.from.star.x}" y1="${e.from.star.y}" x2="${e.to.star.x}" y2="${e.to.star.y}" stroke="${e.to.accent}" stroke-width="0.5" stroke-linecap="round" opacity="0.8"${e.type === 'planned-in' ? ' stroke-dasharray="1 1.6"' : ''}/>`,
+    )
+    .join('');
+  const stars = PROJECTS.map(
+    (p) =>
+      `<circle cx="${p.star.x}" cy="${p.star.y}" r="3.2" fill="${p.accent}" opacity="0.2"/><circle cx="${p.star.x}" cy="${p.star.y}" r="1.5" fill="${p.accent}"/>`,
+  ).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="-6 -6 112 112" fill="none"><circle cx="50" cy="50" r="55" stroke="#ffffff" stroke-opacity="0.08" stroke-width="0.4"/>${lines}${stars}</svg>`;
+};
 
 /**
  * Satori draws into an image, outside the page, so it cannot read CSS custom properties. It reads
@@ -58,10 +74,13 @@ const el = (type: string, style: Record<string, unknown>, children?: unknown): N
 });
 
 async function ogImage(): Promise<Buffer> {
-  const font = (weight: number) =>
+  const inter = (weight: number) =>
     readFileSync(require.resolve(`@fontsource/inter/files/inter-latin-${weight}-normal.woff`));
-
-  const logo = `data:image/svg+xml;base64,${Buffer.from(LOGO(INK.accent)).toString('base64')}`;
+  const serif = (style: 'normal' | 'italic') =>
+    readFileSync(
+      require.resolve(`@fontsource/instrument-serif/files/instrument-serif-latin-400-${style}.woff`),
+    );
+  const data = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 
   const card = el(
     'div',
@@ -69,35 +88,31 @@ async function ogImage(): Promise<Buffer> {
       width: '100%',
       height: '100%',
       display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      padding: '80px 88px',
+      position: 'relative',
+      padding: '72px 80px',
       backgroundColor: INK.bg,
       color: INK.fg,
       fontFamily: 'Inter',
     },
     [
-      el('div', { display: 'flex', alignItems: 'center', gap: '24px' }, [
-        { type: 'img', props: { src: logo, width: 72, height: 72 } },
-        el('div', { fontSize: 34, fontWeight: 600 }, STUDIO),
-      ]),
-      el('div', { display: 'flex', fontSize: 64, fontWeight: 700, lineHeight: 1.15, maxWidth: '980px' }, TAGLINE),
-      el(
-        'div',
-        {
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          borderTop: `2px solid ${INK.rule}`,
-          paddingTop: '28px',
-          fontSize: 28,
-          color: INK.muted,
-        },
-        [
-          el('div', {}, 'No accounts · no ads · no tracking'),
+      { type: 'img', props: { src: data(SKY(560)), width: 560, height: 560, style: { position: 'absolute', right: 40, top: 35 } } },
+      el('div', { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '100%' }, [
+        el('div', { display: 'flex', alignItems: 'center', gap: '20px' }, [
+          { type: 'img', props: { src: data(LOGO(INK.fg, INK.accent)), width: 64, height: 64 } },
+          el('div', { fontSize: 34, fontWeight: 600 }, BRAND),
+        ]),
+        el('div', { display: 'flex', flexDirection: 'column', fontFamily: 'Instrument Serif', fontSize: 112, lineHeight: 1, letterSpacing: '-0.02em' }, [
+          el('div', {}, 'Software you'),
+          el('div', { display: 'flex' }, [
+            el('span', {}, 'get to\u00a0'),
+            el('span', { fontStyle: 'italic', color: INK.accent }, 'keep.'),
+          ]),
+        ]),
+        el('div', { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 26, color: INK.muted }, [
+          el('div', {}, 'Tools that work together · small fixes · no tracking'),
           el('div', { color: INK.accent, fontWeight: 600 }, 'd3cloud.io'),
-        ],
-      ),
+        ]),
+      ]),
     ],
   );
 
@@ -105,9 +120,10 @@ async function ogImage(): Promise<Buffer> {
     width: OG_IMAGE.width,
     height: OG_IMAGE.height,
     fonts: [
-      { name: 'Inter', data: font(400), weight: 400, style: 'normal' },
-      { name: 'Inter', data: font(600), weight: 600, style: 'normal' },
-      { name: 'Inter', data: font(700), weight: 700, style: 'normal' },
+      { name: 'Inter', data: inter(400), weight: 400, style: 'normal' },
+      { name: 'Inter', data: inter(600), weight: 600, style: 'normal' },
+      { name: 'Instrument Serif', data: serif('normal'), weight: 400, style: 'normal' },
+      { name: 'Instrument Serif', data: serif('italic'), weight: 400, style: 'italic' },
     ],
   });
   return new Resvg(svg, { fitTo: { mode: 'width', value: OG_IMAGE.width } }).render().asPng();

@@ -7,10 +7,40 @@ export interface Screenshot {
   compact?: boolean;
 }
 
+/**
+ * How one project depends on another, declared on the dependent side. The map,
+ * the hero and each product page's "In the constellation" block all draw from
+ * these — nothing about the ecosystem is drawn by hand (DI-ADR-006).
+ */
+export type RelationType = 'signs-in-with' | 'built-on' | 'planned-in';
+
+export interface Relation {
+  to: string;
+  type: RelationType;
+}
+
 export interface Project {
   /** URL segment: /daypart, /qr */
   slug: string;
   name: string;
+  /**
+   * `ecosystem`: tools that work together. `fix`: a standalone app for one
+   * problem the maker ran into. Every project is exactly one of the two.
+   */
+  kind: 'ecosystem' | 'fix';
+  /** One or two words for the map: Identity, Documents, Weather. */
+  role: string;
+  /** Where the star sits on the map, in percent of its width and height. */
+  star: { x: number; y: number };
+  relations: Relation[];
+  /** The short, confident line the home page leads with. */
+  headline: string;
+  /** One or two sentences under the headline on the home page. */
+  summary: string;
+  /** Checkable facts, shown as chips. */
+  proof: string[];
+  /** For a fix: the problem it answers, in the reader's own terms. */
+  problem?: string;
   tagline: string;
   /** Longer pitch for the project page. */
   blurb: string;
@@ -45,6 +75,16 @@ export const PROJECTS: Project[] = [
   {
     slug: 'clearwhen',
     name: 'Clearwhen',
+    kind: 'fix',
+    role: 'Weather',
+    star: { x: 84, y: 67 },
+    relations: [{ to: 'foreman', type: 'planned-in' }],
+    headline: 'Weather for the parts of your day that matter.',
+    summary:
+      'Tell it your windows — the commute, the workday, the dog walk — and it gives each one a straight verdict, plus exactly when the weather turns.',
+    proof: ['Worst case wins', 'No account, no tracking'],
+    problem:
+      'Weather apps say “rain today”, and you cancel the dog walk. The rain is coming at midnight. Your whole day was dry.',
     tagline: 'Weather for the parts of your day that matter.',
     blurb:
       '"Rain today" isn\'t an answer. Clearwhen breaks the forecast into the windows you actually live in — the commute, the workday, the dog walk — and gives you a straight verdict for each one, plus exactly when the weather turns.',
@@ -135,6 +175,16 @@ export const PROJECTS: Project[] = [
   {
     slug: 'qr',
     name: 'D3 QR',
+    kind: 'fix',
+    role: 'QR codes',
+    star: { x: 17, y: 69 },
+    relations: [{ to: 'ui', type: 'built-on' }],
+    headline: 'QR codes, in bulk, free.',
+    summary:
+      'Paste a list, get print-ready PDFs and images. No account and no limits — and no server, so there is nothing to charge you for.',
+    proof: ['Nothing leaves the page', 'No sign-up, no limits'],
+    problem:
+      'Search for a QR code generator and you get sign-up walls, trials and paywalls — for something your browser can do on its own.',
     tagline: 'Bulk QR codes, generated entirely in your browser.',
     blurb:
       'A static QR code generator that runs fully client-side. Paste a list, get a batch of codes, export them as a print-ready PDF or individual images. Nothing is uploaded, because there is no server to upload it to.',
@@ -174,6 +224,17 @@ export const PROJECTS: Project[] = [
   {
     slug: 'auth',
     name: 'D3 Auth',
+    kind: 'ecosystem',
+    role: 'Identity',
+    star: { x: 52, y: 50 },
+    relations: [
+      { to: 'ui', type: 'built-on' },
+      { to: 'foreman', type: 'planned-in' },
+    ],
+    headline: 'One sign-in for the apps you host yourself.',
+    summary:
+      'An OpenID Connect provider with one console for who can sign in, to which apps, holding which roles.',
+    proof: ['Four OpenID conformance plans in CI', 'Passkeys', 'Per-app roles'],
     tagline: 'One sign-in for the apps you host yourself.',
     blurb:
       'Self-hosted apps each come with their own login, so a household ends up with five passwords and no way to take somebody\u2019s access away. D3 Auth is a small OpenID Connect provider with one console for the people who can sign in, the apps they can open, and the roles they hold in each \u2014 and every app keeps its own login, so adopting it is never all-or-nothing.',
@@ -257,6 +318,18 @@ export const PROJECTS: Project[] = [
   {
     slug: 'bindery',
     name: 'Bindery',
+    kind: 'ecosystem',
+    role: 'Documents',
+    star: { x: 26, y: 30 },
+    relations: [
+      { to: 'auth', type: 'signs-in-with' },
+      { to: 'ui', type: 'built-on' },
+      { to: 'foreman', type: 'planned-in' },
+    ],
+    headline: 'Finds the page, not just the file.',
+    summary:
+      'A 100-page bundle has a DD-214 in it somewhere. Bindery reads every page, splits bundles into the documents they really contain, and never touches the original.',
+    proof: ['15 ms at 100,000 pages', 'Answers only with a citation'],
     tagline: 'Finds the document you can’t find — down to the page.',
     blurb:
       'A 100-page service bundle has a DD-214 in it somewhere, and no document manager will tell you which page. Bindery OCRs and indexes every page, cuts bundled PDFs into the documents they really contain without touching the original, and files them against the taxonomy you already have — with every automated decision cheap to inspect and one click to undo.',
@@ -321,6 +394,17 @@ export const PROJECTS: Project[] = [
   {
     slug: 'foreman',
     name: 'Foreman',
+    kind: 'ecosystem',
+    role: 'Planning',
+    star: { x: 75, y: 23 },
+    relations: [
+      { to: 'auth', type: 'signs-in-with' },
+      { to: 'ui', type: 'built-on' },
+    ],
+    headline: 'Plans rot. Foreman notices.',
+    summary:
+      'Requirements, decisions and audit findings as records, checked against what actually shipped — in a console for you, and over MCP for Claude, as equals.',
+    proof: ['Never calls an LLM itself', 'Tracks this website too'],
     tagline: 'The plan of record, checked against what actually shipped.',
     blurb:
       'Plans rot. The requirements say one thing, the repository does another, and nobody notices until an audit. Foreman holds requirements, phases, tasks, decisions and audit findings as records rather than documents, and says exactly where plan and reality have come apart — in a web console for you, and over MCP for Claude, as equals.',
@@ -385,6 +469,14 @@ export const PROJECTS: Project[] = [
   {
     slug: 'ui',
     name: 'D3 UI',
+    kind: 'ecosystem',
+    role: 'Foundation',
+    star: { x: 47, y: 78 },
+    relations: [{ to: 'foreman', type: 'planned-in' }],
+    headline: 'One design language for every app.',
+    summary:
+      'A React component library whose rules are enforced by gates, not guidance — every story swept by axe.',
+    proof: ['38 components', '909 tests', 'axe on every story'],
     tagline: 'One design system and component library for every D3 app.',
     blurb:
       'An audit of five apps found 176 distinct colour values, 19 type sizes and 170 button recipes — with no Button component anywhere. @d3cloud/ui replaces all of that with one visual language and a React component library whose rules are enforced by gates, not guidance.',
@@ -509,3 +601,5 @@ export function projectBySlug(slug: string): Project | undefined {
 
 export const CONTACT_EMAIL = 'matthew@demers.dev';
 export const STUDIO = 'Demers Design and Development';
+/** The name people meet (DI-ADR-006). STUDIO is the maker's line under it. */
+export const BRAND = 'D3 Cloud';

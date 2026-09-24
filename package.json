@@ -1,7 +1,7 @@
 {
   "name": "d3cloud-www",
   "version": "0.0.1",
-  "description": "Demers Design and Development \u2014 apex landing site at d3cloud.io. Static React SPA on Cloudflare Workers.",
+  "description": "Demers Design and Development — apex landing site at d3cloud.io. Static React SPA on Cloudflare Workers.",
   "private": false,
   "license": "MIT",
   "type": "module",
@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@d3cloud/ui": "https://github.com/matdemers1/d3-design-system/releases/download/v1.2.2/d3cloud-ui-1.2.2.tgz",
+    "@fontsource/instrument-serif": "^5.3.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

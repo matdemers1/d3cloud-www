@@ -3,6 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { themeBootScript } from '@d3cloud/ui';
 import { LEGAL_DOCS } from './content/legal';
 import { PROJECTS } from './content/projects';
+import {
+  BUILD_LOG,
+  WORKSHOP,
+  connectionsOf,
+  ecosystemProjects,
+  edges,
+  fixProjects,
+} from './content/ecosystem';
 import { HEAD_END, HEAD_START, renderHead, withHead } from './head';
 import { allRoutes, resolveRoute } from './routes';
 import worker, { SECURITY_HEADERS, type Env } from './worker';
@@ -109,7 +117,7 @@ describe('worker', () => {
     expect(res.status).toBe(200);
     const html = await res.text();
     expect(html).toContain('<link rel="canonical" href="https://d3cloud.io/bindery" />');
-    expect(html).toContain('<title>Bindery — Demers Design and Development</title>');
+    expect(html).toContain('<title>Bindery — D3 Cloud</title>');
     expect(html.match(/<title>/g)).toHaveLength(1);
     expectSecure(res);
   });
@@ -166,5 +174,44 @@ describe('theme', () => {
 describe('withHead', () => {
   it('leaves HTML without markers untouched', () => {
     expect(withHead('<head></head>', '<title>x</title>')).toBe('<head></head>');
+  });
+});
+
+describe('ecosystem', () => {
+  it('places every project in exactly one of the two kinds (DI-REQ-029)', () => {
+    for (const project of PROJECTS) expect(['ecosystem', 'fix']).toContain(project.kind);
+    expect(ecosystemProjects().length + fixProjects().length).toBe(PROJECTS.length);
+  });
+
+  it('resolves every declared relation to a real project, and never to itself (DI-REQ-030)', () => {
+    const all = edges();
+    expect(all.length).toBe(PROJECTS.reduce((n, p) => n + p.relations.length, 0));
+    for (const edge of all) expect(edge.from.slug).not.toBe(edge.to.slug);
+  });
+
+  it('describes each relation from both ends (DI-REQ-031)', () => {
+    for (const edge of edges()) {
+      const out = connectionsOf(edge.from.slug).find((c) => c.other.slug === edge.to.slug && c.type === edge.type);
+      const back = connectionsOf(edge.to.slug).find((c) => c.other.slug === edge.from.slug && c.type === edge.type);
+      expect(out?.text).toContain(edge.to.name);
+      expect(back?.text).toContain(edge.from.name);
+    }
+  });
+
+  it('gives every fix a problem, and keeps stars on the sky', () => {
+    for (const project of fixProjects()) expect(project.problem).toBeTruthy();
+    for (const project of PROJECTS) {
+      for (const value of [project.star.x, project.star.y]) {
+        expect(value).toBeGreaterThanOrEqual(0);
+        expect(value).toBeLessThanOrEqual(100);
+      }
+    }
+  });
+
+  it('logs only projects that exist, newest first', () => {
+    for (const entry of BUILD_LOG) expect(PROJECTS.some((p) => p.slug === entry.slug)).toBe(true);
+    const dates = BUILD_LOG.map((e) => e.date);
+    expect([...dates].sort().reverse()).toEqual(dates);
+    for (const item of WORKSHOP) expect(PROJECTS.some((p) => p.slug === item.near)).toBe(true);
   });
 });

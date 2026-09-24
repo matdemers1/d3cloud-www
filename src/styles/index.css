@@ -1,16 +1,101 @@
-/* d3cloud.io on @d3cloud/ui (ADR-005).
+/* d3cloud.io on @d3cloud/ui (ADR-005), with a site-local display layer on
+ * top (DI-ADR-006).
  *
  * theme.css brings Tailwind, the tokens, Inter and the utilities that read
  * them (bg-surface, text-fg-muted, text-14, rounded-lg). The components'
  * own stylesheet arrives with their JS import. It is unlayered, so it beats
  * Tailwind utilities: put spacing on a wrapper, never on a library component.
- * Nothing below defines a colour, a size or a font — if a page needs one the
- * system lacks, the system is what changes. */
+ *
+ * Interface type and every colour stay on the system. What this file adds is
+ * only what a marketing page needs and an app never does: a display face,
+ * display sizes, and motion. */
 @import '@d3cloud/ui/theme.css';
 
 /* Tailwind v4 finds content relative to the CSS entry, which now lives in
    node_modules — point it back at this app. */
 @source '../';
+
+/* The display layer. Instrument Serif is self-hosted from @fontsource (see
+   main.tsx), so font-src 'self' holds. Sizes are fluid between a phone and a
+   wide desktop, and named — never an arbitrary value at a call site. */
+@theme {
+  --font-display: 'Instrument Serif', Georgia, serif;
+
+  --text-display-sm: clamp(1.75rem, 1.4rem + 1.2vw, 2.375rem);
+  --text-display-sm--line-height: 1.1;
+  --text-display-md: clamp(2.25rem, 1.7rem + 2vw, 3.25rem);
+  --text-display-md--line-height: 1.06;
+  --text-display-lg: clamp(2.5rem, 1.8rem + 2.8vw, 3.75rem);
+  --text-display-lg--line-height: 1.06;
+  --text-display-xl: clamp(3.5rem, 2rem + 6vw, 6.5rem);
+  --text-display-xl--line-height: 0.96;
+  --text-stat: clamp(3.5rem, 2.5rem + 4vw, 6rem);
+  --text-stat--line-height: 1;
+
+  --tracking-display: -0.02em;
+  --tracking-label: 0.14em;
+
+  --animate-twinkle: twinkle 3.6s ease-in-out infinite;
+  --animate-rise: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  /* `backwards`, not `both`: once it has run, the line's own opacity (dimmed
+     or lit on the map) takes over again. */
+  --animate-appear: appear 1.4s ease-out backwards;
+  --animate-drift: drift 16s ease-in-out infinite;
+  --animate-halo: halo 2.4s ease-out infinite;
+  --animate-marquee: marquee 40s linear infinite;
+
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes appear {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    50% {
+      transform: translate(0.5%, -0.8%);
+    }
+  }
+  @keyframes halo {
+    from {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+    to {
+      transform: scale(2.6);
+      opacity: 0;
+    }
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
 
 @layer base {
   html,
@@ -19,8 +104,42 @@
     height: 100%;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: var(--color-bg);
     color: var(--color-fg);
+  }
+
+  /* DI-REQ-032: with reduced motion requested, nothing moves — not a slower
+     version, nothing. Every animation above ends at its resting state, so
+     removing it leaves the page complete. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+@layer components {
+  .stagger-1 {
+    animation-delay: 0.15s;
+  }
+  .stagger-2 {
+    animation-delay: 0.3s;
+  }
+  .stagger-3 {
+    animation-delay: 0.45s;
+  }
+  .stagger-4 {
+    animation-delay: 0.6s;
   }
 }

@@ -1,5 +1,5 @@
 import { NOT_FOUND_TITLE, ORIGIN, type RouteMeta } from './routes';
-import { STUDIO } from './content/projects';
+import { BRAND } from './content/projects';
 
 /**
  * The per-page part of `<head>`: title, description, canonical, Open Graph and
@@ -47,14 +47,14 @@ export function renderHead(meta: RouteMeta | null): string {
   tags.push(
     `<link rel="canonical" href="${escape(url)}" />`,
     `<meta property="og:type" content="website" />`,
-    `<meta property="og:site_name" content="${escape(STUDIO)}" />`,
+    `<meta property="og:site_name" content="${escape(BRAND)}" />`,
     `<meta property="og:url" content="${escape(url)}" />`,
     `<meta property="og:title" content="${escape(title)}" />`,
     `<meta property="og:description" content="${escape(description)}" />`,
     `<meta property="og:image" content="${escape(image)}" />`,
     `<meta property="og:image:width" content="${OG_IMAGE.width}" />`,
     `<meta property="og:image:height" content="${OG_IMAGE.height}" />`,
-    `<meta property="og:image:alt" content="${escape(`${STUDIO} — ${description}`)}" />`,
+    `<meta property="og:image:alt" content="${escape(`${BRAND} — ${description}`)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${escape(title)}" />`,
     `<meta name="twitter:description" content="${escape(description)}" />`,

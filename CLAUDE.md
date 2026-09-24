@@ -1,6 +1,6 @@
 # CLAUDE.md — d3cloud-www
 
-Apex landing site for **Demers Design and Development** at `d3cloud.io`. Single-page React SPA. **No backend, no database, no auth.** Same stack and Worker pattern as [`d3-qr`](../d3-qr/); styled with the D3 Cloud design system, `@d3cloud/ui` (ADR-005).
+Home of the **D3 Cloud** ecosystem at `d3cloud.io` — *Demers Design and Development* is the maker's line under it (DI-ADR-006). Single-page React SPA. **No backend, no database, no auth.** Same stack and Worker pattern as [`d3-qr`](../d3-qr/); styled with the D3 Cloud design system, `@d3cloud/ui` (ADR-005).
 
 Read this before doing any work. The plan lives in Foreman as project `DI` — start with `foreman_brief DI`.
 
@@ -23,15 +23,18 @@ When picking up a new development session, run `/start-development d3cloud-www` 
 - **No analytics, no telemetry on this site.** CSP `connect-src 'self'` enforces it. (This is *not* a public stance about future projects.)
 - **Styled with `@d3cloud/ui`** (ADR-005, supersedes "mirror d3-qr"). Installed from the GitHub release tarball — the package lives in a subdirectory, so a git-tag install fails. Use its semantic utilities (`bg-surface`, `text-fg-muted`, `text-14`, `rounded-lg`) and components (`Card`, `Badge`, `Link`). `npm run lint` runs `d3-check-usage src`: no raw hex, palette classes, off-scale values or shadows. A genuine exception needs `d3-allow: <reason>` on or above the line.
 - **Spacing goes on a wrapper, never on a library component.** The components' CSS arrives unlayered with their JS import and sets `margin: 0`, which beats Tailwind utilities — `<Card className="mb-8">` silently does nothing.
-- **Type follows the system scale: 11–24px, no display sizes.** Emphasis is weight (`font-title`), not size.
+- **Interface type follows the system scale (11–24px); display headings use the site's display layer** (DI-ADR-006): `font-display` (Instrument Serif) with `text-display-sm|md|lg|xl` and `text-stat`, all defined in `src/styles/index.css`. Never an arbitrary size at a call site.
+- **The ecosystem is declared, not drawn.** Each project in `projects.ts` has a `kind` (`ecosystem` | `fix`), a `star` position and its `relations` (`signs-in-with`, `built-on`, `planned-in`). The hero, the map, the link-preview card and each product page's "In the constellation" block read them through `src/content/ecosystem.ts`, which also holds the build log and the workshop list. A new product is a new entry there — tests fail on a relation to an unknown project.
+- **Motion is CSS only, and none of it runs under `prefers-reduced-motion`** (DI-REQ-032) — the kill switch is in `index.css`. Every animation must end at a complete resting state.
+- **The mark is the planisphere** (`src/components/Logo.tsx`, `public/favicon.svg`, the OG card in `scripts/generate-static.ts`). On a product page its lit star takes the product's colour.
 - **In-app navigation uses `Link` from `src/router.tsx`** (wraps the library `Link`) or `useNavigateOnClick` on a library `Card href`.
 - **Screenshots live in `public/screenshots/<slug>/`** as WebP with their real width/height recorded in `projects.ts`.
 - **Apex Custom Domain only — never a wildcard route.** A wildcard `*.d3cloud.io/*` would break `qr.d3cloud.io`.
 - **Theme storage key is `d3cloud-theme`** (not `d3qr-theme`). `ThemeProvider` (in `main.tsx`) and the header's `ThemeSwitch` own it; `public/theme-init.js` is `themeBootScript('d3cloud-theme')` from the library, kept as a file because CSP blocks inline script, and `src/site.test.ts` fails if the two differ.
 - **`src/routes.ts` is the one list of pages.** The app, the Worker and the sitemap all read it. A new page is a new entry there, not a new branch in three places.
 - **Per-page `<head>` comes from the Worker.** `src/head.ts` renders title, description, canonical, Open Graph and Twitter tags; the Worker swaps them into index.html between the `route-meta` markers. index.html carries the home page's block, and a test holds it equal to `renderHead('/')` — change `head.ts`, then paste its output back.
-- **Fonts are Inter and JetBrains Mono, self-hosted by `@d3cloud/ui`** — same-origin, so `font-src 'self'` holds.
-- **Bundle budget: 150kb gzipped.** ~124kb on `@d3cloud/ui` 1.2.2: the library ships one flat `dist/index.js`, so unused Radix code can't be tree-shaken yet.
+- **Fonts are Inter and JetBrains Mono, self-hosted by `@d3cloud/ui`, plus Instrument Serif from `@fontsource/instrument-serif`** (Latin, 400 normal + italic, imported in `main.tsx`) — all same-origin, so `font-src 'self'` holds.
+- **Bundle budget: 150kb gzipped.** ~132kb after the Constellation redesign: the library ships one flat `dist/index.js`, so unused Radix code can't be tree-shaken yet.
 - **No co-author footer in commits.**
 - **Deploy via git push to `main`.** GitHub Actions builds and deploys to Cloudflare Workers. Do not deploy by hand — a manual `wrangler deploy` puts a laptop build on the live site that doesn't match `main`.
 

@@ -1,5 +1,5 @@
 import { LEGAL_DOCS } from './content/legal';
-import { PROJECTS, STUDIO, projectBySlug } from './content/projects';
+import { BRAND, PROJECTS, projectBySlug } from './content/projects';
 
 /**
  * Every page the site has, in one place.
@@ -14,7 +14,7 @@ import { PROJECTS, STUDIO, projectBySlug } from './content/projects';
 export const ORIGIN = 'https://d3cloud.io';
 
 export const TAGLINE =
-  'Independent software studio building privacy-first everyday tools.';
+  'Software you get to keep: self-hostable tools that work together, and small apps that each fix one thing.';
 
 /**
  * Paths that changed after launch. `/daypart/*` was live and is baked into an
@@ -43,7 +43,7 @@ function projectRoute(slug: string): RouteMeta | null {
   return {
     path: `/${project.slug}`,
     kind: 'project',
-    title: `${project.name} — ${STUDIO}`,
+    title: `${project.name} — ${BRAND}`,
     description: project.tagline,
     slug: project.slug,
   };
@@ -58,7 +58,7 @@ function subRoute(slug: string, page: string): RouteMeta | null {
     return {
       path: `/${slug}/support`,
       kind: 'support',
-      title: `${project.name} Support — ${STUDIO}`,
+      title: `${project.name} Support — ${BRAND}`,
       description: `Help with ${project.name}, and how to get in touch.`,
       slug,
     };
@@ -69,7 +69,7 @@ function subRoute(slug: string, page: string): RouteMeta | null {
   return {
     path: `/${slug}/${page}`,
     kind: 'legal',
-    title: `${doc.title} — ${STUDIO}`,
+    title: `${doc.title} — ${BRAND}`,
     description:
       page === 'privacy'
         ? project.privacyLine
@@ -92,7 +92,7 @@ export function resolveRoute(
 
   if (segments.length === 0) {
     return {
-      meta: { path: '/', kind: 'home', title: STUDIO, description: TAGLINE },
+      meta: { path: '/', kind: 'home', title: `${BRAND} — Software you get to keep`, description: TAGLINE },
       redirect: false,
     };
   }
@@ -126,4 +126,4 @@ export function allRoutes(): RouteMeta[] {
   return routes;
 }
 
-export const NOT_FOUND_TITLE = `Not found — ${STUDIO}`;
+export const NOT_FOUND_TITLE = `Not found — ${BRAND}`;
