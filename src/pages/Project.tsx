@@ -4,6 +4,7 @@ import { CONTACT_EMAIL, type Project } from '../content/projects';
 import { LEGAL_DOCS } from '../content/legal';
 import { ProjectMark } from '../components/ProjectMark';
 import { Screenshots } from '../components/Screenshots';
+import { CodeBlock } from '../components/CodeBlock';
 
 function SectionLabel({ children }: { children: string }) {
   return (
@@ -87,9 +88,12 @@ export function ProjectPage({ project }: { project: Project }) {
           <p className="mb-4 max-w-prose text-14 text-fg-muted">
             {project.selfHost.intro}
           </p>
-          <pre className="mb-4 overflow-x-auto rounded-md bg-surface p-4 font-mono text-12 text-fg">
-            <code>{project.selfHost.code}</code>
-          </pre>
+          <div className="mb-4">
+            <CodeBlock
+              code={project.selfHost.code}
+              label={`Commands to run ${project.name}`}
+            />
+          </div>
           <ol className="mb-4 flex flex-col gap-2">
             {project.selfHost.steps.map((step, index) => (
               <li key={step} className="flex gap-3 text-14 text-fg">

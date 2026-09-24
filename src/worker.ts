@@ -79,8 +79,12 @@ export default {
     headers.delete('Content-Length');
     headers.delete('ETag');
     headers.set('Content-Type', 'text/html; charset=utf-8');
-    // The shell names hashed bundles, so it must be revalidated on every load.
-    headers.set('Cache-Control', 'no-cache');
+    // no-cache: the shell names hashed bundles, so it must be revalidated on
+    // every load. no-transform: Cloudflare injects its Web Analytics beacon
+    // into HTML when the zone has it on, and skips responses marked this way.
+    // This site collects nothing (DI-REQ-004), and CSP would block the beacon
+    // anyway — as a console error on every page.
+    headers.set('Cache-Control', 'no-cache, no-transform');
     return secure(
       new Response(request.method === 'HEAD' ? null : html, {
         status: route ? 200 : 404,

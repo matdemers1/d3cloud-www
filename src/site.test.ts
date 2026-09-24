@@ -114,6 +114,12 @@ describe('worker', () => {
     expectSecure(res);
   });
 
+  it('marks pages no-transform, so Cloudflare does not inject its analytics beacon', async () => {
+    for (const path of ['/', '/qr', '/nonexistent']) {
+      expect((await get(path)).headers.get('Cache-Control')).toContain('no-transform');
+    }
+  });
+
   it('answers a path that is not a page with a 404, not the home page', async () => {
     const res = await get('/nonexistent');
     expect(res.status).toBe(404);
