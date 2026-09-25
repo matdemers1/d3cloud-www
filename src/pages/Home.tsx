@@ -395,7 +395,8 @@ function BuildLog() {
       <div className="flex flex-col gap-14 lg:flex-row lg:gap-16">
         <ol className="flex flex-1 flex-col gap-6 border-l border-border-field pl-7">
           {BUILD_LOG.map((entry) => {
-            const project = projectBySlug(entry.slug)!;
+            // A log entry may be a product or a project still on the bench.
+            const project = projectBySlug(entry.slug) ?? WORKSHOP.find((w) => w.slug === entry.slug)!;
             return (
               <li key={`${entry.date}-${entry.text}`} className="relative flex flex-col gap-1">
                 <span
@@ -412,7 +413,7 @@ function BuildLog() {
           })}
         </ol>
         <div className="flex flex-col gap-4 lg:w-md">
-          <Kicker>On the bench — the next stars</Kicker>
+          <Kicker>On the bench — the next star</Kicker>
           <ul className="flex flex-col gap-4">
             {WORKSHOP.map((item) => (
               <li key={item.slug}>

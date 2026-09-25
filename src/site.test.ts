@@ -209,7 +209,8 @@ describe('ecosystem', () => {
   });
 
   it('logs only projects that exist, newest first', () => {
-    for (const entry of BUILD_LOG) expect(PROJECTS.some((p) => p.slug === entry.slug)).toBe(true);
+    const known = [...PROJECTS.map((p) => p.slug), ...WORKSHOP.map((w) => w.slug)];
+    for (const entry of BUILD_LOG) expect(known).toContain(entry.slug);
     const dates = BUILD_LOG.map((e) => e.date);
     expect([...dates].sort().reverse()).toEqual(dates);
     for (const item of WORKSHOP) expect(PROJECTS.some((p) => p.slug === item.near)).toBe(true);
@@ -232,6 +233,11 @@ describe('workshop', () => {
       expect(item.stage.length).toBeGreaterThan(0);
       expect(item.features.length).toBeGreaterThan(0);
       for (const feature of item.features) expect(typeof feature.built).toBe('boolean');
+      for (const relation of item.relations) expect(PROJECTS.some((p) => p.slug === relation.to)).toBe(true);
     }
+  });
+
+  it('keeps shelved projects off the site', () => {
+    for (const slug of ['someday-vault', 'sceptrefall', 'kardashev']) expect(resolveRoute(`/${slug}`)).toBeNull();
   });
 });
