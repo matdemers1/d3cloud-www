@@ -121,7 +121,7 @@ function Footer() {
             © {new Date().getFullYear()} {STUDIO}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-10 sm:grid-cols-4 sm:gap-12">
+        <div className={`grid grid-cols-2 gap-10 sm:gap-12 ${WORKSHOP.length ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
           <FooterColumn title="Ecosystem">
             {PROJECTS.filter((p) => p.kind === 'ecosystem').map((p) => (
               <li key={p.slug}>
@@ -140,15 +140,17 @@ function Footer() {
               </li>
             ))}
           </FooterColumn>
-          <FooterColumn title="Workshop">
-            {WORKSHOP.map((item) => (
-              <li key={item.slug}>
-                <InAppLink to={`/${item.slug}`} className={link}>
-                  {item.name}
-                </InAppLink>
-              </li>
-            ))}
-          </FooterColumn>
+          {WORKSHOP.length > 0 && (
+            <FooterColumn title="Workshop">
+              {WORKSHOP.map((item) => (
+                <li key={item.slug}>
+                  <InAppLink to={`/${item.slug}`} className={link}>
+                    {item.name}
+                  </InAppLink>
+                </li>
+              ))}
+            </FooterColumn>
+          )}
           <FooterColumn title="Studio">
             <li>
               <a href="/#log" className={link}>

@@ -66,6 +66,8 @@ export interface Project {
   changelog?: {
     version: string;
     date: string;
+    /** The release's own page, when it has one. */
+    href?: string;
     summary: string;
     notes: string[];
   }[];
@@ -465,6 +467,107 @@ export const PROJECTS: Project[] = [
       'Runs on your machine and calls no AI model itself. It talks to GitHub only if you connect it, and to your own mail relay for alerts.',
     // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#F2937A',
+  },
+  {
+    slug: 'shipyard',
+    name: 'Shipyard',
+    kind: 'ecosystem',
+    role: 'Deploys',
+    star: { x: 92, y: 42 },
+    // What it deploys (D3 Auth, Bindery, Foreman) is said in words below, not
+    // as relations: the map's lines take the colour of the project depended on,
+    // and a line to three different stars would say nothing in one colour.
+    relations: [
+      { to: 'auth', type: 'signs-in-with' },
+      { to: 'ui', type: 'built-on' },
+      { to: 'foreman', type: 'planned-in' },
+    ],
+    headline: 'One deploy button — for your phone, and for Claude.',
+    summary:
+      'Name an app and a commit. A portless agent on the host checks everything a careful person would, deploys the exact image digests it verified, proves they are running, and rolls back on its own.',
+    proof: ['Deploys itself', 'The agent opens no port', 'MCP for Claude Code'],
+    tagline: 'One deploy button, for you and for Claude.',
+    blurb:
+      'Every deploy was hand-typed over SSH, and two coding sessions once deployed conflicting commits of the same app. Shipyard replaces the ritual with one button — on your phone, or a tool call from Claude Code — that checks everything a careful person would, every time, and refuses when it cannot. It deploys the D3 Cloud apps on the home server now: D3 Auth, Bindery, Foreman, and Shipyard itself.',
+    status: 'Live',
+    cta: {
+      label: 'View on GitHub',
+      href: 'https://github.com/matdemers1/shipyard',
+    },
+    platforms: ['Self-hosted', 'Docker', 'PostgreSQL', 'MCP'],
+    // Taken from Shipyard's own console test harness over seeded, fictional data — never the live instance.
+    screenshots: [
+      {
+        src: '/screenshots/shipyard/01-home.webp',
+        alt: 'Home: a deploy of d3auth waiting on approval, with Review and Deny, above a card per app — its live commit, how many commits are waiting, the last deploy and a Ship button — and a group of two sites with its canary marked.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/shipyard/02-deploy-live.webp',
+        alt: 'A deploy in progress, soaking: verify, backup, pull, swap and check each done, with the command it ran and its output — "digest, revision label and /health schema match".',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/shipyard/03-app-detail.webp',
+        alt: 'An app’s page: the live release — repository, commit, schema revision, soak and approval policy — the running image digests as the agent last reported them, and the releases it can roll back to.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/shipyard/04-dry-run.webp',
+        alt: 'The dry-run sheet for deploying bindery: the target commit, who asked, the soak, the commits it would ship, and every gate from G1 down, each marked passed.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/shipyard/05-home-phone.webp',
+        alt: 'Home on a phone: the approval waiting at the top, then each app’s card with its Ship button.',
+        width: 390,
+        height: 844,
+        compact: true,
+      },
+    ],
+    highlights: [
+      'The agent re-checks every request itself: a green build on the default branch, the commit on main and ahead of live, the image digests in the registry, the required environment present — and fails closed',
+      'Backs up, runs a one-shot migration, swaps to tag@digest, then checks the running digest, the revision label and the /health schema before it soaks',
+      'Rolls the images back on its own. A contract migration is never rolled back automatically — restoring data is a person’s decision, guided and typed to confirm',
+      'Per-app locks that name who holds them: a second session is refused with the holder, the commit and the step',
+      'MCP at /mcp — status, dry run, deploy, deploy status and rollback — and a deploy of an approval-required app waits for a person in the console',
+      'A phone-first console: set up in the browser on first run, then password and authenticator or Sign in with D3 Auth; freezes, group deploys with a canary, schedules and drift detection',
+      'Every deploy recorded in Foreman against the tasks it ships, in a hash-chained ledger, with a nightly database dump and a restore drill',
+      'On the home server it deploys six stacks, itself included — the agent is upgraded by hand, so a bad release can never remove the thing that rolls back',
+    ],
+    selfHost: {
+      intro:
+        'Docker Engine and Compose on any Linux machine — nothing is tied to one kind of server. Pick a published image tag, and generate a secret for the database password and SESSION_SECRET.',
+      code: 'git clone https://github.com/matdemers1/shipyard.git\nmkdir shipyard-install && cd shipyard-install\nmkdir -p data/apps data/agent data/backups\ncp ../shipyard/docs/install/compose.example.yml docker-compose.yml\ncp ../shipyard/docs/install/postgres.env.example postgres.env\ncp ../shipyard/docs/install/server.env.example server.env\ncp ../shipyard/docs/install/agent.env.example agent.env\n\n# the image tag you picked; then fill in the secrets\nsed -i.bak "s/sha-<40hex>/sha-<the-40-hex-sha-you-picked>/g" docker-compose.yml && rm docker-compose.yml.bak\n\ndocker compose -p shipyard pull\ndocker compose -p shipyard up -d --wait postgres\ndocker compose -p shipyard \\\n  run --rm --no-deps server node node_modules/prisma/build/index.js migrate deploy\ndocker compose -p shipyard up -d',
+      steps: [
+        'Open http://localhost:3466 straight away and create the first account in the browser: email, name, password, and an authenticator.',
+        'Confirm the agent: find its fingerprint with docker compose -p shipyard logs agent | grep -m1 \'NOT YET CONFIRMED\', then confirm it with host-admin.js confirm-agent.',
+        'Onboard an app with a manifest on the host, apps/<name>.yml, and dry-run it before the first real deploy.',
+      ],
+      note: 'Claim it right after the first start. Until the first account exists, whoever reaches the address can create it — so do it before a tunnel points at it.',
+    },
+    privacyLine:
+      'Runs on your machine and phones nobody — no telemetry, and it stores no app secrets. It talks to GitHub and your image registry to check a deploy, and to Foreman only if you connect it.',
+    // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
+    accent: '#5EEAD4',
+    changelog: [
+      {
+        version: '0.1.0',
+        date: '2026-09-25',
+        href: 'https://github.com/matdemers1/shipyard/releases/tag/v0.1.0',
+        summary: 'First public release, under Apache-2.0.',
+        notes: [
+          'Deploying six stacks on the D3 Cloud home server: D3 Auth, with every deploy approved by a person; Foreman and its board as a canary group, the board soaking first; Bindery; the D3 Auth demo; and Shipyard’s own server.',
+          'First-run account setup in the browser, and Sign in with D3 Auth configured in Settings, its secret encrypted at rest.',
+          'Every console screen’s empty, loading, error and denied states tested, and axe-clean in both themes.',
+          'CI checks a clean-machine install on an internal-only network, scans for secrets, and allows no third-party origin in the console bundle.',
+        ],
+      },
+    ],
   },
   {
     slug: 'ui',

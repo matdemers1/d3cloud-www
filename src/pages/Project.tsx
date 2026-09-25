@@ -172,7 +172,13 @@ export function ProjectPage({ project }: { project: Project }) {
                   style={{ backgroundColor: project.accent }}
                 />
                 <div className="flex flex-wrap items-baseline gap-x-3">
-                  <span className="text-16 font-semibold text-fg">{release.version}</span>
+                  {release.href ? (
+                    <UiLink href={release.href} className="text-16 font-semibold">
+                      {release.version}
+                    </UiLink>
+                  ) : (
+                    <span className="text-16 font-semibold text-fg">{release.version}</span>
+                  )}
                   <time className="font-mono text-12 text-fg-muted" dateTime={release.date}>
                     {new Date(`${release.date}T00:00:00`).toLocaleDateString(undefined, {
                       year: 'numeric',

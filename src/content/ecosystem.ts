@@ -76,6 +76,7 @@ export interface LogEntry {
 }
 
 export const BUILD_LOG: LogEntry[] = [
+  { date: '2026-09-25', slug: 'shipyard', text: 'Shipyard 0.1.0, its first release — out of the workshop and into the constellation' },
   { date: '2026-09-25', slug: 'shipyard', text: 'Shipyard starts deploying the D3 Cloud apps on the home server — itself included' },
   { date: '2026-09-24', slug: 'shipyard', text: 'Shipyard is planned, built to its first phase and published under Apache-2.0 in a day' },
   { date: '2026-09-20', slug: 'bindery', text: 'Bindery and Foreman go public under Apache-2.0' },
@@ -130,53 +131,7 @@ export interface WorkshopItem {
   near: string;
 }
 
-export const WORKSHOP: WorkshopItem[] = [
-  {
-    slug: 'shipyard',
-    name: 'Shipyard',
-    role: 'Deploys',
-    stage: 'Pre-release',
-    stageNote:
-      'Built, open source, and already deploying the D3 Cloud apps on the home server. The console on a phone, deploys requested by Claude Code, and approvals are being proven end to end before it is called released.',
-    line: 'One deploy button for the home server — for a phone, and for Claude Code.',
-    tagline: 'One deploy button, for you and for Claude.',
-    quote:
-      'One deploy button for a Docker Compose host — for you, from your phone, and for Claude Code sessions, over MCP.',
-    why: 'Every deploy was hand-typed over SSH, and two coding sessions once deployed conflicting commits of the same app. Shipyard replaces the ritual with one button that checks everything a careful person would, every time — and refuses when it cannot.',
-    audience:
-      'For one person running a handful of self-hosted apps on a Docker host, and for the coding sessions that ship them.',
-    features: [
-      { text: 'Name an app and a commit; the agent checks for itself that CI passed, the commit is on main, it is newer than what is live, and its images are published', built: true },
-      { text: 'Backs up, migrates, and swaps to the exact image digests it verified', built: true },
-      { text: 'Proves the deploy: the running digest, the revision label and the database schema must all agree, then it soaks', built: true },
-      { text: 'Rolls the images back on its own if anything fails; restoring data is always a person’s decision', built: true },
-      { text: 'Per-app locks that name who holds them, so two sessions can never overwrite each other', built: true },
-      { text: 'MCP tools so a Claude Code session can check, dry-run, deploy and roll back', built: true },
-      { text: 'Every deploy recorded in Foreman, against the tasks it ships', built: true },
-      { text: 'A phone-first console, with Sign in with D3 Auth beside its own login', built: true },
-      { text: 'A whole week of deploys with no SSH at all — every app, and Shipyard itself', built: false },
-    ],
-    principles: [
-      'The agent opens no port. It holds the Docker socket and faces nothing; the internet-facing server never touches Docker.',
-      'Nothing is taken on trust: the agent re-checks every request with GitHub and the registry itself, and fails closed when it cannot.',
-      'No command string is accepted anywhere — only an app name and a 40-character commit.',
-      'Nothing in it is tied to one kind of server: a Docker host is all it needs.',
-      'No telemetry, and no app secrets stored.',
-    ],
-    platforms: ['Self-hosted', 'Docker', 'PostgreSQL', 'MCP', 'Apache-2.0'],
-    relations: [
-      { to: 'auth', type: 'signs-in-with' },
-      { to: 'ui', type: 'built-on' },
-      { to: 'foreman', type: 'planned-in' },
-    ],
-    // Its repository, not the live instance: the site links only to what a
-    // stranger can use today.
-    cta: { label: 'View on GitHub', href: 'https://github.com/matdemers1/shipyard' },
-    // d3-allow: a project's own identity colour, used only as its decorative mark.
-    accent: '#5EEAD4',
-    star: { x: 92, y: 42 },
-    near: 'foreman',
-  },
-];
+/** Empty since Shipyard launched on 2026-09-25; the next project on the bench goes here. */
+export const WORKSHOP: WorkshopItem[] = [];
 
 export const workshopBySlug = (slug: string) => WORKSHOP.find((item) => item.slug === slug);

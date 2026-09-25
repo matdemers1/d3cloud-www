@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { themeBootScript } from '@d3cloud/ui';
 import { LEGAL_DOCS } from './content/legal';
@@ -239,5 +239,68 @@ describe('workshop', () => {
 
   it('keeps shelved projects off the site', () => {
     for (const slug of ['someday-vault', 'sceptrefall', 'kardashev']) expect(resolveRoute(`/${slug}`)).toBeNull();
+  });
+});
+
+/** A WebP's own pixel size, from its header: lossy (VP8), lossless (VP8L) or extended (VP8X). */
+function webpSize(bytes: Buffer): { width: number; height: number } {
+  expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
+  expect(bytes.toString('ascii', 8, 12)).toBe('WEBP');
+  const chunk = bytes.toString('ascii', 12, 16);
+  if (chunk === 'VP8X') {
+    return { width: 1 + bytes.readUIntLE(24, 3), height: 1 + bytes.readUIntLE(27, 3) };
+  }
+  if (chunk === 'VP8L') {
+    const bits = bytes.readUInt32LE(21);
+    return { width: 1 + (bits & 0x3fff), height: 1 + ((bits >> 14) & 0x3fff) };
+  }
+  expect(chunk).toBe('VP8 ');
+  return { width: bytes.readUInt16LE(26) & 0x3fff, height: bytes.readUInt16LE(28) & 0x3fff };
+}
+
+describe('screenshots', () => {
+  it('records every screenshot at its real size, as a WebP in public/screenshots/<slug>/', () => {
+    for (const project of PROJECTS) {
+      for (const shot of project.screenshots ?? []) {
+        expect(shot.src.startsWith(`/screenshots/${project.slug}/`)).toBe(true);
+        expect(shot.src.endsWith('.webp')).toBe(true);
+        const file = new URL(`../public${shot.src}`, import.meta.url);
+        expect(existsSync(file)).toBe(true);
+        expect(webpSize(readFileSync(file))).toEqual({ width: shot.width, height: shot.height });
+        expect(shot.alt.length).toBeGreaterThan(0);
+      }
+    }
+  });
+});
+
+describe('Shipyard launch (DI-T-018)', () => {
+  const shipyard = PROJECTS.find((p) => p.slug === 'shipyard');
+
+  it('is a live ecosystem product with a page, not a workshop item', () => {
+    expect(shipyard).toMatchObject({ kind: 'ecosystem', status: 'Live', accent: '#5EEAD4' });
+    expect(WORKSHOP.some((w) => w.slug === 'shipyard')).toBe(false);
+    const route = resolveRoute('/shipyard');
+    expect(route?.meta.kind).toBe('project');
+    expect(route?.meta.title).toBe('Shipyard — D3 Cloud');
+    expect(renderHead(route!.meta)).toContain('<link rel="canonical" href="https://d3cloud.io/shipyard" />');
+    expect(sitemap()).toContain('<loc>https://d3cloud.io/shipyard</loc>');
+  });
+
+  it('declares its place in the constellation', () => {
+    const lines = connectionsOf('shipyard').map((c) => c.text);
+    expect(lines).toEqual(
+      expect.arrayContaining(['Offers Sign in with D3 Auth', 'Built on D3 UI', 'Planned and tracked in Foreman']),
+    );
+  });
+
+  it('ships 0.1.0 with its release page, and logs the launch', () => {
+    expect(shipyard?.changelog?.[0]).toMatchObject({
+      version: '0.1.0',
+      date: '2026-09-25',
+      href: 'https://github.com/matdemers1/shipyard/releases/tag/v0.1.0',
+    });
+    expect(BUILD_LOG.some((e) => e.slug === 'shipyard' && e.text.includes('0.1.0'))).toBe(true);
+    expect(shipyard?.selfHost?.code).toContain('docker compose -p shipyard up -d');
+    expect(shipyard?.screenshots?.some((s) => s.width === 390 && s.height === 844)).toBe(true);
   });
 });

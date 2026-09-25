@@ -289,7 +289,7 @@ function CompactCard({ project }: { project: Project }) {
 
 function Ecosystem() {
   const tools = ecosystemProjects();
-  const featured = tools.filter((p) => ['bindery', 'foreman'].includes(p.slug));
+  const featured = tools.filter((p) => ['bindery', 'foreman', 'shipyard'].includes(p.slug));
   const rest = tools.filter((p) => !featured.includes(p));
   return (
     <section aria-labelledby="work" className={`${WRAP} flex flex-col gap-20 py-24 lg:gap-24 lg:py-32`}>
@@ -412,16 +412,19 @@ function BuildLog() {
             );
           })}
         </ol>
-        <div className="flex flex-col gap-4 lg:w-md">
-          <Kicker>On the bench — the next star</Kicker>
-          <ul className="flex flex-col gap-4">
-            {WORKSHOP.map((item) => (
-              <li key={item.slug}>
-                <BenchCard item={item} />
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* With nothing on the bench, the log has the width to itself. */}
+        {WORKSHOP.length > 0 && (
+          <div className="flex flex-col gap-4 lg:w-md">
+            <Kicker>On the bench — the next star</Kicker>
+            <ul className="flex flex-col gap-4">
+              {WORKSHOP.map((item) => (
+                <li key={item.slug}>
+                  <BenchCard item={item} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </section>
   );
