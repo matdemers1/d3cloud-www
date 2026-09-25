@@ -1,5 +1,6 @@
 import { LEGAL_DOCS } from './content/legal';
 import { BRAND, PROJECTS, projectBySlug } from './content/projects';
+import { WORKSHOP, workshopBySlug } from './content/ecosystem';
 
 /**
  * Every page the site has, in one place.
@@ -22,7 +23,7 @@ export const TAGLINE =
  */
 export const RENAMED: Record<string, string> = { daypart: 'clearwhen' };
 
-export type RouteKind = 'home' | 'project' | 'legal' | 'support';
+export type RouteKind = 'home' | 'project' | 'workshop' | 'legal' | 'support';
 
 export interface RouteMeta {
   /** Canonical path: no trailing slash, current slugs. */
@@ -46,6 +47,19 @@ function projectRoute(slug: string): RouteMeta | null {
     title: `${project.name} — ${BRAND}`,
     description: project.tagline,
     slug: project.slug,
+  };
+}
+
+/** A project on the bench (DI-REQ-037): a page of its own, no legal pages yet. */
+function workshopRoute(slug: string): RouteMeta | null {
+  const item = workshopBySlug(slug);
+  if (!item) return null;
+  return {
+    path: `/${item.slug}`,
+    kind: 'workshop',
+    title: `${item.name} — ${BRAND}`,
+    description: `${item.tagline} ${item.stage}, in the D3 Cloud workshop.`,
+    slug: item.slug,
   };
 }
 
@@ -104,7 +118,7 @@ export function resolveRoute(
   }
 
   let meta: RouteMeta | null = null;
-  if (segments.length === 1) meta = projectRoute(segments[0]);
+  if (segments.length === 1) meta = projectRoute(segments[0]) ?? workshopRoute(segments[0]);
   else if (segments.length === 2) meta = subRoute(segments[0], segments[1]);
   if (!meta) return null;
 
@@ -123,6 +137,7 @@ export function allRoutes(): RouteMeta[] {
     }
     routes.push(subRoute(project.slug, 'support')!);
   }
+  for (const item of WORKSHOP) routes.push(workshopRoute(item.slug)!);
   return routes;
 }
 

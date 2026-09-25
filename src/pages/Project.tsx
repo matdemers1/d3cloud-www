@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { Link as UiLink } from '@d3cloud/ui';
 import { Link, useNavigateOnClick } from '../router';
 import { CONTACT_EMAIL, PROJECTS, type Project } from '../content/projects';
@@ -8,51 +7,13 @@ import { Screenshots } from '../components/Screenshots';
 import { CodeBlock } from '../components/CodeBlock';
 import { PROBLEM_ART } from '../components/FixProblems';
 import {
+  Band,
   Chips,
   Dot,
-  Kicker,
   PrimaryButton,
   SecondaryButton,
+  WRAP,
 } from '../components/Marketing';
-
-const WRAP = 'mx-auto w-full max-w-7xl px-4 sm:px-8 lg:px-16 xl:px-24';
-
-function Band({
-  label,
-  title,
-  children,
-  sunken = false,
-}: {
-  label: string;
-  title?: string;
-  children: ReactNode;
-  sunken?: boolean;
-}) {
-  const id = `section-${label.toLowerCase().replace(/[^a-z]+/g, '-')}`;
-  return (
-    <section
-      aria-labelledby={id}
-      className={sunken ? 'border-y border-border bg-bg-sunken' : undefined}
-    >
-      <div className={`${WRAP} flex flex-col gap-10 py-20 lg:py-24 xl:flex-row xl:gap-16`}>
-        <div className="flex flex-col gap-4 xl:w-64 xl:shrink-0">
-          <Kicker>{label}</Kicker>
-          {title && (
-            <h2 id={id} className="font-display text-display-md text-fg">
-              {title}
-            </h2>
-          )}
-          {!title && (
-            <h2 id={id} className="sr-only">
-              {label}
-            </h2>
-          )}
-        </div>
-        <div className="min-w-0 flex-1">{children}</div>
-      </div>
-    </section>
-  );
-}
 
 function Hero({ project }: { project: Project }) {
   return (

@@ -1,5 +1,12 @@
 import { CONTACT_EMAIL, PROJECTS, projectBySlug, type Project } from '../content/projects';
-import { BUILD_LOG, WORKSHOP, ecosystemProjects, edges, fixProjects } from '../content/ecosystem';
+import {
+  BUILD_LOG,
+  WORKSHOP,
+  ecosystemProjects,
+  edges,
+  fixProjects,
+  type WorkshopItem,
+} from '../content/ecosystem';
 import { Constellation } from '../components/Constellation';
 import { EcosystemMap } from '../components/EcosystemMap';
 import { PROBLEM_ART } from '../components/FixProblems';
@@ -408,15 +415,35 @@ function BuildLog() {
           <Kicker>On the bench — the next stars</Kicker>
           <ul className="flex flex-col gap-4">
             {WORKSHOP.map((item) => (
-              <li key={item.name} className="flex flex-col gap-1.5 rounded-lg border border-dashed border-border-field p-5">
-                <span className="text-16 font-semibold text-fg">{item.name}</span>
-                <span className="text-14 text-fg-muted">{item.line}</span>
+              <li key={item.slug}>
+                <BenchCard item={item} />
               </li>
             ))}
           </ul>
         </div>
       </div>
     </section>
+  );
+}
+
+function BenchCard({ item }: { item: WorkshopItem }) {
+  const to = `/${item.slug}`;
+  return (
+    <a
+      href={to}
+      onClick={useNavigateOnClick(to)}
+      className="flex flex-col gap-2 rounded-lg border border-dashed border-border-field p-5 transition-colors duration-2 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
+      <span className="flex flex-wrap items-center gap-2.5">
+        <span aria-hidden="true" className="size-2.5 rounded-full" style={{ backgroundColor: item.accent }} />
+        <span className="text-16 font-semibold text-fg">{item.name}</span>
+        <span className="rounded-full border border-dashed border-border-field px-2 py-0.5 font-mono text-11 tracking-label text-fg-muted uppercase">
+          {item.stage}
+        </span>
+      </span>
+      <span className="text-14 text-fg-muted">{item.line}</span>
+      <span className="text-14 font-semibold text-fg">See where it stands →</span>
+    </a>
   );
 }
 

@@ -2,6 +2,8 @@ import { useEffect, type ReactNode } from 'react';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { ProjectPage } from './pages/Project';
+import { WorkshopPage } from './pages/Workshop';
+import { workshopBySlug } from './content/ecosystem';
 import { LegalPage, SupportPage } from './pages/Legal';
 import { LEGAL_DOCS } from './content/legal';
 import { projectBySlug, type Project } from './content/projects';
@@ -34,12 +36,21 @@ function resolve(path: string): {
   view: ReactNode;
   title: string;
   canonical?: string;
-  project?: Project;
+  project?: Pick<Project, 'name' | 'accent'>;
 } {
   const route = resolveRoute(path);
   if (!route) return { view: <Narrow><NotFound /></Narrow>, title: NOT_FOUND_TITLE };
 
   const { meta } = route;
+  if (meta.kind === 'workshop') {
+    const item = workshopBySlug(meta.slug!)!;
+    return {
+      view: <WorkshopPage item={item} />,
+      title: meta.title,
+      canonical: route.redirect ? meta.path : undefined,
+      project: item,
+    };
+  }
   const project = meta.slug ? projectBySlug(meta.slug) : undefined;
   const canonical = route.redirect ? meta.path : undefined;
 

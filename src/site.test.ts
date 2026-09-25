@@ -215,3 +215,23 @@ describe('ecosystem', () => {
     for (const item of WORKSHOP) expect(PROJECTS.some((p) => p.slug === item.near)).toBe(true);
   });
 });
+
+describe('workshop', () => {
+  it('gives every project on the bench its own page, with its own head (DI-REQ-037)', () => {
+    for (const item of WORKSHOP) {
+      const route = resolveRoute(`/${item.slug}`);
+      expect(route?.meta.kind).toBe('workshop');
+      expect(route?.meta.title).toContain(item.name);
+      expect(allRoutes().some((r) => r.path === `/${item.slug}`)).toBe(true);
+      expect(PROJECTS.some((p) => p.slug === item.slug)).toBe(false);
+    }
+  });
+
+  it('marks every feature built or planned, and states a stage (DI-REQ-038)', () => {
+    for (const item of WORKSHOP) {
+      expect(item.stage.length).toBeGreaterThan(0);
+      expect(item.features.length).toBeGreaterThan(0);
+      for (const feature of item.features) expect(typeof feature.built).toBe('boolean');
+    }
+  });
+});

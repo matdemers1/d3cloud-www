@@ -4,6 +4,7 @@ import { Logo } from './Logo';
 import { Kicker } from './Marketing';
 import { useNavigateOnClick } from '../router';
 import { BRAND, CONTACT_EMAIL, PROJECTS, STUDIO, type Project } from '../content/projects';
+import { WORKSHOP } from '../content/ecosystem';
 
 const NAV = [
   { href: '/#what', label: 'What this is' },
@@ -24,7 +25,10 @@ function InAppLink({ to, className, children }: { to: string; className?: string
   );
 }
 
-function Header({ project }: { project?: Project }) {
+/** What the header needs to name the page it is on: a product, or a project on the bench. */
+type Crumb = Pick<Project, 'name' | 'accent'>;
+
+function Header({ project }: { project?: Crumb }) {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-bg/85 backdrop-blur-md">
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-4 px-4 sm:px-8">
@@ -117,7 +121,7 @@ function Footer() {
             © {new Date().getFullYear()} {STUDIO}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 sm:gap-16">
+        <div className="grid grid-cols-2 gap-10 sm:grid-cols-4 sm:gap-12">
           <FooterColumn title="Ecosystem">
             {PROJECTS.filter((p) => p.kind === 'ecosystem').map((p) => (
               <li key={p.slug}>
@@ -132,6 +136,15 @@ function Footer() {
               <li key={p.slug}>
                 <InAppLink to={`/${p.slug}`} className={link}>
                   {p.name}
+                </InAppLink>
+              </li>
+            ))}
+          </FooterColumn>
+          <FooterColumn title="Workshop">
+            {WORKSHOP.map((item) => (
+              <li key={item.slug}>
+                <InAppLink to={`/${item.slug}`} className={link}>
+                  {item.name}
                 </InAppLink>
               </li>
             ))}
@@ -159,7 +172,7 @@ function Footer() {
   );
 }
 
-export function Layout({ children, project }: { children: ReactNode; project?: Project }) {
+export function Layout({ children, project }: { children: ReactNode; project?: Crumb }) {
   return (
     <div className="flex min-h-full flex-col">
       <a
