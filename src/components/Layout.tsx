@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ThemeSwitch } from '@d3cloud/ui';
 import { Logo } from './Logo';
+import { ProductMark } from './ProductMark';
 import { Kicker } from './Marketing';
 import { useNavigateOnClick } from '../router';
 import { BRAND, CONTACT_EMAIL, PROJECTS, STUDIO, type Project } from '../content/projects';
@@ -26,7 +27,7 @@ function InAppLink({ to, className, children }: { to: string; className?: string
 }
 
 /** What the header needs to name the page it is on: a product, or a project on the bench. */
-type Crumb = Pick<Project, 'name' | 'accent'>;
+type Crumb = Pick<Project, 'slug' | 'name' | 'accent'>;
 
 function Header({ project }: { project?: Crumb }) {
   return (
@@ -42,7 +43,10 @@ function Header({ project }: { project?: Crumb }) {
               <span aria-hidden="true" className="hidden text-fg-faint sm:inline">
                 /
               </span>
-              <span className="hidden truncate text-16 text-fg-muted sm:inline">{project.name}</span>
+              <span className="hidden items-center gap-2 truncate text-16 text-fg-muted sm:flex">
+                <ProductMark slug={project.slug} accent={project.accent} size={22} />
+                {project.name}
+              </span>
             </>
           )}
         </div>

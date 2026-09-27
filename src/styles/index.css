@@ -129,7 +129,58 @@
   }
 }
 
+/* Deep-dive drawings (DI-REQ-039). A bar grows as it scrolls into view, and a
+   dot travels a connector. Scroll-driven only where the browser supports it;
+   elsewhere a bar simply sits at its full length, which is its resting state. */
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes flow-y {
+  from {
+    top: 0;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+@keyframes flow-x {
+  from {
+    left: 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  to {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
 @layer components {
+  .bar {
+    transform-origin: left center;
+  }
+  @supports (animation-timeline: view()) {
+    .bar {
+      animation: grow linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 35%;
+    }
+  }
+  .flow-y {
+    animation: flow-y 2.8s ease-in-out infinite;
+  }
+  .flow-x {
+    animation: flow-x 5s ease-in-out infinite;
+  }
   .stagger-1 {
     animation-delay: 0.15s;
   }

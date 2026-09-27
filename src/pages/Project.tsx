@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Link as UiLink } from '@d3cloud/ui';
 import { Link, useNavigateOnClick } from '../router';
 import { CONTACT_EMAIL, PROJECTS, type Project } from '../content/projects';
@@ -6,6 +7,8 @@ import { connectionsOf, edges } from '../content/ecosystem';
 import { Screenshots } from '../components/Screenshots';
 import { CodeBlock } from '../components/CodeBlock';
 import { PROBLEM_ART } from '../components/FixProblems';
+import { ProductMark } from '../components/ProductMark';
+import { DEEP_DIVES } from './deep';
 import {
   Band,
   Chips,
@@ -18,7 +21,15 @@ import {
 function Hero({ project }: { project: Project }) {
   return (
     <section aria-labelledby="product-title" className="relative overflow-hidden">
-      <div className={`${WRAP} flex flex-col gap-7 pt-16 pb-16 lg:pt-24`}>
+      <div className={`${WRAP} relative flex flex-col gap-7 pt-16 pb-16 lg:pt-24`}>
+        {/* The product's own mark (DI-REQ-040): above the name on a phone, beside it on a wide screen. */}
+        <ProductMark
+          slug={project.slug}
+          accent={project.accent}
+          size={160}
+          halo
+          className="size-18 animate-rise text-fg lg:absolute lg:top-24 lg:right-16 lg:size-60 xl:right-24"
+        />
         <p className="flex animate-rise items-center gap-2.5 font-mono text-12 tracking-label text-fg-muted uppercase">
           <Dot project={project} />
           {project.kind === 'fix' ? 'A fix' : 'The ecosystem'} · {project.role} ·{' '}
@@ -104,10 +115,18 @@ export function ProjectPage({ project }: { project: Project }) {
   const Art = PROBLEM_ART[project.slug];
   const next = PROJECTS[(PROJECTS.indexOf(project) + 1) % PROJECTS.length];
   const goNext = useNavigateOnClick(`/${next.slug}`);
+  const Deep = DEEP_DIVES[project.slug];
 
   return (
     <>
       <Hero project={project} />
+
+      {Deep && (
+        // Nothing to show while the chunk loads: the hero is already on screen.
+        <Suspense fallback={null}>
+          <Deep project={project} />
+        </Suspense>
+      )}
 
       {project.problem && (
         <Band label="The problem" title="Why it exists." sunken>
@@ -118,7 +137,11 @@ export function ProjectPage({ project }: { project: Project }) {
         </Band>
       )}
 
-      <Band label="What it does" title={project.headline} sunken={!project.problem}>
+      <Band
+        label={Deep ? 'Everything else' : 'What it does'}
+        title={Deep ? 'The rest of the list.' : project.headline}
+        sunken={!project.problem && !Deep}
+      >
         <ul className="grid gap-x-10 gap-y-5 md:grid-cols-2">
           {project.highlights.map((highlight) => (
             <li key={highlight} className="flex gap-3 text-16 text-fg">

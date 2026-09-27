@@ -36,7 +36,7 @@ function resolve(path: string): {
   view: ReactNode;
   title: string;
   canonical?: string;
-  project?: Pick<Project, 'name' | 'accent'>;
+  project?: Pick<Project, 'slug' | 'name' | 'accent'>;
 } {
   const route = resolveRoute(path);
   if (!route) return { view: <Narrow><NotFound /></Narrow>, title: NOT_FOUND_TITLE };
