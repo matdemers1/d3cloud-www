@@ -13,5 +13,11 @@ import type { Project } from '../../content/projects';
 type DeepDive = LazyExoticComponent<ComponentType<{ project: Project }>>;
 
 export const DEEP_DIVES: Partial<Record<string, DeepDive>> = {
+  auth: lazy(() => import('./Auth').then((m) => ({ default: m.AuthDeepDive }))),
+  bindery: lazy(() => import('./Bindery').then((m) => ({ default: m.BinderyDeepDive }))),
+  clearwhen: lazy(() => import('./Clearwhen').then((m) => ({ default: m.ClearwhenDeepDive }))),
   foreman: lazy(() => import('./Foreman').then((m) => ({ default: m.ForemanDeepDive }))),
+  qr: lazy(() => import('./Qr').then((m) => ({ default: m.QrDeepDive }))),
+  shipyard: lazy(() => import('./Shipyard').then((m) => ({ default: m.ShipyardDeepDive }))),
+  ui: lazy(() => import('./Ui').then((m) => ({ default: m.UiDeepDive }))),
 };

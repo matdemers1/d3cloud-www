@@ -312,7 +312,7 @@ export const PROJECTS: Project[] = [
         notes: [
           'Running in production with Immich and a reference Express app signing in through it.',
           'Passed its own security gate first: four conformance plans, 74 adversarial tests, an ASVS Level 2 self-assessment, Semgrep at zero and a nightly authenticated ZAP scan \u2014 nineteen defects found and fixed, four of them High.',
-          'Console rebuilt on @d3cloud/ui 1.1: sidebar shell, System/Light/Dark, and a strict content security policy with nothing inline.',
+          'Console rebuilt: sidebar shell, System/Light/Dark, and a strict content security policy with nothing inline.',
         ],
       },
     ],
@@ -406,10 +406,10 @@ export const PROJECTS: Project[] = [
     headline: 'Plans rot. Foreman notices.',
     summary:
       'Requirements, decisions and audit findings as records, checked against what actually shipped — in a console for you, and over MCP for Claude, as equals.',
-    proof: ['Never calls an LLM itself', 'Tracks this website too'],
+    proof: ['Never calls an LLM itself', 'Built for AI agents'],
     tagline: 'The plan of record, checked against what actually shipped.',
     blurb:
-      'Plans rot. The requirements say one thing, the repository does another, and nobody notices until an audit. Foreman holds requirements, phases, tasks, decisions and audit findings as records rather than documents, and says exactly where plan and reality have come apart — in a web console for you, and over MCP for Claude, as equals.',
+      'Plans rot. The requirements say one thing, the repository does another, and nobody notices until an audit. Foreman holds requirements, phases, tasks, decisions and audit findings as records rather than documents, and says exactly where plan and reality have come apart — in a web console for you, and over MCP for your AI agent, as equals.',
     status: 'Live',
     cta: {
       label: 'View on GitHub',
@@ -444,13 +444,13 @@ export const PROJECTS: Project[] = [
     ],
     highlights: [
       'Requirements, phases, tasks, decisions, risks and audit findings as records with IDs — cite one anywhere and the backlink is built for you',
-      'An MCP server that is an equal peer to the console: Claude reads where a project stands and records what it did, from inside a coding session',
-      'The server never calls a language model. Claude is a user of Foreman, not a part of it',
+      'An MCP server that is an equal peer to the console: an AI agent reads where a project stands and records what it did, from inside a coding session',
+      'The server never calls a language model. Agents are users of Foreman, not a part of it',
       'Drift is one engine behind every screen that shows it, so the badge and the page it links to cannot disagree',
       'A phase cannot be marked complete while its exit gate fails, and the refusal names what is in the way',
       'Requirements are linted against EARS, tuned on 591 real ones — it warns and never blocks',
       'One findings inbox across every project, and a fix counts only once its commit is known',
-      'App-native sign-in with an authenticator, or Sign in with D3 Auth',
+      'Its own sign-in with an authenticator, or single sign-on over OpenID Connect',
     ],
     selfHost: {
       intro:
@@ -459,7 +459,7 @@ export const PROJECTS: Project[] = [
       steps: [
         'Open http://127.0.0.1:3200 and sign in as the operator named in the generated .env.',
         'Look around the seeded Example Project, then create your own — or bring in an existing Markdown plan with pnpm run import.',
-        'Connect Claude over MCP: the stdio shim in packages/mcp, or the remote endpoint at /mcp.',
+        'Connect your AI agent over MCP: the stdio shim in packages/mcp, or the remote endpoint at /mcp.',
       ],
       note: 'For a real deployment, replace the generated secrets and put it behind a tunnel or reverse proxy. docs/runbooks covers deploying, backups and the restore drill.',
     },
@@ -482,13 +482,13 @@ export const PROJECTS: Project[] = [
       { to: 'ui', type: 'built-on' },
       { to: 'foreman', type: 'planned-in' },
     ],
-    headline: 'One deploy button — for your phone, and for Claude.',
+    headline: 'One deploy button — for your phone, and for your AI agent.',
     summary:
       'Name an app and a commit. A portless agent on the host checks everything a careful person would, deploys the exact image digests it verified, proves they are running, and rolls back on its own.',
     proof: ['Deploys itself', 'The agent opens no port', 'MCP for Claude Code'],
-    tagline: 'One deploy button, for you and for Claude.',
+    tagline: 'One deploy button, for you and for your AI agent.',
     blurb:
-      'Every deploy was hand-typed over SSH, and two coding sessions once deployed conflicting commits of the same app. Shipyard replaces the ritual with one button — on your phone, or a tool call from Claude Code — that checks everything a careful person would, every time, and refuses when it cannot. It deploys the D3 Cloud apps on the home server now: D3 Auth, Bindery, Foreman, and Shipyard itself.',
+      'Deploying a self-hosted app usually means typing the same commands over SSH and hoping nothing was skipped — and when two people or two coding agents deploy at once, they can ship conflicting commits of the same app. Shipyard replaces the ritual with one button, on your phone or as a tool call from an AI agent, that checks everything a careful person would, every time, and refuses when it cannot.',
     status: 'Live',
     cta: {
       label: 'View on GitHub',
@@ -534,10 +534,10 @@ export const PROJECTS: Project[] = [
       'Backs up, runs a one-shot migration, swaps to tag@digest, then checks the running digest, the revision label and the /health schema before it soaks',
       'Rolls the images back on its own. A contract migration is never rolled back automatically — restoring data is a person’s decision, guided and typed to confirm',
       'Per-app locks that name who holds them: a second session is refused with the holder, the commit and the step',
-      'MCP at /mcp — status, dry run, deploy, deploy status and rollback — and a deploy of an approval-required app waits for a person in the console',
-      'A phone-first console: set up in the browser on first run, then password and authenticator or Sign in with D3 Auth; freezes, group deploys with a canary, schedules and drift detection',
-      'Every deploy recorded in Foreman against the tasks it ships, in a hash-chained ledger, with a nightly database dump and a restore drill',
-      'On the home server it deploys six stacks, itself included — the agent is upgraded by hand, so a bad release can never remove the thing that rolls back',
+      'MCP at /mcp for AI coding agents — status, dry run, deploy, deploy status and rollback — and a deploy of an approval-required app waits for a person in the console',
+      'A phone-first console: set up in the browser on first run, then password and authenticator or single sign-on; freezes, group deploys with a canary, schedules and drift detection',
+      'Every deploy recorded in a hash-chained ledger, and optionally against the tasks it ships in your planning tool, with a nightly database dump and a restore drill',
+      'It can deploy itself — the agent is upgraded by hand, so a bad release can never remove the thing that rolls back',
     ],
     selfHost: {
       intro:
@@ -551,7 +551,7 @@ export const PROJECTS: Project[] = [
       note: 'Claim it right after the first start. Until the first account exists, whoever reaches the address can create it — so do it before a tunnel points at it.',
     },
     privacyLine:
-      'Runs on your machine and phones nobody — no telemetry, and it stores no app secrets. It talks to GitHub and your image registry to check a deploy, and to Foreman only if you connect it.',
+      'Runs on your machine and phones nobody — no telemetry, and it stores no app secrets. It talks to GitHub and your image registry to check a deploy, and to a planning tool only if you connect one.',
     // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#5EEAD4',
     changelog: [
@@ -561,8 +561,8 @@ export const PROJECTS: Project[] = [
         href: 'https://github.com/matdemers1/shipyard/releases/tag/v0.1.0',
         summary: 'First public release, under Apache-2.0.',
         notes: [
-          'Deploying six stacks on the D3 Cloud home server: D3 Auth, with every deploy approved by a person; Foreman and its board as a canary group, the board soaking first; Bindery; the D3 Auth demo; and Shipyard’s own server.',
-          'First-run account setup in the browser, and Sign in with D3 Auth configured in Settings, its secret encrypted at rest.',
+          'Proven in production across six stacks: one that needs a person’s approval for every deploy, a two-app canary group that soaks the canary first, and Shipyard’s own server.',
+          'First-run account setup in the browser, and single sign-on configured in Settings, its secret encrypted at rest.',
           'Every console screen’s empty, loading, error and denied states tested, and axe-clean in both themes.',
           'CI checks a clean-machine install on an internal-only network, scans for secrets, and allows no third-party origin in the console bundle.',
         ],
@@ -580,9 +580,9 @@ export const PROJECTS: Project[] = [
     summary:
       'A React component library whose rules are enforced by gates, not guidance — every story swept by axe.',
     proof: ['38 components', '909 tests', 'axe on every story'],
-    tagline: 'One design system and component library for every D3 app.',
+    tagline: 'One design system and component library for every app you build.',
     blurb:
-      'An audit of five apps found 176 distinct colour values, 19 type sizes and 170 button recipes — with no Button component anywhere. @d3cloud/ui replaces all of that with one visual language and a React component library whose rules are enforced by gates, not guidance.',
+      'Apps built without a shared system drift: an audit of five real apps found 176 distinct colour values, 19 type sizes and 170 button recipes — with no Button component anywhere. @d3cloud/ui replaces all of that with one visual language and a React component library whose rules are enforced by gates, not guidance.',
     status: 'Live',
     cta: {
       label: 'Browse the Storybook',
@@ -650,7 +650,7 @@ export const PROJECTS: Project[] = [
         date: '2026-09-18',
         summary: 'Table — the component DataList deliberately is not.',
         notes: [
-          'D-067 settled that a list of like things is rows and not a table, and left the system with nothing for the case a table is actually for: columns that line up, so a value can be compared down one or ordered by it.',
+          'A list of like things is rows, not a table — which left nothing for the case a table is actually for: columns that line up, so a value can be compared down one or ordered by it.',
           'Sorting cycles ascending, descending, then back to the order the caller passed \u2014 the given order is often the meaningful one, and a control that cannot return to it quietly destroys information.',
           'Virtualization uses spacer rows rather than a transform, so it stays a real table: the browser\u2019s own column sizing and cell semantics still apply, and the row count reported to a screen reader is the whole set rather than the handful in the DOM.',
           'Measured at 439 rows \u2014 fewer than forty in the DOM across a full scroll, and the 90th-percentile frame under 50ms.',
@@ -661,7 +661,7 @@ export const PROJECTS: Project[] = [
         date: '2026-09-17',
         summary: 'The frame and the page patterns.',
         notes: [
-          'v1.0 gave apps good parts and no guidance on putting them together, so every internal app improvised its own shell, lists and forms.',
+          'v1.0 gave apps good parts and no guidance on putting them together, so each app improvised its own shell, lists and forms.',
           'AppShell, SideNav, Menu and AccountMenu, with System/Light/Dark theming; Page, Stack, Grid, Section and AuthLayout; DescriptionList, DataList, FormActions and FilterBar.',
           'Nine full-screen patterns with written rules, and strict-CSP support so dialogs work without unsafe-inline.',
         ],
@@ -671,8 +671,8 @@ export const PROJECTS: Project[] = [
         date: '2026-09-15',
         summary: 'The first stable release; the public API is frozen.',
         notes: [
-          'From here a rename or a removal is a major version (D-063).',
-          'Adopted by Bindery and d3-qr, and verified rendered in both apps, in both themes and with keyboard focus.',
+          'From here a rename or a removal is a major version.',
+          'Verified rendered in two production apps, in both themes and with keyboard focus.',
           'CodeInput arrived with it: one-time codes and recovery codes, one character per box, with a single labelled input underneath so paste, autofill and screen readers see one field.',
         ],
       },

@@ -4,67 +4,75 @@ import { BarRow, DeepIndex, DeepSection, Figure, FlowDown, Stat, type DeepEntry 
 import { Accent, Quiet } from '../../components/Marketing';
 
 /**
- * Foreman, explained (DI-T-8.2). Laid out like the thing it describes: every
- * section carries a code the way Foreman's records carry human IDs, and reads
- * top to bottom as a ledger — why, how it is used, how it is built, what it
- * decided, how it was made, what it refuses to be.
+ * Foreman, explained (DI-T-8.2, DI-REQ-041). Laid out like the thing it
+ * describes: every section carries a code the way Foreman's records carry IDs,
+ * and reads top to bottom as a ledger — the problem, how it is used, how it is
+ * built, the ideas it rests on, how to bring a plan in, what it refuses to be.
  *
- * Every number here comes from Foreman's own repository or its FRM records
- * (FRM-ADR-012, apps/server/src/domain/attribution.ts and drift.ts, the P10
- * cutover report). The drift breakdown is FRM's own, as of 2026-09-27.
+ * Written for the reader, not the maker: examples use an illustrative project
+ * coded APP. Product facts — the attribution weights, the five drift
+ * categories, the twelve tools, the test and latency figures — come from
+ * Foreman's repository.
  */
 
 const ENTRIES: DeepEntry[] = [
-  { id: 'why', label: 'Why' },
+  { id: 'why', label: 'The problem' },
   { id: 'walkthrough', label: 'Walkthrough' },
   { id: 'architecture', label: 'Architecture' },
   { id: 'trace', label: 'Traceability' },
   { id: 'attribution', label: 'Attribution' },
   { id: 'drift', label: 'Drift' },
-  { id: 'mcp', label: 'MCP' },
-  { id: 'decisions', label: 'Decisions' },
-  { id: 'build', label: 'How it was built' },
+  { id: 'mcp', label: 'For AI agents' },
+  { id: 'principles', label: 'Principles' },
+  { id: 'bring', label: 'Bring your plan' },
   { id: 'not', label: 'What it is not' },
 ];
 
-const code = (n: number) => `FRM · ${String(n).padStart(2, '0')}`;
+const code = (n: number) => `LEDGER · ${String(n).padStart(2, '0')}`;
 
 /* ---------------------------------------------------------------- Why */
 
-const VAULT_FILES = 534;
-const LARGEST_SHARE = 0.39;
-const COLS = 30;
+const QUESTIONS = [
+  { q: 'Where is this project, really?', a: 'The phase in flight, what is next, what is blocked and why.' },
+  { q: 'What should I work on next?', a: 'Unblocked tasks, in dependency order.' },
+  { q: 'What is still open, across everything?', a: 'Every unresolved finding and uncovered requirement, in one list.' },
+  { q: 'Is the plan still true?', a: 'Where the plan and the repository have come apart, named.' },
+];
 
-/** 534 cells, one per file in the old vault; the largest project's share lit. */
-function Waffle({ accent }: { accent: string }) {
-  const lit = Math.round(VAULT_FILES * LARGEST_SHARE);
-  const rows = Math.ceil(VAULT_FILES / COLS);
-  const cells = Array.from({ length: VAULT_FILES }, (_, i) => {
-    // Column-major, so the one project's share reads as a single block on the left.
-    const x = Math.floor(i / rows);
-    const y = i % rows;
-    return { x, y, on: i < lit };
-  });
-  return (
-    <svg
-      viewBox={`0 0 ${COLS * 10} ${rows * 10}`}
-      className="h-auto w-full"
-      role="img"
-      aria-label={`${VAULT_FILES} squares, one per file in the old planning vault. ${lit} of them — 39% — belong to a single project.`}
-    >
-      {cells.map((c) => (
-        <rect
-          key={`${c.x}-${c.y}`}
-          x={c.x * 10 + 1}
-          y={c.y * 10 + 1}
-          width="8"
-          height="8"
-          rx="1.5"
-          className={c.on ? undefined : 'fill-border-field'}
-          style={c.on ? { fill: accent } : undefined}
-        />
+/** A plan as documents: links that are only text, and one that quietly broke. */
+function DocsVsRecords({ accent }: { accent: string }) {
+  const doc = (title: string, rows: string[], broken?: number) => (
+    <div className="flex flex-col gap-2 rounded-md border border-border bg-surface p-4">
+      <span className="font-mono text-12 text-fg">{title}</span>
+      {rows.map((row, i) => (
+        <span key={row} className={`flex items-center gap-2 font-mono text-11 ${i === broken ? 'text-fg-faint line-through' : 'text-fg-muted'}`}>
+          <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-border-field" />
+          {row}
+        </span>
       ))}
-    </svg>
+    </div>
+  );
+  return (
+    <div className="grid items-center gap-6 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+      <Figure caption="In documents, a link between a requirement and the work is a line of text. Nothing notices when it breaks.">
+        <div role="img" aria-label="Three documents — requirements, tasks and findings — whose cross-references are plain text; one has silently gone stale." className="grid gap-3 sm:grid-cols-3 md:grid-cols-1">
+          {doc('requirements.md', ['REQ-12 see T-3.2', 'REQ-13 see T-3.4', 'REQ-14 —'], 1)}
+          {doc('tasks.md', ['T-3.2 done?', 'T-3.3 in progress', 'T-3.4 (renamed)'], 2)}
+          {doc('findings/', ['finding 41 open', 'finding 42 fixed?', 'finding 43 —'], 1)}
+        </div>
+      </Figure>
+      <span aria-hidden="true" className="text-center font-mono text-20 text-fg-faint md:px-2">→</span>
+      <Figure caption="In Foreman, each link is a row. It can be counted, checked and followed both ways.">
+        <div role="img" aria-label="The same plan as records: a requirement linked to a task, the task to a commit, the commit to a passing check." className="flex flex-col items-stretch">
+          {['APP-REQ-012 · requirement', 'APP-T-3.2 · task', 'a1b2c3d · commit', 'CI · success'].map((row, i, all) => (
+            <div key={row} className="flex flex-col">
+              <span className="rounded-md border border-border-field bg-surface px-4 py-3 font-mono text-12 text-fg">{row}</span>
+              {i < all.length - 1 && <FlowDown accent={accent} className="h-6" />}
+            </div>
+          ))}
+        </div>
+      </Figure>
+    </div>
   );
 }
 
@@ -73,25 +81,27 @@ function Why({ accent }: { accent: string }) {
     <DeepSection
       id="why"
       code={code(1)}
-      label="Why it exists"
+      label="The problem"
       title={
         <>
-          534 files, and not one question <Accent>you could ask across them.</Accent>
+          Plans rot quietly, <Accent>and nobody can ask them anything.</Accent>
         </>
       }
-      lede="Before Foreman, every plan lived in an Obsidian vault. The trouble was never Markdown. It was that nothing in it could be asked a question — and the two chains that mattered most were being kept by hand."
+      lede="Most projects keep their plan in documents: requirements in one file, tasks in another, decisions and audit findings somewhere else. They read well on the day they are written. After that the code moves on, the links between them are only text, and the simple questions stop having answers."
     >
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-center">
-        <Figure caption="Each square is one file in the vault. The lit block is a single project — 39% of everything. Four projects had no files at all.">
-          <Waffle accent={accent} />
-        </Figure>
-        <div className="grid grid-cols-2 gap-8">
-          <Stat value="39%" label="of every file belonged to one project" />
-          <Stat value="4" label="projects had no plan on disk at all" />
-          <Stat value="127" label="audit findings — the largest dataset, and the most deeply buried" />
-          <Stat value="0" label="questions that could be asked across projects" />
-        </div>
-      </div>
+      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {QUESTIONS.map((item, index) => (
+          <li key={item.q} className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-6">
+            <span className="flex items-center gap-2 font-mono text-11 text-fg-faint">
+              <span aria-hidden="true" className="size-2 rounded-full" style={{ backgroundColor: accent }} />
+              Q{index + 1}
+            </span>
+            <span className="font-display text-display-sm text-fg">{item.q}</span>
+            <span className="text-14 text-fg-muted">{item.a}</span>
+          </li>
+        ))}
+      </ul>
+      <DocsVsRecords accent={accent} />
     </DeepSection>
   );
 }
@@ -108,64 +118,64 @@ interface Step {
 const STEPS: Step[] = [
   {
     title: 'Plan it',
-    who: 'You and Claude',
-    body: 'An interview becomes records, not files: requirements with IDs, phases, tasks, decisions. Each requirement is checked against EARS — warned, never blocked.',
+    who: 'You, or your agent',
+    body: 'Requirements, phases, tasks and decisions go in as records with permanent IDs. Each requirement is checked against the EARS pattern — warned, never blocked.',
     screen: (
       <>
-        <span className="text-fg">FRM-REQ-106</span> <Quiet>M · EARS ✓</Quiet>
+        <span className="text-fg">APP-REQ-012</span> <Quiet>Must · EARS ✓</Quiet>
         {'\n'}
-        <Quiet>Foreman shall attribute a commit to a Task by agent declaration first…</Quiet>
+        <Quiet>When a user exports a report, the system shall…</Quiet>
       </>
     ),
   },
   {
     title: 'Ask where it stands',
-    who: 'Claude, over MCP',
-    body: 'A session opens with one call. The brief is a few hundred tokens: the phase in flight, what is next, what is blocked and why, CI, drift.',
+    who: 'An agent, over MCP',
+    body: 'A coding session opens with one call. The brief is a few hundred tokens: the phase in flight, what is next, what is blocked and why, CI, drift.',
     screen: (
       <>
-        <Quiet>›</Quiet> foreman_brief FRM{'\n'}
-        <Quiet>phase </Quiet>P-11 The Fleet · 4/4{'\n'}
-        <Quiet>ci    </Quiet>success · 8f7da9f{'\n'}
-        <Quiet>drift </Quiet>47
+        <Quiet>›</Quiet> foreman_brief APP{'\n'}
+        <Quiet>phase </Quiet>P-3 Reports · 5/8{'\n'}
+        <Quiet>next  </Quiet>APP-T-3.6{'\n'}
+        <Quiet>drift </Quiet>2
       </>
     ),
   },
   {
     title: 'Build',
-    who: 'Claude, in the repo',
-    body: 'Work lands as ordinary commits. GitHub tells Foreman; the receiver queues the delivery before it answers, so nothing is dropped.',
+    who: 'Work lands in the repo',
+    body: 'Commits arrive from GitHub as they are pushed. Each delivery is queued before it is acknowledged, and a nightly reconcile heals any that went missing.',
     screen: (
       <>
-        <span className="text-fg">8f7da9f</span> FRM-T-11.4: a cancelled{'\n'}
-        task is closed, so done-or-{'\n'}
-        cancelled work reads 100%
+        <span className="text-fg">a1b2c3d</span> T-3.6: export{'\n'}
+        reports as CSV, with the{'\n'}
+        filters the user chose
       </>
     ),
   },
   {
     title: 'Say what it was for',
-    who: 'Claude declares, you confirm',
-    body: 'Claude declares which task a commit served. That is a proposal until a person confirms it — a guess is never counted as done.',
+    who: 'Declared, then confirmed',
+    body: 'Whoever did the work declares which task a commit served. Anything weaker is only a proposal until a person confirms it — a guess never counts as done.',
     screen: (
       <>
         <Quiet>›</Quiet> foreman_attribute{'\n'}
-        <Quiet>  </Quiet>8f7da9f → FRM-T-11.4{'\n'}
+        <Quiet>  </Quiet>a1b2c3d → APP-T-3.6{'\n'}
         <Quiet>source </Quiet>declared · 1.0{'\n'}
-        <Quiet>state  </Quiet>proposed → confirmed
+        <Quiet>state  </Quiet>confirmed
       </>
     ),
   },
   {
-    title: 'Find where it drifted',
-    who: 'Foreman, every night',
+    title: 'See where it drifted',
+    who: 'Foreman, continuously',
     body: 'Plan and reality are compared: uncovered requirements, stale tasks, fired tripwires, gates that would fail today. Each is named, so it can be fixed.',
     screen: (
       <>
-        <Quiet>coverage-hole    </Quiet>26{'\n'}
-        <Quiet>failed-exit-gate </Quiet>10{'\n'}
-        <Quiet>orphan-adr       </Quiet>11{'\n'}
-        <Quiet>stale-task       </Quiet>0
+        <Quiet>coverage-hole    </Quiet>1{'\n'}
+        <Quiet>stale-task       </Quiet>1{'\n'}
+        <Quiet>failed-exit-gate </Quiet>0{'\n'}
+        <Quiet>orphan-adr       </Quiet>0
       </>
     ),
   },
@@ -217,7 +227,7 @@ function Walkthrough({ accent }: { accent: string }) {
           <span aria-hidden="true" className="font-mono text-fg-faint">
             ↺
           </span>
-          Drift is a list of things to plan next, so step five feeds step one.
+          Drift is a list of things to plan next, so step five feeds step one. The project and its IDs are illustrative.
         </p>
       </div>
     </DeepSection>
@@ -262,16 +272,16 @@ function Architecture({ accent }: { accent: string }) {
           Two front doors, <Accent>one ledger.</Accent>
         </>
       }
-      lede="The console and the MCP server are equal peers: anything you can see or change in one, Claude can in the other. Both sit on the same API, the same shapes and the same database — and nothing in it calls a language model."
+      lede="The console and the MCP server are equal peers: anything you can see or change in one, an AI agent can in the other. Both sit on the same API, the same shapes and the same database — and nothing in it calls a language model."
     >
       <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_18rem]">
-        <div role="img" aria-label="Architecture: you, Claude and GitHub reach Foreman through a Cloudflare Tunnel. One Express server serves the console, the REST API, the MCP endpoint and a webhook receiver. It stores everything in PostgreSQL 16, which also holds the job queue a worker drains." className="flex flex-col">
+        <div role="img" aria-label="Architecture: you, an AI agent and GitHub reach Foreman through a Cloudflare Tunnel. One Express server serves the console, the REST API, the MCP endpoint and a webhook receiver. It stores everything in PostgreSQL 16, which also holds the job queue a worker drains." className="flex flex-col">
           <div className="grid gap-3 sm:grid-cols-3" aria-hidden="true">
             <Box kicker="You" title="The console">
-              React 19 on @d3cloud/ui, served by the server itself
+              React 19, served by the server itself
             </Box>
-            <Box kicker="Claude" title="MCP">
-              A local stdio shim with a scoped token, or remote /mcp signed in by D3 Auth
+            <Box kicker="Your agent" title="MCP">
+              A local stdio shim with a scoped token, or the remote /mcp endpoint over OpenID Connect
             </Box>
             <Box kicker="GitHub" title="The GitHub App">
               Commits, files, check runs and releases, as webhooks
@@ -302,8 +312,8 @@ function Architecture({ accent }: { accent: string }) {
               </Box>
             </div>
             <Box title="Dual login">
-              Its own password with Argon2id and TOTP, or Sign in with D3 Auth — linked by issuer and subject, never by
-              email
+              Its own password with Argon2id and an authenticator, or single sign-on over OpenID Connect — linked by
+              issuer and subject, never by email
             </Box>
           </div>
           <FlowDown accent={accent} />
@@ -346,7 +356,7 @@ function Architecture({ accent }: { accent: string }) {
               A language model
             </span>
             <span className="text-13 text-fg-muted">
-              The server never calls one. Claude is Foreman’s user, not its dependency — and a test fails if an AI SDK
+              The server never calls one. Agents are Foreman’s users, not its dependency — and a test fails if an AI SDK
               appears in any package.json.
             </span>
           </div>
@@ -391,18 +401,18 @@ function Traceability({ accent }: { accent: string }) {
           The two chains, <Accent>made first-class.</Accent>
         </>
       }
-      lede="These were kept by hand in YAML frontmatter, and a chain kept by hand breaks silently. In Foreman each arrow is a row — cite an ID anywhere and the backlink is built for you."
+      lede="Two chains decide whether a project is really done, and most teams keep them by hand — in documents, spreadsheets or memory, where a broken link makes no sound. In Foreman each arrow is a row: cite an ID anywhere and the backlink is built for you."
       sunken
     >
       <div className="flex flex-col gap-10">
-        <Figure caption="A real chain: the requirement for attribution, the task that built it, and the proof it shipped.">
+        <Figure caption="From a requirement to the proof it shipped. Illustrative IDs.">
           <Chain
             label="Requirement to check run"
             accent={accent}
             links={[
-              { kind: 'Requirement', id: 'FRM-REQ-106' },
-              { kind: 'Task', id: 'FRM-T-5.7' },
-              { kind: 'Commit', id: 'sha, attributed' },
+              { kind: 'Requirement', id: 'APP-REQ-012' },
+              { kind: 'Task', id: 'APP-T-3.6' },
+              { kind: 'Commit', id: 'a1b2c3d, attributed' },
               { kind: 'Check run', id: 'CI · success' },
             ]}
           />
@@ -412,7 +422,7 @@ function Traceability({ accent }: { accent: string }) {
             label="Finding to decision"
             accent={accent}
             links={[
-              { kind: 'Finding', id: 'BND-CR-119' },
+              { kind: 'Finding', id: 'APP-SEC-004' },
               { kind: 'File:line', id: 'path, in the repo' },
               { kind: 'Fix commit', id: 'sha, ingested' },
               { kind: 'Decision', id: 'ADR, if one' },
@@ -426,53 +436,6 @@ function Traceability({ accent }: { accent: string }) {
 
 /* ---------------------------------------------------------------- Attribution */
 
-function Dumbbell({
-  repo,
-  planned,
-  measured,
-  detail,
-  accent,
-}: {
-  repo: string;
-  planned: number;
-  measured: number;
-  detail: string;
-  accent: string;
-}) {
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-baseline justify-between gap-4">
-        <span className="text-16 font-semibold text-fg">{repo}</span>
-        <span className="font-mono text-13 text-fg-muted">{detail}</span>
-      </div>
-      <div className="relative h-6" aria-hidden="true">
-        <span className="absolute top-1/2 right-0 left-0 h-px bg-border-field" />
-        <span
-          className="absolute top-1/2 h-0.5 -translate-y-1/2 bg-fg-faint"
-          style={{ left: `${measured}%`, width: `${planned - measured}%` }}
-        />
-        <span
-          className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-fg-faint bg-bg"
-          style={{ left: `${planned}%` }}
-        />
-        <span
-          className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full"
-          style={{ left: `${measured}%`, backgroundColor: accent }}
-        />
-      </div>
-      <div className="flex justify-between font-mono text-11 text-fg-faint" aria-hidden="true">
-        <span>0%</span>
-        <span>50%</span>
-        <span>100%</span>
-      </div>
-      <p className="text-14 text-fg-muted">
-        The plan recorded <span className="text-fg">{planned}%</span> of commits citing a task. Measured by the parser
-        itself: <span className="text-fg">{measured}%</span>.
-      </p>
-    </div>
-  );
-}
-
 function Attribution({ accent }: { accent: string }) {
   return (
     <DeepSection
@@ -484,20 +447,21 @@ function Attribution({ accent }: { accent: string }) {
           Which task was that commit for? <Accent>Three signals, ranked.</Accent>
         </>
       }
-      lede="The plan said file overlap would answer it. Measured against the real corpus, only 60 of 363 tasks named their files — so the ranking was rebuilt around what the history actually contains."
+      lede="Linking work to the plan sounds easy until you look at real history: most commits never mention a task, and most tasks never say which files they will touch. So Foreman asks the one party that actually knows — whoever did the work — and treats everything else as a hint."
     >
       <div className="grid gap-16 lg:grid-cols-2">
         <Figure caption="The confidence Foreman gives each signal. The order decides which proposal is offered, not which is true.">
           <div className="flex flex-col gap-6">
-            <BarRow label="1 · Claude declares it" value="1.0" fraction={1} accent={accent} note="A fact: Claude knows what it was working on." />
-            <BarRow label="2 · The message cites it" value="0.9" fraction={0.9} accent={accent} note="“T-13.9” in the subject — bare IDs too, because nobody types the project code." />
-            <BarRow label="3 · Files overlap" value="0.3" fraction={0.3} accent={accent} muted note="A hint, never more. Only 17% of tasks declare their files." />
+            <BarRow label="1 · It is declared" value="1.0" fraction={1} accent={accent} note="A fact: the person or agent doing the work knows what it was for." />
+            <BarRow label="2 · The message cites it" value="0.9" fraction={0.9} accent={accent} note="“T-3.6” in the commit subject — the short form too, because nobody types the project code." />
+            <BarRow label="3 · Files overlap" value="0.3" fraction={0.3} accent={accent} muted note="A hint, never more. Two tasks can touch the same file." />
           </div>
         </Figure>
-        <Figure caption="Planned (hollow) against measured (filled), over every non-bot commit: 31 of 160 in Bindery, 59 of 107 in D3 Auth. Recorded as FRM-ADR-012.">
-          <div className="flex flex-col gap-10">
-            <Dumbbell repo="Bindery" planned={56} measured={19} detail="31 / 160" accent={accent} />
-            <Dumbbell repo="D3 Auth" planned={65} measured={55} detail="59 / 107" accent={accent} />
+        <Figure caption="Why guessing is not enough: measured over two real codebases' full commit history and one real backlog of 363 tasks.">
+          <div className="flex flex-col gap-6">
+            <BarRow label="Commits citing a task" value="19%" fraction={0.19} accent={accent} muted note="In one codebase: 31 of 160 commits." />
+            <BarRow label="…in another" value="55%" fraction={0.55} accent={accent} muted note="59 of 107 commits." />
+            <BarRow label="Tasks naming their files" value="17%" fraction={0.17} accent={accent} muted note="60 of 363 tasks." />
           </div>
         </Figure>
       </div>
@@ -511,7 +475,7 @@ function Attribution({ accent }: { accent: string }) {
           An unconfirmed attribution is never truth.{' '}
           <Quiet>
             No coverage, status, brief or drift figure may read one, and a test holds that line — a file-path
-            coincidence must never mark work complete.
+            coincidence can never mark your work complete.
           </Quiet>
         </p>
       </div>
@@ -522,10 +486,10 @@ function Attribution({ accent }: { accent: string }) {
 /* ---------------------------------------------------------------- Drift */
 
 const DRIFT = [
-  { key: 'coverage-hole', label: 'Coverage hole', what: 'A Must with no task, or a task citing no requirement', n: 26 },
-  { key: 'failed-exit-gate', label: 'Failed exit gate', what: 'A phase marked done that would not pass its gate today', n: 10 },
-  { key: 'orphan-adr', label: 'Orphan decision', what: 'Accepted but cited by nothing, or a broken supersedes chain', n: 11 },
-  { key: 'stale-task', label: 'Stale task', what: 'In progress, with no commits touching its files', n: 0 },
+  { key: 'coverage-hole', label: 'Coverage hole', what: 'A Must with no task, or a task citing no requirement', n: 5 },
+  { key: 'failed-exit-gate', label: 'Failed exit gate', what: 'A phase marked done that would not pass its gate today', n: 1 },
+  { key: 'orphan-adr', label: 'Orphan decision', what: 'Accepted but cited by nothing, or a broken supersedes chain', n: 2 },
+  { key: 'stale-task', label: 'Stale task', what: 'In progress, with no commits touching its files', n: 1 },
   { key: 'fired-tripwire', label: 'Fired tripwire', what: 'A risk whose named condition has been met', n: 0 },
 ];
 
@@ -576,7 +540,7 @@ function Drift({ accent }: { accent: string }) {
       <PlanVsReality accent={accent} />
 
       <div className="grid gap-12 lg:grid-cols-2">
-        <Figure caption={`Foreman's drift on its own plan, FRM, on 27 September 2026: ${total} items, every one named.`}>
+        <Figure caption={`An illustrative project's drift: ${total} items, every one named — never just “there is drift”.`}>
           <div className="flex h-6 overflow-hidden rounded-full bg-surface-raised" aria-hidden="true">
             {DRIFT.filter((d) => d.n > 0).map((d, i) => (
               <span
@@ -663,13 +627,13 @@ function Mcp({ accent }: { accent: string }) {
     <DeepSection
       id="mcp"
       code={code(7)}
-      label="The MCP surface"
+      label="For AI agents"
       title={
         <>
           Twelve verbs. <Accent>The ceiling is full.</Accent>
         </>
       }
-      lede="A large graph behind a small surface. Every tool Claude sees costs context in every session, so the count is capped at twelve and the definitions' size is budgeted — both asserted by contract tests."
+      lede="Foreman is built for AI coding agents as much as for people: an agent reads where a project stands and records what it did, from inside the session. Every tool an agent sees costs context in every session, so the surface is capped at twelve verbs and a token budget — both asserted by contract tests."
     >
       <div className="grid gap-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="flex flex-col gap-8">
@@ -690,7 +654,7 @@ function Mcp({ accent }: { accent: string }) {
         <div className="flex flex-col gap-6">
           <Figure caption="Long content is a resource, fetched one section at a time — never tool output.">
             <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-5">
-              <span className="font-mono text-12 text-fg">foreman://FRM/architecture</span>
+              <span className="font-mono text-12 text-fg">foreman://APP/architecture</span>
               {['#overview', '#data-model', '#deployment', '#security'].map((section) => {
                 const on = section === '#deployment';
                 return (
@@ -710,7 +674,7 @@ function Mcp({ accent }: { accent: string }) {
           <Figure caption="Forward progress just happens. Anything regressive or irreversible asks you first, through the protocol's own round-trip.">
             <ol className="flex flex-col gap-2 text-13">
               <li className="self-start rounded-md border border-border bg-surface px-3 py-2 font-mono text-fg">
-                set_status FRM-P-10 → done
+                set_status APP-P-3 → done
               </li>
               <li className="self-end rounded-md border border-border-field px-3 py-2 text-fg-muted">
                 Completing a phase — confirm?
@@ -727,40 +691,40 @@ function Mcp({ accent }: { accent: string }) {
   );
 }
 
-/* ---------------------------------------------------------------- Decisions */
+/* ---------------------------------------------------------------- Principles */
 
-const ADRS = [
-  { id: 'FRM-ADR-002', title: 'A small verb surface over a large graph', why: 'Tool definitions cost context in every session. Twelve verbs reach every kind of record.' },
-  { id: 'FRM-ADR-004', title: 'Dual login, forever', why: 'Anyone who clones it can run it, and it still offers Sign in with D3 Auth. Identities link by issuer and subject, never email.' },
-  { id: 'FRM-ADR-005', title: 'Attribution is declared, not inferred', why: 'A guess that marks work done is worse than no answer. Claude says what it did; a person confirms.' },
-  { id: 'FRM-ADR-008', title: 'IDs are prefixed and permanent', why: 'A code is embedded in every citation forever. Renumbering would break every document that cites one.' },
-  { id: 'FRM-ADR-009', title: 'One cutover, not a migration window', why: 'Two sources of truth is none. Nine projects moved on one day and the vault was frozen behind them.' },
-  { id: 'FRM-ADR-012', title: '19%, not 56%', why: 'The parser measured the plan’s own assumption and found it three times too high — which made declaring load-bearing.' },
+const PRINCIPLES = [
+  { title: 'A small surface over a large graph', why: 'Twelve verbs reach every kind of record, so an agent spends its context on your project, not on reading tool definitions.' },
+  { title: 'Two ways in, always', why: 'Its own password and authenticator, or single sign-on. Anyone who clones it can run it, with or without an identity provider.' },
+  { title: 'Declared, not guessed', why: 'A guess that marks work done is worse than no answer. The one doing the work says what it was for; a person confirms.' },
+  { title: 'IDs are permanent', why: 'Every ID carries its project’s code and never changes, so a citation written today still resolves in a year.' },
+  { title: 'One source of truth', why: 'Registers, matrices and scopes of work are generated views of the records — never second copies that can disagree.' },
+  { title: 'No model inside', why: 'The server never calls an LLM. Agents are its users, so nothing about your plan leaves unless you send it.' },
 ];
 
-function Decisions({ accent }: { accent: string }) {
+function Principles({ accent }: { accent: string }) {
   return (
     <DeepSection
-      id="decisions"
+      id="principles"
       code={code(8)}
-      label="Decisions"
+      label="Principles"
       title={
         <>
           Why it is built <Accent>this way.</Accent>
         </>
       }
-      lede="Seventeen decisions are recorded on Foreman's own plan. These six shaped it most."
+      lede="Six ideas shape everything else. Each one trades a little convenience for a plan you can keep believing."
       sunken
     >
       <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {ADRS.map((adr) => (
-          <li key={adr.id} className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-6">
+        {PRINCIPLES.map((principle, index) => (
+          <li key={principle.title} className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-6">
             <span className="flex items-center gap-2 font-mono text-12 text-fg-muted">
               <span aria-hidden="true" className="size-2 rounded-full" style={{ backgroundColor: accent }} />
-              {adr.id}
+              {String(index + 1).padStart(2, '0')}
             </span>
-            <span className="text-16 font-semibold text-fg">{adr.title}</span>
-            <span className="text-14 text-fg-muted">{adr.why}</span>
+            <span className="text-16 font-semibold text-fg">{principle.title}</span>
+            <span className="text-14 text-fg-muted">{principle.why}</span>
           </li>
         ))}
       </ul>
@@ -768,82 +732,78 @@ function Decisions({ accent }: { accent: string }) {
   );
 }
 
-/* ---------------------------------------------------------------- Build */
+/* ---------------------------------------------------------------- Bring */
 
-const PHASES = [
-  { n: 0, name: 'Foundation', mark: '17 Sep', note: 'Scaffolded' },
-  { n: 1, name: 'Where Are We' },
-  { n: 2, name: 'Write-Back & Custody' },
-  { n: 3, name: 'Traceability', mark: '18 Sep', note: 'Deployed' },
-  { n: 4, name: 'The Record' },
-  { n: 5, name: 'Reality' },
-  { n: 6, name: 'Findings' },
-  { n: 7, name: 'Signal & Operations' },
-  { n: 8, name: 'The Importer' },
-  { n: 9, name: 'Hardening' },
-  { n: 10, name: 'The Cutover', mark: '20 Sep', note: 'Source of truth' },
-  { n: 11, name: 'The Fleet', mark: '25 Sep', note: '4 of 4 done' },
+const IMPORT_STEPS = [
+  { label: 'Point it at your plan', detail: 'A folder of Markdown — requirements, phases, decisions, findings.' },
+  { label: 'Dry run', detail: 'Nothing is written. Every file is reported as mapped, partial or unmapped, with the reason.' },
+  { label: 'Write', detail: 'Records created, citations rewritten to IDs. Run it again and nothing duplicates.' },
 ];
 
-const CUTOVER = [
-  { label: 'Tasks', n: 724 },
-  { label: 'Requirements', n: 439 },
-  { label: 'Findings', n: 127 },
-  { label: 'Documents', n: 122 },
-  { label: 'Decisions', n: 36 },
-  { label: 'Projects', n: 9 },
-];
+/** A dry-run report: every file accounted for, none silently dropped. */
+function ImportReport({ accent }: { accent: string }) {
+  const rows = [
+    { name: 'requirements.md', state: 'mapped', note: '42 requirements' },
+    { name: 'phases/phase-3.md', state: 'mapped', note: '1 phase, 8 tasks' },
+    { name: 'decisions/007.md', state: 'mapped', note: '1 decision' },
+    { name: 'notes/ideas.md', state: 'partial', note: 'no requirement pattern found in 2 sections' },
+    { name: 'scratch.txt', state: 'unmapped', note: 'not a planning document' },
+  ];
+  return (
+    <div role="img" aria-label="An illustrative dry-run report: five files, three mapped, one partial with its reason, one unmapped with its reason." className="flex flex-col divide-y divide-border rounded-lg border border-border bg-surface">
+      {rows.map((row) => (
+        <div key={row.name} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
+          <span
+            aria-hidden="true"
+            className={`size-2.5 shrink-0 rounded-full ${row.state === 'mapped' ? '' : row.state === 'partial' ? 'bg-warning' : 'border border-fg-faint'}`}
+            style={row.state === 'mapped' ? { backgroundColor: accent } : undefined}
+          />
+          <span className="min-w-0 flex-1 truncate font-mono text-12 text-fg">{row.name}</span>
+          <span className="font-mono text-11 tracking-label text-fg-faint uppercase">{row.state}</span>
+          <span className="w-full pl-6 text-13 text-fg-muted sm:w-auto sm:pl-0">{row.note}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
-function Build({ accent }: { accent: string }) {
-  const max = CUTOVER[0].n;
+function Bring({ accent }: { accent: string }) {
   return (
     <DeepSection
-      id="build"
+      id="bring"
       code={code(9)}
-      label="How it was built"
+      label="Bring your plan"
       title={
         <>
-          Twelve phases, <Accent>then it took over.</Accent>
+          Start from what you have, <Accent>lose nothing.</Accent>
         </>
       }
-      lede="Foreman was planned in the vault it would replace, built phase by phase against its own exit gates, and then asked to hold its own remaining work. It tracks itself as FRM."
+      lede="An existing Markdown plan comes in through the importer. It never drops a file in silence: every one is accounted for, and the dry run is the default."
     >
-      <ol className="relative flex flex-col gap-0 lg:grid lg:grid-cols-12 lg:gap-2">
-        <span aria-hidden="true" className="absolute top-2 bottom-2 left-2 w-px bg-border-field lg:top-2 lg:right-4 lg:bottom-auto lg:left-4 lg:h-px lg:w-auto" />
-        {PHASES.map((phase) => (
-          <li key={phase.n} className="relative flex gap-4 pb-5 pl-0 lg:flex-col lg:gap-3 lg:pb-0">
-            <span
-              aria-hidden="true"
-              className={`relative z-10 mt-0.5 size-4 shrink-0 rounded-full border-2 lg:mt-0 ${phase.mark ? '' : 'border-fg-faint bg-bg'}`}
-              style={phase.mark ? { backgroundColor: accent, borderColor: accent } : undefined}
-            />
-            <span className="flex flex-col gap-1">
-              <span className="font-mono text-11 text-fg-faint">P{phase.n}</span>
-              <span className="text-13 text-fg">{phase.name}</span>
-              {phase.mark && (
-                <span className="font-mono text-11 text-fg-muted">
-                  {phase.mark} · {phase.note}
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start">
+        <ol className="flex flex-col">
+          {IMPORT_STEPS.map((step, index) => (
+            <li key={step.label} className="flex flex-col">
+              <div className="flex gap-4 rounded-lg border border-border bg-surface p-5">
+                <span className="font-mono text-14 text-fg-faint">{index + 1}</span>
+                <span className="flex flex-col gap-1">
+                  <span className="text-16 font-semibold text-fg">{step.label}</span>
+                  <span className="text-14 text-fg-muted">{step.detail}</span>
                 </span>
-              )}
-            </span>
-          </li>
-        ))}
-      </ol>
-
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
-        <Figure caption="What moved in at the cutover on 20 September 2026: nine projects, and not one source file left unmapped.">
-          <div className="flex flex-col gap-4">
-            {CUTOVER.map((row) => (
-              <BarRow key={row.label} label={row.label} value={row.n} fraction={row.n / max} accent={accent} />
-            ))}
-          </div>
+              </div>
+              {index < IMPORT_STEPS.length - 1 && <FlowDown accent={accent} className="h-6" />}
+            </li>
+          ))}
+        </ol>
+        <Figure caption="What a dry run tells you, illustrated. Silence is the failure it exists to prevent.">
+          <ImportReport accent={accent} />
         </Figure>
-        <div className="grid grid-cols-2 gap-8">
-          <Stat value="0" label="files unmapped by the importer — silence is the failure it exists to prevent" />
-          <Stat value="10" label="importer bugs found at the cutover, none visible to a report that only counted files" />
-          <Stat value="107" label="end-to-end tests, and axe clean on twenty screens in both themes" />
-          <Stat value="<15ms" label="every endpoint at p95, over 210 real requirements" />
-        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
+        <Stat value="12" label="MCP tools, and not one more — a contract test holds the ceiling" />
+        <Stat value="107" label="end-to-end tests, run in a real browser" />
+        <Stat value="20" label="screens checked with axe, in light and dark" />
+        <Stat value="<15ms" label="every endpoint at p95, over 210 real requirements" />
       </div>
     </DeepSection>
   );
@@ -874,7 +834,7 @@ function Not() {
           The refusals are <Accent>requirements too.</Accent>
         </>
       }
-      lede="Each of these is recorded as a requirement asserting its absence, so none of them can quietly arrive. The one that matters most: no freeform wiki — the guardrail that stops Foreman decaying back into the vault."
+      lede="Foreman is a ledger for a plan, not a team tracker. Each of these is recorded as a requirement asserting its absence, so none can quietly arrive. The one that matters most: no freeform wiki — the guardrail that keeps it a set of records rather than another pile of notes."
       sunken
     >
       <ul className="flex flex-wrap gap-3">
@@ -905,8 +865,8 @@ export function ForemanDeepDive({ project }: { project: Project }) {
       <Attribution accent={accent} />
       <Drift accent={accent} />
       <Mcp accent={accent} />
-      <Decisions accent={accent} />
-      <Build accent={accent} />
+      <Principles accent={accent} />
+      <Bring accent={accent} />
       <Not />
     </>
   );
