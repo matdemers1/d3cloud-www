@@ -570,6 +570,106 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
+    slug: 'postroom',
+    name: 'Postroom',
+    kind: 'ecosystem',
+    role: 'Mail',
+    star: { x: 8, y: 47 },
+    relations: [
+      { to: 'auth', type: 'signs-in-with' },
+      { to: 'ui', type: 'built-on' },
+      { to: 'foreman', type: 'planned-in' },
+    ],
+    headline: 'A mail server you can understand, end to end.',
+    summary:
+      'SMTP, IMAP, calendars and contacts written from scratch, with a webmail that sorts itself and shows its working — every check that passed, every hop, and why each message landed where it did.',
+    proof: ['Every protocol written by hand', 'Sorts itself, no LLM', 'Nothing listened before the gate'],
+    tagline: 'A mail server and webmail written from scratch, that shows its working.',
+    blurb:
+      'Running your own mail usually means stitching together a mail transfer agent, an IMAP server, a spam filter and a webmail you did not write, and trusting whatever happens between them. Postroom is one server written from scratch — SMTP in and out, IMAP, calendars, contacts and filtering rules — with a webmail that sorts your mail into real folders by itself and shows its working: which checks passed, how a message travelled, and why it landed where it did.',
+    status: 'Live',
+    cta: {
+      label: 'View on GitHub',
+      href: 'https://github.com/matdemers1/d3-postroom',
+    },
+    platforms: ['Self-hosted', 'Docker', 'PostgreSQL', 'IMAP · SMTP', 'CalDAV · CardDAV'],
+    // Taken from Postroom's own web app, built from its repository and fed fictional people,
+    // companies and newsletters by a scratch harness — never the live instance.
+    screenshots: [
+      {
+        src: '/screenshots/postroom/01-inbox.webp',
+        alt: 'The inbox with the reading pane open: the sidebar sorts mail into Inbox, four folders under "Sorted for you", then Junk and Rejects; each row in Everything carries its Priority or People chip, and a letter about a garden plan is open beside the list.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/postroom/02-inbox-dark.webp',
+        alt: 'The same inbox in the dark theme.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/postroom/03-inspect.webp',
+        alt: 'The Inspect drawer over a message: the client that delivered it, through the edge, with its TLS version and the 250 reply it was sent; then why it was filed as Priority, with every stored reason and the score for each bucket; then the spam signals and the words the Bayes model weighed.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/postroom/04-health.webp',
+        alt: 'Admin › Health: no dead jobs, certificates valid for 21+ days, last night’s backup and restore drill, every daemon from the edge to the worker healthy, and SPF, DKIM and DMARC passing for the domain.',
+        width: 1440,
+        height: 900,
+      },
+      {
+        src: '/screenshots/postroom/05-inbox-phone.webp',
+        alt: 'The inbox on a phone: Everything, Priority and People as a segmented control above the messages, each with its bucket chip.',
+        width: 390,
+        height: 844,
+        compact: true,
+      },
+    ],
+    highlights: [
+      'SMTP in and out, submission, IMAP4rev1 and rev2 with CONDSTORE and QRESYNC, CalDAV, CardDAV and Sieve — every protocol and parser written in TypeScript, nothing wrapped',
+      'SPF, DKIM, DMARC and ARC checked by its own code, and every outgoing message signed with DKIM',
+      'A 250 reply only once the message is on disk and committed: killing the server straight after never loses mail, and a test holds that line',
+      'A small stateless edge forwards the mail ports home over WireGuard and holds no mail and no keys — for home networks that block port 25',
+      'Sorts itself into real IMAP folders: Priority and People from who you reply to, then Newsletters, Updates, Receipts and Notifications, with a naive Bayes model that learns from your moves. No language model, and every decision keeps its reasons',
+      'An Inspect drawer for any message, a live view of SMTP sessions, and a timeline for every delivery attempt',
+      'Tracking pixels removed, remote images held back, tracking parameters stripped from links, and HTML rendered on a separate sandboxed origin',
+      'Mail encrypted at rest, one key per message — deleting it destroys the key. Mail apps get app passwords only; the web has its own sign-in with an authenticator, or single sign-on',
+      'Nightly backups with a restore drill, a full account export, and a one-tap profile that sets up mail, calendar and contacts on an iPhone or a Mac',
+    ],
+    selfHost: {
+      intro:
+        'A learning build for one domain, written to be understood rather than to compete with a mature mail server. You need Docker, a domain you control and, if your network blocks port 25, a small VPS for the edge. No host ports are published: the web reaches the api on port 3300 through a tunnel or reverse proxy, and mail arrives over WireGuard.',
+      code: 'git clone https://github.com/matdemers1/d3-postroom.git && cd d3-postroom\ncp .env.example .env    # KEK, secrets, hostnames, WireGuard keys\nopenssl rand -base64 32\n\ndocker build -t ghcr.io/matdemers1/d3-postroom/server:local .\ndocker compose run --rm migrate\ndocker compose up -d',
+      steps: [
+        'From your own network, or with SETUP_TOKEN set, open the webmail and create the first account at /setup: a password and an authenticator.',
+        'In Admin › Setup, walk through the domain, its DKIM keys, the DNS records to publish, your first mailbox and a test message.',
+        'Provision the edge from edge/ if you need it, then connect your devices from Settings › Security & devices — an app password, or a one-tap profile for an iPhone or a Mac.',
+      ],
+      note: 'Escrow the KEK with a passphrase. It seals every stored message and DKIM key, and no backup can be read without it.',
+    },
+    privacyLine:
+      'Runs on your own machines, with no telemetry and no third-party scripts. Mail is encrypted at rest and never sent to an AI model — sorting runs on the server, from rules and a model trained on your own moves. Outbound mail goes straight to the recipient’s server, or through Amazon SES only if you switch that fallback on.',
+    // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
+    accent: '#E06AB8',
+    changelog: [
+      {
+        version: 'Unreleased',
+        date: '2026-10-02',
+        href: 'https://github.com/matdemers1/d3-postroom/blob/main/CHANGELOG.md',
+        summary: 'No tagged release yet: main is what runs, under Apache-2.0.',
+        notes: [
+          'Serving its first domain since 28 September: MX published, the edge open on ports 25, 465, 587 and 993, and outbound relayed through Amazon SES until the edge may send on port 25 itself.',
+          'Passed its own security gate before anything listened: an adversarial suite, fuzzing for every parser, Semgrep, gitleaks, an authenticated ZAP scan and an OWASP ASVS 5.0 Level 2 self-assessment — 253 requirements, no open fail.',
+          'The webmail rebuilt as a finished product: Mail, Settings and Admin as three separate places, compose attachments streamed into the encrypted store, and every screen laid out for a 390-pixel phone.',
+          'Single sign-on links to an account that already exists, and never creates one.',
+        ],
+      },
+    ],
+  },
+  {
     slug: 'ui',
     name: 'D3 UI',
     kind: 'ecosystem',

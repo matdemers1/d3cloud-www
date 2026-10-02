@@ -1,4 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { themeBootScript } from '@d3cloud/ui';
 import { LEGAL_DOCS } from './content/legal';
@@ -15,6 +17,8 @@ import { HEAD_END, HEAD_START, renderHead, withHead } from './head';
 import { allRoutes, resolveRoute } from './routes';
 import worker, { SECURITY_HEADERS, type Env } from './worker';
 import { sitemap } from '../scripts/generate-static';
+import { ProductMark } from './components/ProductMark';
+import { DEEP_DIVES } from './pages/deep';
 
 const INDEX_HTML = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
@@ -302,5 +306,63 @@ describe('Shipyard launch (DI-T-018)', () => {
     expect(BUILD_LOG.some((e) => e.slug === 'shipyard' && e.text.includes('0.1.0'))).toBe(true);
     expect(shipyard?.selfHost?.code).toContain('docker compose -p shipyard up -d');
     expect(shipyard?.screenshots?.some((s) => s.width === 390 && s.height === 844)).toBe(true);
+  });
+});
+
+describe('Postroom launch (DI-T-9.1)', () => {
+  const postroom = PROJECTS.find((p) => p.slug === 'postroom');
+
+  it('is a live ecosystem product with its own page, head and sitemap entry', () => {
+    expect(postroom).toMatchObject({ kind: 'ecosystem', status: 'Live', accent: '#E06AB8' });
+    expect(postroom?.cta?.href).toBe('https://github.com/matdemers1/d3-postroom');
+    const route = resolveRoute('/postroom');
+    expect(route?.meta.kind).toBe('project');
+    expect(route?.meta.title).toBe('Postroom — D3 Cloud');
+    const head = renderHead(route!.meta);
+    expect(head).toContain('<link rel="canonical" href="https://d3cloud.io/postroom" />');
+    expect(head).toContain('<meta property="og:title" content="Postroom — D3 Cloud" />');
+    expect(sitemap()).toContain('<loc>https://d3cloud.io/postroom</loc>');
+    expect(resolveRoute('/postroom/privacy')).toBeNull();
+  });
+
+  it('serves /postroom from the Worker with its own head', async () => {
+    const env = {
+      ASSETS: { fetch: async () => new Response(INDEX_HTML, { headers: { 'Content-Type': 'text/html' } }) },
+    } as unknown as Env;
+    const res = await worker.fetch(new Request('https://d3cloud.io/postroom'), env);
+    expect(res.status).toBe(200);
+    expect(await res.text()).toContain('<title>Postroom — D3 Cloud</title>');
+  });
+
+  it('declares its place in the constellation, and logs the launch', () => {
+    const lines = connectionsOf('postroom').map((c) => c.text);
+    expect(lines).toEqual(
+      expect.arrayContaining(['Offers Sign in with D3 Auth', 'Built on D3 UI', 'Planned and tracked in Foreman']),
+    );
+    expect(BUILD_LOG[0]).toMatchObject({ date: '2026-10-02', slug: 'postroom' });
+    expect(postroom?.screenshots?.some((s) => s.width === 390 && s.height === 844)).toBe(true);
+  });
+
+  it('keeps its accent apart from every other product’s', () => {
+    const others = PROJECTS.filter((p) => p.slug !== 'postroom').map((p) => p.accent.toUpperCase());
+    expect(others).not.toContain(postroom?.accent.toUpperCase());
+  });
+
+  it('links only to its repository, never to a running instance', () => {
+    const text = JSON.stringify(postroom);
+    expect(text).not.toMatch(/mail\.d3cloud\.io|d3cloud\.io\/mail/);
+  });
+
+  it('draws its own mark: the ring, ink lines, and exactly one star in its accent (DI-REQ-040)', () => {
+    const svg = renderToStaticMarkup(createElement(ProductMark, { slug: 'postroom', accent: '#E06AB8', size: 32 }));
+    expect(svg).toContain('<circle cx="32" cy="32" r="26"');
+    expect(svg).toContain('M17 22 L32 34.5 L47 22');
+    expect(svg.match(/fill:#E06AB8/g)).toHaveLength(1);
+    // A product without a mark of its own falls back to the planisphere instead.
+    expect(renderToStaticMarkup(createElement(ProductMark, { slug: 'qr', accent: '#A8E6CF' }))).not.toContain('M17 22');
+  });
+
+  it('carries a deep dive, loaded as its own chunk (DI-REQ-039)', () => {
+    expect(DEEP_DIVES.postroom).toBeDefined();
   });
 });

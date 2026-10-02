@@ -103,6 +103,21 @@ const MARKS: Record<string, MarkShape> = {
     ),
     star: { x: 37, y: 21 },
   },
+  // Chosen over Postmark (a letter with a wavy cancellation, too busy at 18px) and Sorted (a rack
+  // of pigeonholes, which read as a window): the envelope reads as mail at every size. Joints sit
+  // where the flap meets the body; the lit star is where the flap points.
+  postroom: {
+    concept: 'Envelope',
+    lines: (ink) => (
+      <>
+        <path d="M17 22 H47 V44 H17 Z" {...stroke(ink)} />
+        <path d="M17 22 L32 34.5 L47 22" {...stroke(ink)} />
+        {joint(17, 22, ink)}
+        {joint(47, 22, ink)}
+      </>
+    ),
+    star: { x: 32, y: 34.5 },
+  },
 };
 
 /**

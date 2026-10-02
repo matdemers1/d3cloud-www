@@ -7,7 +7,7 @@ import type { Project } from '../../content/projects';
  * and the shared closing sections around it. A product without one keeps the
  * standard page.
  *
- * Each is its own chunk, loaded only on its page: seven of them in the main
+ * Each is its own chunk, loaded only on its page: eight of them in the main
  * bundle would break the 150kb budget on their own.
  */
 type DeepDive = LazyExoticComponent<ComponentType<{ project: Project }>>;
@@ -17,6 +17,7 @@ export const DEEP_DIVES: Partial<Record<string, DeepDive>> = {
   bindery: lazy(() => import('./Bindery').then((m) => ({ default: m.BinderyDeepDive }))),
   clearwhen: lazy(() => import('./Clearwhen').then((m) => ({ default: m.ClearwhenDeepDive }))),
   foreman: lazy(() => import('./Foreman').then((m) => ({ default: m.ForemanDeepDive }))),
+  postroom: lazy(() => import('./Postroom').then((m) => ({ default: m.PostroomDeepDive }))),
   qr: lazy(() => import('./Qr').then((m) => ({ default: m.QrDeepDive }))),
   shipyard: lazy(() => import('./Shipyard').then((m) => ({ default: m.ShipyardDeepDive }))),
   ui: lazy(() => import('./Ui').then((m) => ({ default: m.UiDeepDive }))),

@@ -76,6 +76,8 @@ export interface LogEntry {
 }
 
 export const BUILD_LOG: LogEntry[] = [
+  { date: '2026-10-02', slug: 'postroom', text: 'Postroom, a mail server written from scratch, joins the constellation' },
+  { date: '2026-09-28', slug: 'postroom', text: 'Postroom starts receiving mail, after passing its own security gate' },
   { date: '2026-09-25', slug: 'shipyard', text: 'Shipyard 0.1.0, its first release — out of the workshop and into the constellation' },
   { date: '2026-09-25', slug: 'shipyard', text: 'Shipyard starts deploying the D3 Cloud apps on the home server — itself included' },
   { date: '2026-09-24', slug: 'shipyard', text: 'Shipyard is planned, built to its first phase and published under Apache-2.0 in a day' },

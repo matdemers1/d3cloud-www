@@ -289,7 +289,7 @@ function CompactCard({ project }: { project: Project }) {
 
 function Ecosystem() {
   const tools = ecosystemProjects();
-  const featured = tools.filter((p) => ['bindery', 'foreman', 'shipyard'].includes(p.slug));
+  const featured = tools.filter((p) => ['bindery', 'foreman', 'shipyard', 'postroom'].includes(p.slug));
   const rest = tools.filter((p) => !featured.includes(p));
   return (
     <section aria-labelledby="work" className={`${WRAP} flex flex-col gap-20 py-24 lg:gap-24 lg:py-32`}>
