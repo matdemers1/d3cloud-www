@@ -76,6 +76,7 @@ export interface LogEntry {
 }
 
 export const BUILD_LOG: LogEntry[] = [
+  { date: '2026-10-04', slug: 'floorspec-app', text: 'Floorspec Core Draft 0.1 is published, with a reference engine passing all 281 conformance tests' },
   { date: '2026-10-02', slug: 'postroom', text: 'Postroom, a mail server written from scratch, joins the constellation' },
   { date: '2026-09-28', slug: 'postroom', text: 'Postroom starts receiving mail, after passing its own security gate' },
   { date: '2026-09-25', slug: 'shipyard', text: 'Shipyard 0.1.0, its first release — out of the workshop and into the constellation' },
@@ -159,6 +160,7 @@ export const WORKSHOP: WorkshopItem[] = [
       'For people who are not architects and want to design their own home, with the tools they already use — Claude Code first.',
     features: [
       { text: 'Floorspec Core Draft 0.1, published at d3cloud.io/floorspec', built: true },
+      { text: 'A reference engine with exact geometry, a validator and a CLI, passing every conformance test', built: true },
       { text: 'Draw walls and rooms in 2D', built: false },
       { text: 'Claude edits over MCP, as reviewable changesets you accept or reject', built: false },
       { text: 'Every edit validated by the exact engine, with coded diagnostics and fixes', built: false },
@@ -167,8 +169,8 @@ export const WORKSHOP: WorkshopItem[] = [
       { text: 'Advisory code findings with citations, which never say “compliant”', built: false },
       { text: 'A 3D walkthrough with materials, textures and furniture', built: false },
       { text: 'Export to IFC, glTF, PDF and DXF', built: false },
-      { text: 'Its own login and Sign in with D3 Auth, side by side', built: false },
-      { text: 'Self-hosted with Docker Compose, with no telemetry', built: false },
+      { text: 'Its own login and Sign in with D3 Auth, side by side', built: true },
+      { text: 'Self-hosted with Docker Compose, with no telemetry', built: true },
     ],
     principles: [
       'The standard comes first: D3 Floorspec implements Floorspec, and does not get to redefine it.',

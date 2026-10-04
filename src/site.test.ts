@@ -340,7 +340,7 @@ describe('Postroom launch (DI-T-9.1)', () => {
     expect(lines).toEqual(
       expect.arrayContaining(['Offers Sign in with D3 Auth', 'Built on D3 UI', 'Planned and tracked in Foreman']),
     );
-    expect(BUILD_LOG[0]).toMatchObject({ date: '2026-10-02', slug: 'postroom' });
+    expect(BUILD_LOG).toContainEqual(expect.objectContaining({ date: '2026-10-02', slug: 'postroom' }));
     expect(postroom?.screenshots?.some((s) => s.width === 390 && s.height === 844)).toBe(true);
   });
 
@@ -400,9 +400,12 @@ describe('D3 Floorspec on the bench (DI-T-10.3)', () => {
     expect(sitemap()).toContain('<loc>https://d3cloud.io/floorspec/app</loc>');
   });
 
-  it('marks every feature built or planned, with only the published draft built for now', () => {
+  it('marks every feature built or planned, built only where FLR-P-0 and FLR-P-1 delivered it', () => {
     expect(app.features.filter((f) => f.built).map((f) => f.text)).toEqual([
       'Floorspec Core Draft 0.1, published at d3cloud.io/floorspec',
+      'A reference engine with exact geometry, a validator and a CLI, passing every conformance test',
+      'Its own login and Sign in with D3 Auth, side by side',
+      'Self-hosted with Docker Compose, with no telemetry',
     ]);
     expect(app.features.length).toBeGreaterThan(5);
   });
