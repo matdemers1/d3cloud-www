@@ -366,3 +366,23 @@ describe('Postroom launch (DI-T-9.1)', () => {
     expect(DEEP_DIVES.postroom).toBeDefined();
   });
 });
+
+describe('Floorspec marks (DI-T-10.1)', () => {
+  it('draws Junction and Door swing in the ring family, each with exactly one chartreuse star', () => {
+    const draw = (slug: string, size: number) =>
+      renderToStaticMarkup(createElement(ProductMark, { slug, accent: '#B5D84A', size }));
+    for (const size of [18, 32, 96]) {
+      const standard = draw('floorspec', size);
+      expect(standard).toContain('<circle cx="32" cy="32" r="26"');
+      expect(standard).toContain('M30 21 V43 M30 32 H45');
+      expect(standard).toContain('<circle cx="30" cy="32"');
+      expect(standard.match(/fill:#B5D84A/g)).toHaveLength(1);
+
+      const app = draw('floorspec-app', size);
+      expect(app).toContain('<circle cx="32" cy="32" r="26"');
+      expect(app).toContain('M24 29 A14 14 0 0 1 38 43');
+      expect(app).toContain('<circle cx="24" cy="43"');
+      expect(app.match(/fill:#B5D84A/g)).toHaveLength(1);
+    }
+  });
+});

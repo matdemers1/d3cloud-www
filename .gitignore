@@ -38,3 +38,6 @@ coverage/
 
 # Misc
 *.tsbuildinfo
+
+# Scratch output of scripts/export-floorspec-icons.ts (copied into d3-floorspec by hand)
+scripts/out/

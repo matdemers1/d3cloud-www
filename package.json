@@ -18,7 +18,8 @@
     "lint": "eslint . && d3-check-usage src",
     "format": "prettier --write .",
     "deploy": "wrangler deploy",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "icons:floorspec": "tsx --tsconfig tsconfig.app.json scripts/export-floorspec-icons.ts"
   },
   "dependencies": {
     "@d3cloud/ui": "https://github.com/matdemers1/d3-design-system/releases/download/v1.2.2/d3cloud-ui-1.2.2.tgz",

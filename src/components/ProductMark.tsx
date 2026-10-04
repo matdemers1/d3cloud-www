@@ -118,6 +118,41 @@ const MARKS: Record<string, MarkShape> = {
     ),
     star: { x: 32, y: 34.5 },
   },
+  // The standard: a three-room plan reduced to its wall graph, because in Floorspec the graph is the
+  // truth and rooms are derived from it. Joints are where walls meet the outer wall; the lit star is
+  // the three-way junction where the interior walls meet — the kind of point the spec computes exactly.
+  floorspec: {
+    concept: 'Junction',
+    lines: (ink) => (
+      <>
+        <path d="M19 21 H45 V43 H19 Z" {...stroke(ink)} />
+        <path d="M30 21 V43 M30 32 H45" {...stroke(ink)} />
+        {joint(30, 43, ink)}
+        {joint(45, 32, ink)}
+      </>
+    ),
+    star: { x: 30, y: 32 },
+  },
+  // The app: the same plan language, now something you edit — a room with a door in its south wall,
+  // its swing dashed like a proposal. The lit star is the hinge, the point everything turns on.
+  'floorspec-app': {
+    concept: 'Door swing',
+    lines: (ink) => (
+      <>
+        <path d="M24 43 H19 V21 H45 V43 H38" {...stroke(ink)} />
+        <path d="M24 43 V29" {...stroke(ink)} />
+        <path
+          d="M24 29 A14 14 0 0 1 38 43"
+          {...stroke({ ...ink, w: ink.w * 0.75 })}
+          strokeDasharray="2.5 3.5"
+          opacity="0.8"
+        />
+        {joint(19, 21, ink)}
+        {joint(45, 43, ink)}
+      </>
+    ),
+    star: { x: 24, y: 43 },
+  },
 };
 
 /**
