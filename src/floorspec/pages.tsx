@@ -49,7 +49,7 @@ function DraftBanner({ compact = false }: { compact?: boolean }) {
       </p>
       <p className={`${compact ? 'text-14' : 'text-16'} text-fg`}>
         This is a working draft. Any later 0.x draft may change any part of it, and Floorspec stays
-        0.x until a real house is fully modelled in it and every MUST has a conformance test.
+        0.x until a real house has been fully modelled in it.
       </p>
     </div>
   );

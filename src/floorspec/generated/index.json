@@ -101,6 +101,6 @@
  ],
  "statements": 98,
  "mandatory": 90,
- "covered": 0,
- "tests": 0
+ "covered": 90,
+ "tests": 281
 }
