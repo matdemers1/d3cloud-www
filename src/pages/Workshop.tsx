@@ -2,9 +2,11 @@ import { CONTACT_EMAIL, projectBySlug } from "../content/projects";
 import {
   WORKSHOP,
   describeRelation,
+  workshopPath,
   type WorkshopItem,
 } from "../content/ecosystem";
 import { WORKSHOP_ART } from "../components/WorkshopArt";
+import { ProductMark } from "../components/ProductMark";
 import { Link, useNavigateOnClick } from "../router";
 import {
   Band,
@@ -48,7 +50,7 @@ export function WorkshopPage({ item }: { item: WorkshopItem }) {
   const built = item.features.filter((f) => f.built);
   const planned = item.features.filter((f) => !f.built);
   const next = WORKSHOP[(WORKSHOP.indexOf(item) + 1) % WORKSHOP.length];
-  const goNext = useNavigateOnClick(`/${next.slug}`);
+  const goNext = useNavigateOnClick(workshopPath(next));
   const Art = WORKSHOP_ART[item.slug];
 
   return (
@@ -57,7 +59,15 @@ export function WorkshopPage({ item }: { item: WorkshopItem }) {
         aria-labelledby="workshop-title"
         className="relative overflow-hidden"
       >
-        <div className={`${WRAP} flex flex-col gap-7 pt-16 pb-14 lg:pt-24`}>
+        <div className={`${WRAP} relative flex flex-col gap-7 pt-16 pb-14 lg:pt-24`}>
+          {/* Its mark (DI-REQ-040), placed as a product page places one. */}
+          <ProductMark
+            slug={item.slug}
+            accent={item.accent}
+            size={160}
+            halo
+            className="size-18 animate-rise text-fg lg:absolute lg:top-24 lg:right-16 lg:size-60 xl:right-24"
+          />
           <p className="flex animate-rise flex-wrap items-center gap-2.5 font-mono text-12 tracking-label text-fg-muted uppercase">
             <Colour item={item} />
             In the workshop · {item.role}
@@ -83,8 +93,8 @@ export function WorkshopPage({ item }: { item: WorkshopItem }) {
             <PrimaryButton href={item.cta.href}>
               {item.cta.label} ↗
             </PrimaryButton>
-            <SecondaryButton href="/#log">
-              Everything on the bench
+            <SecondaryButton href={item.secondary?.href ?? "/#log"}>
+              {item.secondary?.label ?? "Everything on the bench"}
             </SecondaryButton>
           </div>
         </div>
@@ -202,7 +212,7 @@ export function WorkshopPage({ item }: { item: WorkshopItem }) {
         >
           {next !== item ? (
             <a
-              href={`/${next.slug}`}
+              href={workshopPath(next)}
               onClick={goNext}
               className="flex items-center gap-4 rounded-sm font-display text-display-sm text-fg hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >

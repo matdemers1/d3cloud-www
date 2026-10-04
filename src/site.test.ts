@@ -12,6 +12,7 @@ import {
   ecosystemProjects,
   edges,
   fixProjects,
+  workshopPath,
 } from './content/ecosystem';
 import { HEAD_END, HEAD_START, renderHead, withHead } from './head';
 import { allRoutes, resolveRoute } from './routes';
@@ -224,10 +225,10 @@ describe('ecosystem', () => {
 describe('workshop', () => {
   it('gives every project on the bench its own page, with its own head (DI-REQ-037)', () => {
     for (const item of WORKSHOP) {
-      const route = resolveRoute(`/${item.slug}`);
+      const route = resolveRoute(workshopPath(item));
       expect(route?.meta.kind).toBe('workshop');
       expect(route?.meta.title).toContain(item.name);
-      expect(allRoutes().some((r) => r.path === `/${item.slug}`)).toBe(true);
+      expect(allRoutes().some((r) => r.path === workshopPath(item))).toBe(true);
       expect(PROJECTS.some((p) => p.slug === item.slug)).toBe(false);
     }
   });
@@ -383,6 +384,43 @@ describe('Floorspec marks (DI-T-10.1)', () => {
       expect(app).toContain('M24 29 A14 14 0 0 1 38 43');
       expect(app).toContain('<circle cx="24" cy="43"');
       expect(app.match(/fill:#B5D84A/g)).toHaveLength(1);
+    }
+  });
+});
+
+describe('D3 Floorspec on the bench (DI-T-10.3)', () => {
+  const app = WORKSHOP.find((w) => w.slug === 'floorspec-app')!;
+
+  it('has a workshop page at /floorspec/app — /floorspec is the standard — and not at /floorspec-app', () => {
+    const route = resolveRoute('/floorspec/app');
+    expect(route?.meta).toMatchObject({ kind: 'workshop', slug: 'floorspec-app', path: '/floorspec/app' });
+    expect(route?.meta.title).toBe('D3 Floorspec — D3 Cloud');
+    expect(resolveRoute('/floorspec-app')).toBeNull();
+    expect(resolveRoute('/floorspec')?.meta.kind).toBe('floorspec');
+    expect(sitemap()).toContain('<loc>https://d3cloud.io/floorspec/app</loc>');
+  });
+
+  it('marks every feature built or planned, with only the published draft built for now', () => {
+    expect(app.features.filter((f) => f.built).map((f) => f.text)).toEqual([
+      'Floorspec Core Draft 0.1, published at d3cloud.io/floorspec',
+    ]);
+    expect(app.features.length).toBeGreaterThan(5);
+  });
+
+  it('links to its repository and the standard, never to the invite-only instance', () => {
+    expect(app.cta.href).toBe('https://github.com/matdemers1/d3-floorspec');
+    expect(app.secondary?.href).toBe('/floorspec');
+    expect(JSON.stringify(app)).not.toMatch(/floorspec\.d3cloud\.io/);
+    expect(app.relations).toEqual([
+      { to: 'auth', type: 'signs-in-with' },
+      { to: 'ui', type: 'built-on' },
+      { to: 'foreman', type: 'planned-in' },
+    ]);
+  });
+
+  it('keeps its star off every other star', () => {
+    for (const project of PROJECTS) {
+      expect(Math.hypot(project.star.x - app.star.x, project.star.y - app.star.y)).toBeGreaterThan(8);
     }
   });
 });
