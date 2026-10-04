@@ -18,7 +18,9 @@
     "lint": "eslint . && d3-check-usage src",
     "format": "prettier --write .",
     "deploy": "wrangler deploy",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "sync:floorspec": "tsx scripts/sync-floorspec.ts",
+    "icons:floorspec": "tsx --tsconfig tsconfig.app.json scripts/export-floorspec-icons.ts"
   },
   "dependencies": {
     "@d3cloud/ui": "https://github.com/matdemers1/d3-design-system/releases/download/v1.2.2/d3cloud-ui-1.2.2.tgz",
@@ -40,6 +42,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "marked": "^18.0.14",
     "prettier": "^3.4.2",
     "satori": "^0.33.5",
     "tailwindcss": "^4.1.18",

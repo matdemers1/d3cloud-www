@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { Suspense, lazy, useEffect, type ReactNode } from 'react';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { ProjectPage } from './pages/Project';
@@ -9,6 +9,16 @@ import { LEGAL_DOCS } from './content/legal';
 import { projectBySlug, type Project } from './content/projects';
 import { NOT_FOUND_TITLE, resolveRoute } from './routes';
 import { Link, useRouter } from './router';
+import { FLOORSPEC } from './floorspec/spec';
+
+// The Floorspec standard's pages are one chunk of their own, loaded only when one is visited.
+const floorspecPages = () => import('./floorspec/pages');
+const StandardPage = lazy(() => floorspecPages().then((m) => ({ default: m.StandardPage })));
+const ChapterPage = lazy(() => floorspecPages().then((m) => ({ default: m.ChapterPage })));
+const CoveragePage = lazy(() => floorspecPages().then((m) => ({ default: m.CoveragePage })));
+
+/** Nothing to show while the chunk loads; the header is already on screen. */
+const Lazy = ({ children }: { children: ReactNode }) => <Suspense fallback={null}>{children}</Suspense>;
 
 /** Reading pages — legal text, support, not found — keep a readable measure. */
 function Narrow({ children }: { children: ReactNode }) {
@@ -42,6 +52,18 @@ function resolve(path: string): {
   if (!route) return { view: <Narrow><NotFound /></Narrow>, title: NOT_FOUND_TITLE };
 
   const { meta } = route;
+  const canonicalPath = route.redirect ? meta.path : undefined;
+  if (meta.kind === 'floorspec' || meta.kind === 'floorspec-chapter' || meta.kind === 'floorspec-coverage') {
+    const view =
+      meta.kind === 'floorspec' ? (
+        <StandardPage />
+      ) : meta.kind === 'floorspec-chapter' ? (
+        <ChapterPage key={meta.doc} slug={meta.doc!} />
+      ) : (
+        <CoveragePage />
+      );
+    return { view: <Lazy>{view}</Lazy>, title: meta.title, canonical: canonicalPath, project: FLOORSPEC };
+  }
   if (meta.kind === 'workshop') {
     const item = workshopBySlug(meta.slug!)!;
     return {

@@ -76,6 +76,7 @@ export interface LogEntry {
 }
 
 export const BUILD_LOG: LogEntry[] = [
+  { date: '2026-10-04', slug: 'floorspec-app', text: 'Floorspec Core Draft 0.1 is published, with a reference engine passing all 281 conformance tests' },
   { date: '2026-10-02', slug: 'postroom', text: 'Postroom, a mail server written from scratch, joins the constellation' },
   { date: '2026-09-28', slug: 'postroom', text: 'Postroom starts receiving mail, after passing its own security gate' },
   { date: '2026-09-25', slug: 'shipyard', text: 'Shipyard 0.1.0, its first release — out of the workshop and into the constellation' },
@@ -104,6 +105,11 @@ export interface WorkshopFeature {
 
 export interface WorkshopItem {
   slug: string;
+  /**
+   * Where its page lives, when not at `/<slug>` — D3 Floorspec's is /floorspec/app, because
+   * /floorspec is the standard it implements (FLR-ADR-018).
+   */
+  path?: string;
   name: string;
   /** One or two words: Messages, Council game. */
   role: string;
@@ -125,6 +131,8 @@ export interface WorkshopItem {
   /** What it already connects to, declared the same way a product's are. */
   relations: Relation[];
   cta: { label: string; href: string };
+  /** The hero's second button; "Everything on the bench" when absent. */
+  secondary?: { label: string; href: string };
   accent: string;
   /** A screenshot of what is live — or, with none to show, a drawing (WORKSHOP_ART). */
   screenshot?: Screenshot;
@@ -133,7 +141,62 @@ export interface WorkshopItem {
   near: string;
 }
 
-/** Empty since Shipyard launched on 2026-09-25; the next project on the bench goes here. */
-export const WORKSHOP: WorkshopItem[] = [];
+export const WORKSHOP: WorkshopItem[] = [
+  {
+    slug: 'floorspec-app',
+    // /floorspec is the standard it implements (FLR-ADR-018).
+    path: '/floorspec/app',
+    name: 'D3 Floorspec',
+    role: 'House design',
+    stage: 'Being built — Phase 0 and 1',
+    stageNote:
+      'The standard’s first draft, Floorspec Core 0.1, is published, and the reference engine is being built against it. The app’s foundation — sign-in, projects, export — is being deployed. There is nothing to try yet.',
+    line: 'Design a house with Claude — every edit validated, attributed and yours to accept.',
+    tagline: 'Design a house with Claude. Every edit checked, and yours to accept.',
+    quote:
+      'I’m not an architect, but I have an itch to design a home and I want to use the tools that I’m most aware of, like Claude Code, to help me along that process.',
+    why: 'Floor plans live in drawings and in files only one program can read, so nothing can check a change before it lands. D3 Floorspec keeps the house in an open, exact document — Floorspec — and treats an edit the way code review treats a commit: Claude proposes it, an exact engine validates it, and you accept or reject it.',
+    audience:
+      'For people who are not architects and want to design their own home, with the tools they already use — Claude Code first.',
+    features: [
+      { text: 'Floorspec Core Draft 0.1, published at d3cloud.io/floorspec', built: true },
+      { text: 'A reference engine with exact geometry, a validator and a CLI, passing every conformance test', built: true },
+      { text: 'Draw walls and rooms in 2D', built: false },
+      { text: 'Claude edits over MCP, as reviewable changesets you accept or reject', built: false },
+      { text: 'Every edit validated by the exact engine, with coded diagnostics and fixes', built: false },
+      { text: 'From a program of rooms to a bubble diagram to layout candidates', built: false },
+      { text: 'Building systems — electrical, plumbing, mechanical — as devices on walls', built: false },
+      { text: 'Advisory code findings with citations, which never say “compliant”', built: false },
+      { text: 'A 3D walkthrough with materials, textures and furniture', built: false },
+      { text: 'Export to IFC, glTF, PDF and DXF', built: false },
+      { text: 'Its own login and Sign in with D3 Auth, side by side', built: true },
+      { text: 'Self-hosted with Docker Compose, with no telemetry', built: true },
+    ],
+    principles: [
+      'The standard comes first: D3 Floorspec implements Floorspec, and does not get to redefine it.',
+      'Claude proposes and you decide. No edit lands in the house without your say.',
+      'Exact, integer geometry: the engine and the conformance suite agree to the base unit, with no tolerance.',
+      'Code findings are advice with citations. They are not a plan review; the authority having jurisdiction decides.',
+      'Self-hosted, open source, and no telemetry.',
+    ],
+    platforms: ['Self-hosted', 'Web', 'Docker Compose', 'MCP', 'Apache-2.0'],
+    relations: [
+      { to: 'auth', type: 'signs-in-with' },
+      { to: 'ui', type: 'built-on' },
+      { to: 'foreman', type: 'planned-in' },
+    ],
+    // Its repository, not the instance: production is invite-only, and the site
+    // links only to what a stranger can use today.
+    cta: { label: 'View on GitHub', href: 'https://github.com/matdemers1/d3-floorspec' },
+    secondary: { label: 'Read the standard', href: '/floorspec' },
+    // d3-allow: a project's own identity colour (chartreuse, DI-T-10.1), used only as its decorative mark.
+    accent: '#B5D84A',
+    star: { x: 62, y: 11 },
+    near: 'foreman',
+  },
+];
 
 export const workshopBySlug = (slug: string) => WORKSHOP.find((item) => item.slug === slug);
+
+/** A workshop page's address. */
+export const workshopPath = (item: Pick<WorkshopItem, 'slug' | 'path'>) => item.path ?? `/${item.slug}`;

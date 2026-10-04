@@ -12,6 +12,7 @@ import {
   ecosystemProjects,
   edges,
   fixProjects,
+  workshopPath,
 } from './content/ecosystem';
 import { HEAD_END, HEAD_START, renderHead, withHead } from './head';
 import { allRoutes, resolveRoute } from './routes';
@@ -224,10 +225,10 @@ describe('ecosystem', () => {
 describe('workshop', () => {
   it('gives every project on the bench its own page, with its own head (DI-REQ-037)', () => {
     for (const item of WORKSHOP) {
-      const route = resolveRoute(`/${item.slug}`);
+      const route = resolveRoute(workshopPath(item));
       expect(route?.meta.kind).toBe('workshop');
       expect(route?.meta.title).toContain(item.name);
-      expect(allRoutes().some((r) => r.path === `/${item.slug}`)).toBe(true);
+      expect(allRoutes().some((r) => r.path === workshopPath(item))).toBe(true);
       expect(PROJECTS.some((p) => p.slug === item.slug)).toBe(false);
     }
   });
@@ -339,7 +340,7 @@ describe('Postroom launch (DI-T-9.1)', () => {
     expect(lines).toEqual(
       expect.arrayContaining(['Offers Sign in with D3 Auth', 'Built on D3 UI', 'Planned and tracked in Foreman']),
     );
-    expect(BUILD_LOG[0]).toMatchObject({ date: '2026-10-02', slug: 'postroom' });
+    expect(BUILD_LOG).toContainEqual(expect.objectContaining({ date: '2026-10-02', slug: 'postroom' }));
     expect(postroom?.screenshots?.some((s) => s.width === 390 && s.height === 844)).toBe(true);
   });
 
@@ -364,5 +365,65 @@ describe('Postroom launch (DI-T-9.1)', () => {
 
   it('carries a deep dive, loaded as its own chunk (DI-REQ-039)', () => {
     expect(DEEP_DIVES.postroom).toBeDefined();
+  });
+});
+
+describe('Floorspec marks (DI-T-10.1)', () => {
+  it('draws Junction and Door swing in the ring family, each with exactly one chartreuse star', () => {
+    const draw = (slug: string, size: number) =>
+      renderToStaticMarkup(createElement(ProductMark, { slug, accent: '#B5D84A', size }));
+    for (const size of [18, 32, 96]) {
+      const standard = draw('floorspec', size);
+      expect(standard).toContain('<circle cx="32" cy="32" r="26"');
+      expect(standard).toContain('M30 21 V43 M30 32 H45');
+      expect(standard).toContain('<circle cx="30" cy="32"');
+      expect(standard.match(/fill:#B5D84A/g)).toHaveLength(1);
+
+      const app = draw('floorspec-app', size);
+      expect(app).toContain('<circle cx="32" cy="32" r="26"');
+      expect(app).toContain('M24 29 A14 14 0 0 1 38 43');
+      expect(app).toContain('<circle cx="24" cy="43"');
+      expect(app.match(/fill:#B5D84A/g)).toHaveLength(1);
+    }
+  });
+});
+
+describe('D3 Floorspec on the bench (DI-T-10.3)', () => {
+  const app = WORKSHOP.find((w) => w.slug === 'floorspec-app')!;
+
+  it('has a workshop page at /floorspec/app — /floorspec is the standard — and not at /floorspec-app', () => {
+    const route = resolveRoute('/floorspec/app');
+    expect(route?.meta).toMatchObject({ kind: 'workshop', slug: 'floorspec-app', path: '/floorspec/app' });
+    expect(route?.meta.title).toBe('D3 Floorspec — D3 Cloud');
+    expect(resolveRoute('/floorspec-app')).toBeNull();
+    expect(resolveRoute('/floorspec')?.meta.kind).toBe('floorspec');
+    expect(sitemap()).toContain('<loc>https://d3cloud.io/floorspec/app</loc>');
+  });
+
+  it('marks every feature built or planned, built only where FLR-P-0 and FLR-P-1 delivered it', () => {
+    expect(app.features.filter((f) => f.built).map((f) => f.text)).toEqual([
+      'Floorspec Core Draft 0.1, published at d3cloud.io/floorspec',
+      'A reference engine with exact geometry, a validator and a CLI, passing every conformance test',
+      'Its own login and Sign in with D3 Auth, side by side',
+      'Self-hosted with Docker Compose, with no telemetry',
+    ]);
+    expect(app.features.length).toBeGreaterThan(5);
+  });
+
+  it('links to its repository and the standard, never to the invite-only instance', () => {
+    expect(app.cta.href).toBe('https://github.com/matdemers1/d3-floorspec');
+    expect(app.secondary?.href).toBe('/floorspec');
+    expect(JSON.stringify(app)).not.toMatch(/floorspec\.d3cloud\.io/);
+    expect(app.relations).toEqual([
+      { to: 'auth', type: 'signs-in-with' },
+      { to: 'ui', type: 'built-on' },
+      { to: 'foreman', type: 'planned-in' },
+    ]);
+  });
+
+  it('keeps its star off every other star', () => {
+    for (const project of PROJECTS) {
+      expect(Math.hypot(project.star.x - app.star.x, project.star.y - app.star.y)).toBeGreaterThan(8);
+    }
   });
 });

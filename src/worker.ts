@@ -41,6 +41,25 @@ function secure(response: Response): Response {
   });
 }
 
+/**
+ * Floorspec's JSON Schemas (FLR-ADR-018, DI-REQ-042). A published schema URL never changes — the
+ * sync refuses to alter one, and a test holds public/ to the record — so any origin may fetch
+ * them (validators and editors load them cross-origin) and any cache may keep them for a year.
+ */
+// Not exported: a Worker module's exports must be handlers, and the runtime refuses a string.
+const SCHEMA_PREFIX = '/floorspec/schema/';
+export const SCHEMA_HEADERS: Record<string, string> = {
+  'Access-Control-Allow-Origin': '*',
+  'Cache-Control': 'public, max-age=31536000, immutable',
+};
+
+function schema(response: Response): Response {
+  if (!response.ok && response.status !== 304) return response;
+  const headers = new Headers(response.headers);
+  for (const [key, value] of Object.entries(SCHEMA_HEADERS)) headers.set(key, value);
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 /** A request for a file (has an extension) rather than a page. */
 const isAsset = (pathname: string) => /\.[a-z0-9]+$/i.test(pathname);
 
@@ -62,7 +81,8 @@ export default {
     }
 
     if (isAsset(url.pathname)) {
-      return secure(await env.ASSETS.fetch(request));
+      const file = await env.ASSETS.fetch(request);
+      return secure(url.pathname.startsWith(SCHEMA_PREFIX) ? schema(file) : file);
     }
 
     const route = resolveRoute(url.pathname);

@@ -1,0 +1,18 @@
+{
+ "floorspec/schema/core/0.1/asset.schema.json": "4ed11fac5e67d319a8f2ae001d5ee548d7b8c30f90f64be7e133ce9fd33454ca",
+ "floorspec/schema/core/0.1/building.schema.json": "c0456f57da7b5ff09614252fb834f088957b3651da05ec94cefe96f9ce13a536",
+ "floorspec/schema/core/0.1/defs.schema.json": "395a66a29f51fee8b1ebae44c00a60e3c8e8ca06bfc52a3a7cc74ad312c573b9",
+ "floorspec/schema/core/0.1/floorspec.schema.json": "3c52a3a447f71d8f247b59f2a85835d38a1d516ab6473ec5a8486ebf2452a000",
+ "floorspec/schema/core/0.1/junction.schema.json": "2bdfff5902c34f984ec661fe0eb5e869c0da84b9c258e3e4a83eb25e070d5422",
+ "floorspec/schema/core/0.1/layer.schema.json": "d67630f773a5f8043d872a4ddfc4901fadfc86d62fce82baece468939646a75b",
+ "floorspec/schema/core/0.1/level.schema.json": "fe1f6b4a22bf12a55a24dfd6cd09b698c317a6773f995dea0a186fc8a81641e0",
+ "floorspec/schema/core/0.1/material.schema.json": "655a417b6cc1a625a59fae1736495eee0b011b1c4f0427601106e89b0579244c",
+ "floorspec/schema/core/0.1/opening.schema.json": "1fd2540955567c64bcea103a608632fbbc8a85f2ca0cbc3bd902eca5adc51dd3",
+ "floorspec/schema/core/0.1/project.schema.json": "8a5bc26c4fb103b285b934b377ce4b92d7b9321a48a5cecc6a54c2da09aa3a08",
+ "floorspec/schema/core/0.1/room.schema.json": "12a3dea3f7ae8e90d5ae5eb00a2976430b9b7e3c472d4077f4254a3c820fb097",
+ "floorspec/schema/core/0.1/separator.schema.json": "71aedf8e1b86457254d88ac3c6a9c805f0ad2ea0ff92772725ad9669df2db21e",
+ "floorspec/schema/core/0.1/site.schema.json": "7748812879053a9f50a88d39cf2500b6ba68101dbd77af3abdc348f47262bf10",
+ "floorspec/schema/core/0.1/slab.schema.json": "75acafd31a99d0511fc558dabc89693b942db687f6ac1174238f0c166775f172",
+ "floorspec/schema/core/0.1/type.schema.json": "e50ae6d714491da8b1dc2b29e9ffeca5a6c7e681de0be398b8dc92bec9f269eb",
+ "floorspec/schema/core/0.1/wall.schema.json": "ca373bff58d0d48ddf3188150a1a5aebdcc971847803d4f4116744277ba596c8"
+}

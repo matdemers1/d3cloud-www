@@ -44,10 +44,19 @@ export function RouterProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const navigate = useCallback((to: string) => {
-    const next = normalize(to);
-    if (next === normalize(window.location.pathname)) return;
-    window.history.pushState({}, '', next);
+    // `to` may carry a fragment — a link to a section of a Floorspec chapter. The path is what
+    // picks the page; the fragment is the page's to scroll to once its content is there.
+    const url = new URL(to, window.location.href);
+    const next = normalize(url.pathname);
+    const samePage = next === normalize(window.location.pathname);
+    if (samePage && !url.hash) return;
+    window.history.pushState({}, '', `${next}${url.search}${url.hash}`);
     setPath(next);
+    if (samePage) {
+      document.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView();
+      return;
+    }
+    // Another page scrolls to its fragment itself, once its content has loaded.
     // A new page starts at its top, at once. `instant` overrides the smooth
     // scrolling index.css gives in-page anchors — left smooth, the jump became a
     // glide the next render or a stray wheel tick could strand halfway down.
