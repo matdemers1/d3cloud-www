@@ -5,7 +5,7 @@ import { ProductMark } from './ProductMark';
 import { Kicker } from './Marketing';
 import { useNavigateOnClick } from '../router';
 import { BRAND, CONTACT_EMAIL, PROJECTS, STUDIO, type Project } from '../content/projects';
-import { WORKSHOP } from '../content/ecosystem';
+import { WORKSHOP, workshopPath } from '../content/ecosystem';
 
 const NAV = [
   { href: '/#what', label: 'What this is' },
@@ -148,7 +148,7 @@ function Footer() {
             <FooterColumn title="Workshop">
               {WORKSHOP.map((item) => (
                 <li key={item.slug}>
-                  <InAppLink to={`/${item.slug}`} className={link}>
+                  <InAppLink to={workshopPath(item)} className={link}>
                     {item.name}
                   </InAppLink>
                 </li>
@@ -156,6 +156,11 @@ function Footer() {
             </FooterColumn>
           )}
           <FooterColumn title="Studio">
+            <li>
+              <InAppLink to="/floorspec" className={link}>
+                Floorspec standard
+              </InAppLink>
+            </li>
             <li>
               <a href="/#log" className={link}>
                 Build log

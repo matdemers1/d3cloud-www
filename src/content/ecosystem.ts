@@ -104,6 +104,11 @@ export interface WorkshopFeature {
 
 export interface WorkshopItem {
   slug: string;
+  /**
+   * Where its page lives, when not at `/<slug>` — D3 Floorspec's is /floorspec/app, because
+   * /floorspec is the standard it implements (FLR-ADR-018).
+   */
+  path?: string;
   name: string;
   /** One or two words: Messages, Council game. */
   role: string;
@@ -125,6 +130,8 @@ export interface WorkshopItem {
   /** What it already connects to, declared the same way a product's are. */
   relations: Relation[];
   cta: { label: string; href: string };
+  /** The hero's second button; "Everything on the bench" when absent. */
+  secondary?: { label: string; href: string };
   accent: string;
   /** A screenshot of what is live — or, with none to show, a drawing (WORKSHOP_ART). */
   screenshot?: Screenshot;
@@ -137,3 +144,6 @@ export interface WorkshopItem {
 export const WORKSHOP: WorkshopItem[] = [];
 
 export const workshopBySlug = (slug: string) => WORKSHOP.find((item) => item.slug === slug);
+
+/** A workshop page's address. */
+export const workshopPath = (item: Pick<WorkshopItem, 'slug' | 'path'>) => item.path ?? `/${item.slug}`;

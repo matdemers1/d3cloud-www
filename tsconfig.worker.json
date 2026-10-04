@@ -5,6 +5,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "isolatedModules": true,
+    "resolveJsonModule": true,
     "moduleDetection": "force",
     "noEmit": true,
     "types": ["@cloudflare/workers-types"],
@@ -12,5 +13,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["src/worker.ts", "src/head.ts", "src/routes.ts", "src/content"]
+  "include": ["src/worker.ts", "src/head.ts", "src/routes.ts", "src/content", "src/floorspec/spec.ts", "src/floorspec/ast.ts"]
 }

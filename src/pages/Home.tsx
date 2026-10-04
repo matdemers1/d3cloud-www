@@ -5,6 +5,7 @@ import {
   ecosystemProjects,
   edges,
   fixProjects,
+  workshopPath,
   type WorkshopItem,
 } from '../content/ecosystem';
 import { Constellation } from '../components/Constellation';
@@ -431,7 +432,7 @@ function BuildLog() {
 }
 
 function BenchCard({ item }: { item: WorkshopItem }) {
-  const to = `/${item.slug}`;
+  const to = workshopPath(item);
   return (
     <a
       href={to}
