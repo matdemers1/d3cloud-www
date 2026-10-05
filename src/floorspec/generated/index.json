@@ -1,106 +1,188 @@
 {
- "spec": "core",
- "version": "0.1",
- "chapters": [
+ "specifications": [
   {
-   "slug": "conventions",
-   "file": "spec/core/00-conventions.md",
-   "number": "0",
-   "title": "Conventions",
-   "summary": "normative language, conformance classes, notation, what this draft does not define",
-   "statements": 0
+   "spec": "core",
+   "name": "Floorspec Core",
+   "short": "Core",
+   "version": "0.1",
+   "chapters": [
+    {
+     "slug": "conventions",
+     "file": "spec/core/00-conventions.md",
+     "number": "0",
+     "title": "Conventions",
+     "summary": "normative language, conformance classes, notation, what this draft does not define",
+     "statements": 0
+    },
+    {
+     "slug": "model",
+     "file": "spec/core/01-model.md",
+     "number": "1",
+     "title": "Document model",
+     "summary": "the document, version, spatial structure, collections, defaults, extensions, extras",
+     "statements": 25
+    },
+    {
+     "slug": "units",
+     "file": "spec/core/02-units.md",
+     "number": "2",
+     "title": "Units, quantities and coordinates",
+     "summary": "base unit, exact derivation and rounding, axes, angles, polygons",
+     "statements": 5
+    },
+    {
+     "slug": "identity",
+     "file": "spec/core/03-identity.md",
+     "number": "3",
+     "title": "Identity and references",
+     "summary": "IDs, references, level consistency",
+     "statements": 7
+    },
+    {
+     "slug": "taxonomy",
+     "file": "spec/core/04-taxonomy.md",
+     "number": "4",
+     "title": "Taxonomies",
+     "summary": "room functions, extension terms, layer functions",
+     "statements": 3
+    },
+    {
+     "slug": "walls",
+     "file": "spec/core/05-walls.md",
+     "number": "5",
+     "title": "Walls",
+     "summary": "junctions, walls, separators, planarity, face lines, wedges, outlines, joins, heights",
+     "statements": 22
+    },
+    {
+     "slug": "rooms",
+     "file": "spec/core/06-rooms.md",
+     "number": "6",
+     "title": "Rooms",
+     "summary": "faces, room polygons, anchors and identity, net area, slabs",
+     "statements": 8
+    },
+    {
+     "slug": "openings",
+     "file": "spec/core/07-openings.md",
+     "number": "7",
+     "title": "Openings",
+     "summary": "hosted openings, typed dimensions, placement",
+     "statements": 8
+    },
+    {
+     "slug": "types",
+     "file": "spec/core/08-types.md",
+     "number": "8",
+     "title": "Types, materials and assets",
+     "summary": "types and overrides, layers, door and window types, materials, assets",
+     "statements": 10
+    },
+    {
+     "slug": "serialization",
+     "file": "spec/core/09-serialization.md",
+     "number": "9",
+     "title": "Serialization",
+     "summary": "encoding, canonical form, content hash",
+     "statements": 6
+    },
+    {
+     "slug": "diagnostics",
+     "file": "spec/core/10-diagnostics.md",
+     "number": "10",
+     "title": "Validation and diagnostics",
+     "summary": "tiers, diagnostics, order of evaluation, the catalogue, fixes",
+     "statements": 4
+    },
+    {
+     "slug": "ifc",
+     "file": "spec/core/annex-ifc.md",
+     "number": "A",
+     "title": "IFC4 mapping",
+     "summary": "every core kind and its IFC4 entity",
+     "statements": 0
+    }
+   ],
+   "statements": 98,
+   "mandatory": 90,
+   "covered": 90,
+   "tests": 281
   },
   {
-   "slug": "model",
-   "file": "spec/core/01-model.md",
-   "number": "1",
-   "title": "Document model",
-   "summary": "the document, version, spatial structure, collections, defaults, extensions, extras",
-   "statements": 25
-  },
-  {
-   "slug": "units",
-   "file": "spec/core/02-units.md",
-   "number": "2",
-   "title": "Units, quantities and coordinates",
-   "summary": "base unit, exact derivation and rounding, axes, angles, polygons",
-   "statements": 5
-  },
-  {
-   "slug": "identity",
-   "file": "spec/core/03-identity.md",
-   "number": "3",
-   "title": "Identity and references",
-   "summary": "IDs, references, level consistency",
-   "statements": 7
-  },
-  {
-   "slug": "taxonomy",
-   "file": "spec/core/04-taxonomy.md",
-   "number": "4",
-   "title": "Taxonomies",
-   "summary": "room functions, extension terms, layer functions",
-   "statements": 3
-  },
-  {
-   "slug": "walls",
-   "file": "spec/core/05-walls.md",
-   "number": "5",
-   "title": "Walls",
-   "summary": "junctions, walls, separators, planarity, face lines, wedges, outlines, joins, heights",
-   "statements": 22
-  },
-  {
-   "slug": "rooms",
-   "file": "spec/core/06-rooms.md",
-   "number": "6",
-   "title": "Rooms",
-   "summary": "faces, room polygons, anchors and identity, net area, slabs",
-   "statements": 8
-  },
-  {
-   "slug": "openings",
-   "file": "spec/core/07-openings.md",
-   "number": "7",
-   "title": "Openings",
-   "summary": "hosted openings, typed dimensions, placement",
-   "statements": 8
-  },
-  {
-   "slug": "types",
-   "file": "spec/core/08-types.md",
-   "number": "8",
-   "title": "Types, materials and assets",
-   "summary": "types and overrides, layers, door and window types, materials, assets",
-   "statements": 10
-  },
-  {
-   "slug": "serialization",
-   "file": "spec/core/09-serialization.md",
-   "number": "9",
-   "title": "Serialization",
-   "summary": "encoding, canonical form, content hash",
-   "statements": 6
-  },
-  {
-   "slug": "diagnostics",
-   "file": "spec/core/10-diagnostics.md",
-   "number": "10",
-   "title": "Validation and diagnostics",
-   "summary": "tiers, diagnostics, order of evaluation, the catalogue, fixes",
-   "statements": 4
-  },
-  {
-   "slug": "ifc",
-   "file": "spec/core/annex-ifc.md",
-   "number": "A",
-   "title": "IFC4 mapping",
-   "summary": "every core kind and its IFC4 entity",
-   "statements": 0
+   "spec": "ops",
+   "name": "Floorspec Ops",
+   "short": "Ops",
+   "version": "0.1",
+   "chapters": [
+    {
+     "slug": "conventions",
+     "file": "spec/ops/00-conventions.md",
+     "number": "0",
+     "title": "Conventions",
+     "summary": "what Ops is, the applier, what this draft does not cover",
+     "statements": 0
+    },
+    {
+     "slug": "transactions",
+     "file": "spec/ops/01-transactions.md",
+     "number": "1",
+     "title": "Operations, batches and transactions",
+     "summary": "the request, the six-step transaction, the result, the echo, minting IDs, the inverse",
+     "statements": 10
+    },
+    {
+     "slug": "primitives",
+     "file": "spec/ops/02-primitives.md",
+     "number": "2",
+     "title": "Primitive operations",
+     "summary": "addElement and its shorthands, removeElement and cascades, setProperty, unsetProperty, moveJunction",
+     "statements": 6
+    },
+    {
+     "slug": "references",
+     "file": "spec/ops/03-references.md",
+     "number": "3",
+     "title": "References",
+     "summary": "lengths in feet-inches-fractions and metric, points, vectors, selectors, sides, positions",
+     "statements": 5
+    },
+    {
+     "slug": "composites",
+     "file": "spec/ops/04-composites.md",
+     "number": "4",
+     "title": "Composite operations",
+     "summary": "drawWall, moveWall, moveRoom, resizeRoom, addOpening, addRoom, setRoomFinish, removeWall",
+     "statements": 7
+    },
+    {
+     "slug": "normalization",
+     "file": "spec/ops/05-normalization.md",
+     "number": "5",
+     "title": "Normalization",
+     "summary": "merging junctions, planarizing by snap rounding, join cleanup",
+     "statements": 4
+    },
+    {
+     "slug": "locks",
+     "file": "spec/ops/06-locks.md",
+     "number": "6",
+     "title": "Locks",
+     "summary": "element, length and distance locks",
+     "statements": 2
+    },
+    {
+     "slug": "diagnostics",
+     "file": "spec/ops/07-diagnostics.md",
+     "number": "7",
+     "title": "Diagnostics",
+     "summary": "the FS-OPS catalogue",
+     "statements": 3
+    }
+   ],
+   "statements": 37,
+   "mandatory": 36,
+   "covered": 36,
+   "tests": 230
   }
- ],
- "statements": 98,
- "mandatory": 90,
- "covered": 90,
- "tests": 281
+ ]
 }
