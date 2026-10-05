@@ -154,7 +154,7 @@ export const WORKSHOP: WorkshopItem[] = [
     role: 'House design',
     stage: 'Being built — Phases 0 to 9',
     stageNote:
-      'Floorspec Core and Ops are published as 0.3 drafts, with Rules 0.1, the extension registry and two libraries, beside 0.2 and 0.1, which stay as they were. The reference engine passes every conformance test of Core and Ops 0.3 and of all six official extensions, in its public CI. The editor is built — 2D and 3D, Claude’s changesets, the program and its layouts, building systems, materials and furniture, and exports — and runs privately, by invitation. There is nothing public to try yet.',
+      'Floorspec Core and Ops are published as 0.3 drafts, with Rules 0.1, the extension registry and two libraries, beside 0.2 and 0.1, which stay as they were. The reference engine passes every conformance test of Core and Ops 0.3 and of all six official extensions, in its public CI. The editor is built — 2D and 3D, Claude’s changesets, the program and its layouts, building systems, materials and furniture, and exports — and runs privately, by invitation. Its engine runs in your browser in the Floorspec playground, at d3cloud.io/floorspec/playground.',
     line: 'Design a house with Claude — every edit validated, attributed and yours to accept.',
     tagline: 'Design a house with Claude. Every edit checked, and yours to accept.',
     quote:

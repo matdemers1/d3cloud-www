@@ -56,7 +56,9 @@ export type RouteKind =
   | 'floorspec-coverage'
   | 'floorspec-registry'
   | 'floorspec-extension'
-  | 'floorspec-library';
+  | 'floorspec-library'
+  /** The playground (FLR-T-10.2): a file validated, drawn and meshed in the browser. */
+  | 'floorspec-playground';
 
 export interface RouteMeta {
   /** Canonical path: no trailing slash, current slugs. */
@@ -137,6 +139,7 @@ function floorspecRoute(segments: string[]): RouteMeta | null {
       description: `${FLOORSPEC_DESCRIPTION} ${list(SPECS.map(specName))} ${SPECS.length === 1 ? 'is a draft' : 'are drafts'}.`,
     };
   }
+  if (segments.length === 2 && segments[1] === 'playground') return playgroundRoute();
   if (segments.length === 2 && segments[1] === 'registry' && EXTENSIONS.length) return registryRoute();
   if (segments[1] === 'registry') {
     const ext = segments.length === 3 ? extensionByName(segments[2]) : undefined;
@@ -176,6 +179,23 @@ function floorspecRoute(segments: string[]): RouteMeta | null {
   }
   return null;
 }
+
+function playgroundRoute(): RouteMeta {
+  return {
+    path: '/floorspec/playground',
+    kind: 'floorspec-playground',
+    title: `Playground — Floorspec — ${BRAND}`,
+    description:
+      'Drop a Floorspec document or .floorspec package: the reference engine validates it in your browser and draws it in 2D and 3D with every diagnostic. Nothing is uploaded, and no account is needed.',
+  };
+}
+
+/**
+ * Pages whose document carries a content security policy of its own: the playground's lets
+ * manifold-3d compile its WebAssembly ('wasm-unsafe-eval'), and no other page's does. A document keeps
+ * the policy it was loaded with, so the router reaches or leaves such a page with a full load.
+ */
+export const hasOwnPolicy = (meta: RouteMeta | null | undefined): boolean => meta?.kind === 'floorspec-playground';
 
 function registryRoute(): RouteMeta {
   return {
@@ -311,6 +331,7 @@ export function allRoutes(): RouteMeta[] {
     for (const chapter of spec.chapters) routes.push(chapterRoute(spec, chapter));
   }
   routes.push(floorspecRoute(['floorspec', 'coverage'])!);
+  routes.push(playgroundRoute());
   if (EXTENSIONS.length) routes.push(registryRoute());
   for (const ext of EXTENSIONS) routes.push(extensionRoute(ext));
   for (const lib of LIBRARIES) {

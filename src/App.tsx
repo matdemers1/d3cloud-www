@@ -21,6 +21,8 @@ const floorspecRegistry = () => import('./floorspec/registry');
 const RegistryPage = lazy(() => floorspecRegistry().then((m) => ({ default: m.RegistryPage })));
 const ExtensionPage = lazy(() => floorspecRegistry().then((m) => ({ default: m.ExtensionPage })));
 const LibraryPage = lazy(() => floorspecRegistry().then((m) => ({ default: m.LibraryPage })));
+// The playground (FLR-T-10.2) is a third; the engine, the mesher and three.js are chunks of their own below it.
+const PlaygroundPage = lazy(() => import('./floorspec/playground/Playground').then((m) => ({ default: m.PlaygroundPage })));
 
 /** Nothing to show while the chunk loads; the header is already on screen. */
 const Lazy = ({ children }: { children: ReactNode }) => <Suspense fallback={null}>{children}</Suspense>;
@@ -70,6 +72,8 @@ function resolve(path: string): {
         <ExtensionPage key={meta.path} name={meta.doc!} />
       ) : meta.kind === 'floorspec-library' ? (
         <LibraryPage key={meta.path} name={meta.doc!} version={meta.version} />
+      ) : meta.kind === 'floorspec-playground' ? (
+        <PlaygroundPage />
       ) : (
         <CoveragePage />
       );

@@ -2,8 +2,8 @@ import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { renderHead } from '../head';
-import { allRoutes, resolveRoute } from '../routes';
-import worker, { SCHEMA_HEADERS, SECURITY_HEADERS, type Env } from '../worker';
+import { allRoutes, hasOwnPolicy, resolveRoute } from '../routes';
+import worker, { PLAYGROUND_HEADERS, SCHEMA_HEADERS, SECURITY_HEADERS, type Env } from '../worker';
 import { sitemap } from '../../scripts/generate-static';
 import type { Block, Chapter, Coverage, Inline, Libraries, Registry, SpecIndex } from './ast';
 import { CORE, EARLIER, EXTENSIONS, FLOORSPEC_LOCK, LIBRARIES, SPECS, specAt, specByCode } from './spec';
@@ -693,3 +693,63 @@ describe('the Worker and the schemas', () => {
     for (const path of ['/floorspec/registry/nope', '/floorspec/library/us-starter/9.9.9', '/floorspec/rules/nope']) expect((await get(path)).status, path).toBe(404);
   });
 });
+
+describe('the playground (FLR-T-10.2)', () => {
+  const env: Env = {
+    ASSETS: {
+      fetch: async (input: RequestInfo | URL) => {
+        const url = new URL(input instanceof Request ? input.url : input.toString());
+        if (url.pathname === '/') return new Response('<html><head><!-- route-meta:start --><!-- route-meta:end --></head></html>');
+        if (url.pathname.endsWith('.wasm')) return new Response(new Uint8Array([0, 97, 115, 109]), { headers: { 'Content-Type': 'application/wasm' } });
+        return new Response('Not Found', { status: 404 });
+      },
+    } as unknown as Fetcher,
+  };
+  const get = (path: string) => worker.fetch(new Request(`https://d3cloud.io${path}`), env);
+  const directives = (csp: string) => new Map(csp.split('; ').map((d) => [d.split(' ')[0]!, d.slice(d.indexOf(' ') + 1)]));
+
+  it('is a page at /floorspec/playground, in the sitemap, with its own head', () => {
+    const route = resolveRoute('/floorspec/playground');
+    expect(route).toMatchObject({ meta: { path: '/floorspec/playground', kind: 'floorspec-playground' }, redirect: false });
+    expect(resolveRoute('/floorspec/playground/')).toMatchObject({ meta: { path: '/floorspec/playground' }, redirect: true });
+    expect(resolveRoute('/floorspec/playground/extra')).toBeNull();
+    expect(allRoutes().filter((r) => r.path === '/floorspec/playground')).toHaveLength(1);
+    expect(sitemap()).toContain('<loc>https://d3cloud.io/floorspec/playground</loc>');
+    const head = renderHead(route!.meta);
+    expect(head).toContain('<title>Playground — Floorspec — D3 Cloud</title>');
+    expect(head).toContain('<link rel="canonical" href="https://d3cloud.io/floorspec/playground" />');
+    expect(head).toContain('Nothing is uploaded');
+    expect(head).not.toMatch(/complian/i);
+  });
+
+  it('is the only page with a policy of its own', () => {
+    expect(allRoutes().filter(hasOwnPolicy).map((r) => r.path)).toEqual(['/floorspec/playground']);
+  });
+
+  it('serves the playground with WebAssembly allowed in script-src, and nothing else loosened', async () => {
+    const res = await get('/floorspec/playground');
+    expect(res.status).toBe(200);
+    expect(await res.text()).toContain('<title>Playground — Floorspec — D3 Cloud</title>');
+    for (const [key, value] of Object.entries(PLAYGROUND_HEADERS)) expect(res.headers.get(key), key).toBe(value);
+    const strict = directives(SECURITY_HEADERS['Content-Security-Policy']!);
+    const playground = directives(res.headers.get('Content-Security-Policy')!);
+    expect(playground.get('script-src')).toBe("'self' 'wasm-unsafe-eval'");
+    expect(playground.get('script-src')).not.toMatch(/'unsafe-eval'|'unsafe-inline'|https?:/);
+    // Every other directive is the site's own: connect-src 'self' holds, so the file goes nowhere.
+    expect(playground.get('connect-src')).toBe("'self'");
+    for (const [name, value] of strict) if (name !== 'script-src') expect(playground.get(name), name).toBe(value);
+    expect([...playground.keys()]).toEqual([...strict.keys()]);
+    for (const [key, value] of Object.entries(SECURITY_HEADERS)) if (key !== 'Content-Security-Policy') expect(PLAYGROUND_HEADERS[key], key).toBe(value);
+  });
+
+  it('keeps every other page, and every file — the WebAssembly itself — on the strict policy', async () => {
+    expect(SECURITY_HEADERS['Content-Security-Policy']).not.toContain('wasm-unsafe-eval');
+    expect(directives(SECURITY_HEADERS['Content-Security-Policy']!).get('script-src')).toBe("'self'");
+    for (const path of ['/', '/floorspec', '/floorspec/core/walls', '/floorspec/app', '/nonexistent', '/floorspec/playground/', '/assets/manifold-x.wasm']) {
+      const res = await get(path);
+      expect(res.headers.get('Content-Security-Policy'), path).toBe(SECURITY_HEADERS['Content-Security-Policy']);
+    }
+    expect((await get('/floorspec/playground/')).status).toBe(301);
+  });
+});
+

@@ -10,6 +10,9 @@ import { loadChapter, loadCoverage } from './load';
 // tests read). Imported here, in the lazy chunk, rather than beside the routes.
 import PUBLISHED_SCHEMAS from './published-schemas.json';
 import { Blocks, Inlines, LINK, LevelBadge } from './Prose';
+// The crumb above a page's title, in a module of its own so the playground shares it without this chunk.
+import { Crumb } from './Crumb';
+export { Crumb };
 import { CopyContext } from './copy';
 import { asSentence, listOf, shortSha, useCopiedNote, useLateFragment } from './util';
 import {
@@ -147,20 +150,6 @@ export function Pinned({ path, commit = FLOORSPEC_LOCK.commit, className = '' }:
         {FLOORSPEC_LOCK.repository}@{shortSha(commit)}
       </UiLink>
       {path ? ` · ${path}` : ''}
-    </p>
-  );
-}
-
-/** The small crumb above a chapter's or the coverage page's title. */
-export function Crumb({ children }: { children: ReactNode }) {
-  return (
-    <p className="flex flex-wrap items-center gap-2 font-mono text-12 tracking-label text-fg-muted uppercase">
-      <ProductMark slug={FLOORSPEC.slug} accent={FLOORSPEC.accent} size={18} className="text-fg" />
-      <Link to="/floorspec" variant="muted" className="no-underline hover:underline">
-        Floorspec
-      </Link>
-      <span aria-hidden="true">/</span>
-      {children}
     </p>
   );
 }
@@ -561,6 +550,7 @@ export function StandardPage() {
                 Read {specName(spec)}
               </SecondaryButton>
             ))}
+            <SecondaryButton href="/floorspec/playground">Try a file in the playground</SecondaryButton>
             <SecondaryButton href={FLOORSPEC_REPO}>The repository ↗</SecondaryButton>
           </div>
         </div>
