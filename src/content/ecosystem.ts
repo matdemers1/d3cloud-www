@@ -76,6 +76,7 @@ export interface LogEntry {
 }
 
 export const BUILD_LOG: LogEntry[] = [
+  { date: '2026-10-05', slug: 'floorspec-app', text: 'Floorspec Core and Ops Drafts 0.2 — the program, extensions, hosting and clearances, circulation — published beside 0.1, which stays as it was' },
   { date: '2026-10-04', slug: 'floorspec-app', text: 'Floorspec Ops Draft 0.1 — how a house changes — is published beside Core, with a test for every MUST' },
   { date: '2026-10-04', slug: 'floorspec-app', text: 'Floorspec Core Draft 0.1 is published, with a reference engine passing all 281 conformance tests' },
   { date: '2026-10-02', slug: 'postroom', text: 'Postroom, a mail server written from scratch, joins the constellation' },

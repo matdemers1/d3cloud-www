@@ -1,33 +1,41 @@
 /**
  * Pins a commit of the Floorspec standard and turns it into this site's /floorspec pages
- * (DI-T-10.2, DI-T-10.4, DI-REQ-042, FLR-ADR-018):
+ * (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-REQ-042, FLR-ADR-018):
  *
  *   npm run sync:floorspec [-- <path to the floorspec checkout>]   (or FLOORSPEC_DIR=…; default ../floorspec)
  *
  * Every specification under spec/ that has chapters is published — Core and Ops today, Rules when
- * it has some. For each one:
+ * it has some — at its current draft, and every earlier draft stays published as it was:
  *
  * 1. Refuses a checkout with uncommitted changes under spec/, schema/ or conformance/ — what is
  *    published has to be a commit someone can look at.
- * 2. Records the commit, and each specification's draft version, in src/floorspec/floorspec.lock.json.
+ * 2. Records the commit, and each specification's draft version (from its README), in
+ *    src/floorspec/floorspec.lock.json. When a specification's version moves on (Core 0.1 → 0.2),
+ *    the commit the lock pinned for the old version is kept under `earlier`, and that draft goes
+ *    on being published from that commit — read with `git archive`, never from the working tree —
+ *    at /floorspec/<spec>/<version>/<chapter>. Earlier pins are never dropped or moved.
  * 3. Parses each chapter of spec/<spec> with marked's lexer into the compact AST of
  *    src/floorspec/ast.ts — headings with stable ids, statement tags as anchored statements,
- *    cross-references as links (including "Core §5.3" from another specification) — and writes
- *    src/floorspec/generated/. Everything generated is committed, so CI builds the site without
- *    the floorspec checkout.
- * 4. Extracts the normative statements with floorspec's own tools/statements.ts (imported, not
- *    copied), refuses if it reports a problem, and checks every statement it found is anchored.
- * 5. Coverage: the repo's own gate (`pnpm coverage`, when its dependencies are installed) writes
- *    build/coverage.json, which is read; otherwise conformance/<spec>/<version>/**\/test.json is
- *    scanned.
- * 6. Copies schema/<spec>/<version>/*.json byte for byte into public/floorspec/schema/<spec>/<version>/.
- *    A schema URL never changes once published: src/floorspec/published-schemas.json records each
- *    file's SHA-256, new files are added to it, and the sync refuses if a published file would
- *    change or disappear. src/floorspec/floorspec.test.ts holds public/ to the same record.
+ *    cross-references as links (including "Core §5.3" from another specification, resolved within
+ *    the same commit, so Ops 0.1 links to Core 0.1) — and writes src/floorspec/generated/.
+ *    Everything generated is committed, so CI builds the site without the floorspec checkout.
+ * 4. Extracts the normative statements with floorspec's own tools/statements.ts at the same commit
+ *    (imported, not copied), refuses if it reports a problem, and checks every statement it found
+ *    is anchored. The IDs a draft retired (the "Changes from" table of its chapter 0) are recorded
+ *    with what replaced them and where the old statement is still published.
+ * 5. Coverage: for the current drafts, the repo's own gate (`pnpm coverage`, when its dependencies
+ *    are installed) writes build/coverage.json, which is read; otherwise, and for every earlier
+ *    draft, conformance/<spec>/<version>/**\/test.json at that draft's commit is scanned.
+ * 6. Copies every schema/<name>/<version>/*.json byte for byte into
+ *    public/floorspec/schema/<name>/<version>/ — the specifications' schemas and the extension
+ *    registry's. A schema URL never changes once published: src/floorspec/published-schemas.json
+ *    records each file's SHA-256, new files are added to it, and the sync refuses if a published
+ *    file would change or disappear. src/floorspec/floorspec.test.ts holds public/ to the record.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { basename, dirname, join, posix, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { marked, type Token, type Tokens } from 'marked';
@@ -41,6 +49,7 @@ import type {
   FloorspecIndex,
   Inline,
   Level,
+  RetiredStatement,
   SpecIndex,
 } from '../src/floorspec/ast';
 
@@ -53,6 +62,7 @@ const ORDER = ['core', 'ops', 'rules'];
 const out = join(root, 'src/floorspec');
 const generated = join(out, 'generated');
 const publishedPath = join(out, 'published-schemas.json');
+const lockPath = join(out, 'floorspec.lock.json');
 
 function fail(message: string): never {
   console.error(`sync-floorspec: ${message}`);
@@ -71,7 +81,7 @@ const commit = git('rev-parse', 'HEAD');
 const committedAt = git('show', '-s', '--format=%cI', 'HEAD');
 
 // ---------------------------------------------------------------------------------------------
-// The specifications: every directory of spec/ with at least one chapter.
+// The specifications: every directory of spec/ with at least one chapter, at one commit.
 
 interface Statement {
   id: string;
@@ -82,12 +92,24 @@ interface Statement {
   line: number;
 }
 type Extract = (root: string, spec: string) => { statements: Statement[]; problems: { file: string; line: number; message: string }[] };
-const { extract } = (await import(pathToFileURL(join(source, 'tools/statements.ts')).href)) as { extract: Extract };
 
 /** `05-walls.md` → `walls`; `annex-ifc.md` → `ifc`. */
 const slugOf = (file: string) => basename(file, '.md').replace(/^\d+-/, '').replace(/^annex-/, '');
 
 const CHAPTER = /^#\s+(\d+|[A-Z])\.\s+(.*)$/m;
+
+interface Pin {
+  commit: string;
+  committedAt: string;
+}
+
+/** The standard at one commit: the checkout itself, or an earlier pinned commit read with `git archive`. */
+interface Snapshot extends Pin {
+  root: string;
+  specs: Spec[];
+  /** "Core" → Core at this commit: a cross-reference resolves within the commit it was written at. */
+  byShort: Map<string, Spec>;
+}
 
 interface Spec {
   code: string;
@@ -95,6 +117,9 @@ interface Spec {
   short: string;
   name: string;
   version: string;
+  /** Where its chapters are published: /floorspec/core, or /floorspec/core/0.1 for an earlier draft. */
+  base: string;
+  snap: Snapshot;
   dir: string;
   files: string[];
   summaries: Map<string, string>;
@@ -105,59 +130,141 @@ interface Spec {
   slugByFile: Map<string, string>;
 }
 
-const specs: Spec[] = readdirSync(join(source, 'spec'))
-  .filter((code) => statSync(join(source, 'spec', code)).isDirectory())
-  .filter((code) => readdirSync(join(source, 'spec', code)).some((f) => f.endsWith('.md') && f !== 'README.md'))
-  .sort((a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b))
-  .map((code): Spec => {
-    const dir = join(source, 'spec', code);
-    const readme = readFileSync(join(dir, 'README.md'), 'utf8');
-    const name = /^#\s+(Floorspec \S+)\s*$/m.exec(readme)?.[1];
-    const version = /\*\*Draft (\d+\.\d+)\b/.exec(readme)?.[1];
-    if (!name || !version) fail(`spec/${code}/README.md must have a "# Floorspec <Name>" heading and a "**Draft <n.n>" status`);
-    const files = readdirSync(dir)
-      .filter((f) => f.endsWith('.md') && f !== 'README.md')
-      .sort();
+/**
+ * Reads every specification at `root`. `current` is undefined for the checkout itself (whose drafts
+ * are the current ones); for an earlier commit it is the current versions and the earlier pins, which
+ * decide where each of its specifications is published.
+ */
+async function loadSnapshot(
+  root: string,
+  pin: Pin,
+  current?: { versions: Record<string, string>; earlier: Record<string, Record<string, Pin>> },
+): Promise<Snapshot> {
+  const { extract } = (await import(pathToFileURL(join(root, 'tools/statements.ts')).href)) as { extract: Extract };
+  const snap: Snapshot = { ...pin, root, specs: [], byShort: new Map() };
+  snap.specs = readdirSync(join(root, 'spec'))
+    .filter((code) => statSync(join(root, 'spec', code)).isDirectory())
+    .filter((code) => readdirSync(join(root, 'spec', code)).some((f) => f.endsWith('.md') && f !== 'README.md'))
+    .sort((a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b))
+    .map((code): Spec => {
+      const at = pin.commit.slice(0, 7);
+      const dir = join(root, 'spec', code);
+      const readme = readFileSync(join(dir, 'README.md'), 'utf8');
+      const name = /^#\s+(Floorspec \S+)\s*$/m.exec(readme)?.[1];
+      const version = /\*\*Draft (\d+\.\d+)\b/.exec(readme)?.[1];
+      if (!name || !version) fail(`spec/${code}/README.md at ${at} must have a "# Floorspec <Name>" heading and a "**Draft <n.n>" status`);
+      const files = readdirSync(dir)
+        .filter((f) => f.endsWith('.md') && f !== 'README.md')
+        .sort();
 
-    /** The chapter table in the README: file → what the chapter covers. */
-    const summaries = new Map<string, string>();
-    for (const line of readme.split('\n')) {
-      const m = /^\|\s*\[[^\]]*\]\(([^)]+\.md)\)\s*\|\s*(.*?)\s*\|\s*$/.exec(line);
-      if (m) summaries.set(m[1]!, m[2]!);
-    }
+      /** The chapter table in the README: file → what the chapter covers. */
+      const summaries = new Map<string, string>();
+      for (const line of readme.split('\n')) {
+        const m = /^\|\s*\[[^\]]*\]\(([^)]+\.md)\)\s*\|\s*(.*?)\s*\|\s*$/.exec(line);
+        if (m) summaries.set(m[1]!, m[2]!);
+      }
 
-    const { statements, problems } = extract(source, code);
-    if (problems.length)
-      fail(`floorspec's statement checker reports problems in spec/${code}:\n${problems.map((p) => `  ${p.file}:${p.line}: ${p.message}`).join('\n')}`);
+      const { statements, problems } = extract(root, code);
+      if (problems.length)
+        fail(
+          `floorspec's statement checker reports problems in spec/${code} at ${at}:\n${problems.map((p) => `  ${p.file}:${p.line}: ${p.message}`).join('\n')}`,
+        );
 
-    /** First pass: every chapter's number, and every numbered section, so cross-references resolve. */
-    const chapterOf = new Map<string, string>();
-    const sectionOf = new Map<string, string>();
-    for (const file of files) {
-      const text = readFileSync(join(dir, file), 'utf8');
-      const c = CHAPTER.exec(text);
-      if (!c) fail(`spec/${code}/${file} has no "# n. Title" heading`);
-      chapterOf.set(c[1]!, slugOf(file));
-      for (const m of text.matchAll(/^##\s+(\d+\.\d+)\s/gm)) sectionOf.set(m[1]!, slugOf(file));
-    }
+      /** First pass: every chapter's number, and every numbered section, so cross-references resolve. */
+      const chapterOf = new Map<string, string>();
+      const sectionOf = new Map<string, string>();
+      for (const file of files) {
+        const text = readFileSync(join(dir, file), 'utf8');
+        const c = CHAPTER.exec(text);
+        if (!c) fail(`spec/${code}/${file} at ${at} has no "# n. Title" heading`);
+        chapterOf.set(c[1]!, slugOf(file));
+        for (const m of text.matchAll(/^##\s+(\d+\.\d+)\s/gm)) sectionOf.set(m[1]!, slugOf(file));
+      }
 
-    return {
-      code,
-      short: name.replace(/^Floorspec /, ''),
-      name,
-      version,
-      dir,
-      files,
-      summaries,
-      statements,
-      statementIds: new Set(statements.map((s) => s.id)),
-      chapterOf,
-      sectionOf,
-      slugByFile: new Map(files.map((f) => [f, slugOf(f)])),
-    };
+      // The current draft of a specification, and anything a later commit has not moved past, is at
+      // /floorspec/<spec>; an earlier draft that is published is under its version.
+      const versioned = current && version !== current.versions[code] && current.earlier[code]?.[version];
+      return {
+        code,
+        short: name.replace(/^Floorspec /, ''),
+        name,
+        version,
+        base: versioned ? `/floorspec/${code}/${version}` : `/floorspec/${code}`,
+        snap,
+        dir,
+        files,
+        summaries,
+        statements,
+        statementIds: new Set(statements.map((s) => s.id)),
+        chapterOf,
+        sectionOf,
+        slugByFile: new Map(files.map((f) => [f, slugOf(f)])),
+      };
+    });
+  snap.byShort = new Map(snap.specs.map((s) => [s.short, s]));
+  return snap;
+}
+
+const current = await loadSnapshot(source, { commit, committedAt });
+if (!current.specs.some((s) => s.code === 'core')) fail('spec/core has no chapters');
+const currentVersions = Object.fromEntries(current.specs.map((s) => [s.code, s.version]));
+
+// The earlier drafts: every pin the lock already holds, and the draft the lock pinned last for any
+// specification whose version has since moved on.
+interface Lock extends Pin {
+  repository: string;
+  specifications: Record<string, string>;
+  earlier?: Record<string, Record<string, Pin>>;
+}
+const previous: Lock | undefined = existsSync(lockPath) ? JSON.parse(readFileSync(lockPath, 'utf8')) : undefined;
+const earlierPins: Record<string, Record<string, Pin>> = JSON.parse(JSON.stringify(previous?.earlier ?? {}));
+if (previous) {
+  for (const [code, version] of Object.entries(previous.specifications)) {
+    if (!currentVersions[code] || currentVersions[code] === version) continue;
+    (earlierPins[code] ??= {})[version] ??= { commit: previous.commit, committedAt: previous.committedAt };
+  }
+}
+for (const [code, versions] of Object.entries(earlierPins)) {
+  if (versions[currentVersions[code] ?? '']) fail(`${code} ${currentVersions[code]} is pinned as an earlier draft, and is also the checkout's current draft`);
+}
+
+const scratch = mkdtempSync(join(tmpdir(), 'floorspec-sync-'));
+process.on('exit', () => rmSync(scratch, { recursive: true, force: true }));
+
+const earlier: Spec[] = [];
+const byCommit = new Map<string, { pin: Pin; wanted: [string, string][] }>();
+for (const [code, versions] of Object.entries(earlierPins))
+  for (const [version, pin] of Object.entries(versions)) {
+    const entry = byCommit.get(pin.commit) ?? { pin, wanted: [] };
+    entry.wanted.push([code, version]);
+    byCommit.set(pin.commit, entry);
+  }
+for (const { pin, wanted } of [...byCommit.values()].sort((a, b) => a.pin.committedAt.localeCompare(b.pin.committedAt))) {
+  try {
+    git('cat-file', '-e', `${pin.commit}^{commit}`);
+  } catch {
+    fail(`${source} does not have commit ${pin.commit}, which an earlier draft is pinned at — fetch it`);
+  }
+  const dir = join(scratch, pin.commit);
+  mkdirSync(dir);
+  const tar = execFileSync('git', ['-C', source, 'archive', '--format=tar', pin.commit, 'spec', 'tools', 'conformance'], {
+    maxBuffer: 1 << 30,
   });
-if (!specs.some((s) => s.code === 'core')) fail('spec/core has no chapters');
-const specByShort = new Map(specs.map((s) => [s.short, s]));
+  execFileSync('tar', ['-x', '-C', dir], { input: tar });
+  const snap = await loadSnapshot(dir, pin, { versions: currentVersions, earlier: earlierPins });
+  for (const [code, version] of wanted) {
+    const spec = snap.specs.find((s) => s.code === code);
+    if (!spec || spec.version !== version)
+      fail(`${code} ${version} is pinned at ${pin.commit.slice(0, 7)}, but that commit has ${spec ? `${code} ${spec.version}` : `no spec/${code}`}`);
+    earlier.push(spec);
+  }
+}
+earlier.sort(
+  (a, b) =>
+    (ORDER.indexOf(a.code) + 1 || 99) - (ORDER.indexOf(b.code) + 1 || 99) ||
+    a.code.localeCompare(b.code) ||
+    b.version.localeCompare(a.version, undefined, { numeric: true }),
+);
 
 // ---------------------------------------------------------------------------------------------
 // 3. Chapters.
@@ -177,7 +284,7 @@ const OTHER_SPEC = /\b([A-Z][a-z]+)\s*(§)?\s*$/;
 /** What joins a list or range of numbers to the one before it: "Core 5.2.1, 5.2.2", "Core §5.1–5.3". */
 const CONTINUES = /^\s*(?:,|–|—|-|and|or|to|, and|, or)\s*$/;
 
-const page = (spec: Spec, slug: string, hash?: string) => `/floorspec/${spec.code}/${slug}${hash ? `#${hash}` : ''}`;
+const page = (spec: Spec, slug: string, hash?: string) => `${spec.base}/${slug}${hash ? `#${hash}` : ''}`;
 
 /** A section or statement number in `spec`, as a link, if it names something that exists. */
 function numberTarget(spec: Spec, chapter: string, section: string, statement: string | undefined): string | undefined {
@@ -205,7 +312,7 @@ function crossRefs(text: string, spec: Spec, here: string): Inline[] {
       if (slug) href = page(spec, slug);
     } else {
       const named = OTHER_SPEC.exec(before);
-      const target = named ? specByShort.get(named[1]!) : undefined;
+      const target = named ? spec.snap.byShort.get(named[1]!) : undefined;
       if (target && target !== spec) {
         // "Core §0.1" is a section; "Core 0.1" is a version.
         if (m[2] !== '0' || named![2]) href = numberTarget(target, m[2]!, m[3]!, m[4]);
@@ -234,10 +341,10 @@ function linkTarget(href: string, spec: Spec): string {
   const [file, hash] = href.split('#');
   const path = posix.join('spec', spec.code, file!);
   const m = /^spec\/([^/]+)\/([^/]+\.md)$/.exec(path);
-  const target = m ? specs.find((s) => s.code === m[1]) : undefined;
+  const target = m ? spec.snap.specs.find((s) => s.code === m[1]) : undefined;
   const slug = target?.slugByFile.get(m![2]!);
   if (target && slug) return page(target, slug, hash);
-  return `https://github.com/${REPO}/tree/${commit}/${posix.join('spec', spec.code, href)}`;
+  return `https://github.com/${REPO}/tree/${spec.snap.commit}/${posix.join('spec', spec.code, href)}`;
 }
 
 /** Text with statement tags and cross-references found in it. Tags become markers, grouped later. */
@@ -449,7 +556,7 @@ function chaptersOf(spec: Spec): Chapter[] {
 const MANDATORY: Level[] = ['MUST', 'MUST NOT'];
 
 function scanSuite(spec: Spec): { tests: number; coveredBy: Map<string, number> } {
-  const dir = join(source, 'conformance', spec.code, spec.version);
+  const dir = join(spec.snap.root, 'conformance', spec.code, spec.version);
   const coveredBy = new Map<string, number>();
   let tests = 0;
   const walk = (d: string) => {
@@ -459,10 +566,10 @@ function scanSuite(spec: Spec): { tests: number; coveredBy: Map<string, number> 
       if (statSync(p).isDirectory()) walk(p);
       else if (entry === 'test.json') {
         const t = JSON.parse(readFileSync(p, 'utf8')) as { covers?: unknown };
-        if (!Array.isArray(t.covers)) fail(`${relative(source, p)}: "covers" must be an array of statement IDs`);
+        if (!Array.isArray(t.covers)) fail(`${relative(spec.snap.root, p)}: "covers" must be an array of statement IDs`);
         tests += 1;
         for (const id of t.covers as string[]) {
-          if (!spec.statementIds.has(id)) fail(`${relative(source, p)} covers ${id}, which no statement has`);
+          if (!spec.statementIds.has(id)) fail(`${spec.snap.commit.slice(0, 7)}:${relative(spec.snap.root, p)} covers ${id}, which no statement has`);
           coveredBy.set(id, (coveredBy.get(id) ?? 0) + 1);
         }
       }
@@ -489,7 +596,8 @@ function gate(): GateReport | null {
 const gateReport = gate();
 
 function coverageOf(spec: Spec): Coverage {
-  const data = gateReport?.[spec.code];
+  // The gate counts the checkout's current drafts; an earlier draft is counted from its own suite.
+  const data = spec.snap === current ? gateReport?.[spec.code] : undefined;
   const counted = data
     ? { tests: data.tests, coveredBy: new Map(data.statements.map((s) => [s.id, s.tests.length])) }
     : scanSuite(spec);
@@ -514,6 +622,41 @@ function coverageOf(spec: Spec): Coverage {
 }
 
 // ---------------------------------------------------------------------------------------------
+// 4b. Retired statement IDs: the "Changes from" table of a draft's chapter 0 — `| \`FS-CORE-1.2.1\` |
+// \`FS-CORE-1.2.3\` | why |`. A link to a retired ID still lands somewhere: the page it was on says
+// what replaced it, and where the earlier draft that had it is published.
+
+const RETIRED_ROW = /^\|\s*`(FS-[A-Z]+-\d+\.\d+\.\d+)`\s*\|\s*(?:`(FS-[A-Z]+-\d+\.\d+\.\d+)`)?\s*\|\s*(.*?)\s*\|\s*$/;
+
+function retiredOf(spec: Spec): RetiredStatement[] {
+  const conventions = spec.files.find((f) => spec.slugByFile.get(f) === 'conventions');
+  if (!conventions) return [];
+  const list: RetiredStatement[] = [];
+  for (const line of readFileSync(join(spec.dir, conventions), 'utf8').split('\n')) {
+    const m = RETIRED_ROW.exec(line);
+    if (!m || !m[1]!.startsWith(`FS-${spec.code.toUpperCase()}-`)) continue;
+    const [, id, replacedBy, why] = m as unknown as [string, string, string | undefined, string];
+    if (spec.statementIds.has(id)) fail(`spec/${spec.code}: ${id} is listed as retired, and is still a statement`);
+    if (replacedBy && !spec.statementIds.has(replacedBy)) fail(`spec/${spec.code}: ${id} is replaced by ${replacedBy}, which no statement has`);
+    const section = id.replace(/^FS-[A-Z]+-/, '').replace(/\.\d+$/, '');
+    const chapter = spec.sectionOf.get(section) ?? spec.chapterOf.get(section.split('.')[0]!);
+    if (!chapter) fail(`spec/${spec.code}: retired ${id} belongs to no chapter of ${spec.name} ${spec.version}`);
+    const was = earlier.find((e) => e.code === spec.code && e.statementIds.has(id));
+    if (!was) fail(`spec/${spec.code}: retired ${id} is in no earlier draft this site publishes`);
+    const by = replacedBy && spec.sectionOf.get(replacedBy.replace(/^FS-[A-Z]+-/, '').replace(/\.\d+$/, ''));
+    list.push({
+      id,
+      ...(replacedBy && by ? { replacedBy: { id: replacedBy, href: by === chapter ? `#${replacedBy}` : page(spec, by, replacedBy) } } : {}),
+      why: group(inlines(marked.Lexer.lexInline(why), spec, chapter)),
+      section,
+      chapter,
+      was: { version: was.version, href: page(was, was.sectionOf.get(section)!, id) },
+    });
+  }
+  return list;
+}
+
+// ---------------------------------------------------------------------------------------------
 // 6. Schemas: copied byte for byte, and never changed once published.
 
 const sha256 = (path: string) => createHash('sha256').update(readFileSync(path)).digest('hex');
@@ -531,21 +674,29 @@ if (breaks.length)
       `Publish the change under a new version instead.`,
   );
 
+/** Every schema/<name>/<version>/ with JSON in it: each specification's drafts, and the registry's. */
 const added: string[] = [];
 const schemaCounts = new Map<string, number>();
-for (const spec of specs) {
-  const from = join(source, 'schema', spec.code, spec.version);
-  const incoming = existsSync(from) ? readdirSync(from).filter((f) => f.endsWith('.json')).sort() : [];
-  schemaCounts.set(spec.code, incoming.length);
-  if (!incoming.length) continue;
-  const to = join(root, 'public/floorspec/schema', spec.code, spec.version);
-  mkdirSync(to, { recursive: true });
-  for (const file of incoming) {
-    const path = `floorspec/schema/${spec.code}/${spec.version}/${file}`;
-    copyFileSync(join(from, file), join(to, file));
-    if (!published[path]) {
-      published[path] = sha256(join(from, file));
-      added.push(path);
+const isDir = (p: string) => existsSync(p) && statSync(p).isDirectory();
+for (const name of readdirSync(join(source, 'schema')).sort()) {
+  if (!isDir(join(source, 'schema', name))) continue;
+  for (const version of readdirSync(join(source, 'schema', name)).sort()) {
+    const from = join(source, 'schema', name, version);
+    if (!isDir(from)) continue;
+    const incoming = readdirSync(from)
+      .filter((f) => f.endsWith('.json'))
+      .sort();
+    if (!incoming.length) continue;
+    schemaCounts.set(`${name}/${version}`, incoming.length);
+    const to = join(root, 'public/floorspec/schema', name, version);
+    mkdirSync(to, { recursive: true });
+    for (const file of incoming) {
+      const path = `floorspec/schema/${name}/${version}/${file}`;
+      copyFileSync(join(from, file), join(to, file));
+      if (!published[path]) {
+        published[path] = sha256(join(from, file));
+        added.push(path);
+      }
     }
   }
 }
@@ -557,21 +708,31 @@ const sortedPublished = Object.fromEntries(Object.entries(published).sort(([a], 
 const json = (value: unknown) => `${JSON.stringify(value, null, 1)}\n`;
 rmSync(generated, { recursive: true, force: true });
 
-const index: FloorspecIndex = { specifications: [] };
 const report: string[] = [`floorspec @ ${commit.slice(0, 7)} (${committedAt})`];
-for (const spec of specs) {
+
+/** Writes one draft's chapters and coverage under generated/<spec>/<version>/, and returns its index entry. */
+function publish(spec: Spec): SpecIndex {
   const chapters = chaptersOf(spec);
   const coverage = coverageOf(spec);
-  const dir = join(generated, spec.code);
+  const retired = spec.snap === current ? retiredOf(spec) : [];
+  const dir = join(generated, spec.code, spec.version);
   mkdirSync(join(dir, 'chapters'), { recursive: true });
   for (const ch of chapters) writeFileSync(join(dir, 'chapters', `${ch.slug}.json`), JSON.stringify(ch) + '\n');
   writeFileSync(join(dir, 'coverage.json'), json(coverage));
 
-  const entry: SpecIndex = {
+  const schemas = schemaCounts.get(`${spec.code}/${spec.version}`) ?? 0;
+  report.push(
+    `${spec.name} ${spec.version} @ ${spec.snap.commit.slice(0, 7)} → ${spec.base}: ${chapters.length} chapters, ${spec.statements.length} statements (${coverage.mandatory} MUST / MUST NOT); ` +
+      `coverage (${coverage.source}): ${coverage.covered} of ${coverage.mandatory}, ${coverage.tests} tests; ` +
+      `${schemas} schemas${retired.length ? `; retired ${retired.map((r) => r.id).join(', ')}` : ''}`,
+  );
+  return {
     spec: spec.code,
     name: spec.name,
     short: spec.short,
     version: spec.version,
+    base: spec.base,
+    commit: spec.snap.commit,
     chapters: chapters.map((ch) => {
       const file = spec.files.find((f) => slugOf(f) === ch.slug)!;
       return {
@@ -587,21 +748,22 @@ for (const spec of specs) {
     mandatory: coverage.mandatory,
     covered: coverage.covered,
     tests: coverage.tests,
+    ...(retired.length ? { retired } : {}),
   };
-  index.specifications.push(entry);
-  report.push(
-    `${spec.name} ${spec.version}: ${chapters.length} chapters, ${spec.statements.length} statements (${coverage.mandatory} MUST / MUST NOT); ` +
-      `coverage (${coverage.source}): ${coverage.covered} of ${coverage.mandatory}, ${coverage.tests} tests; ` +
-      `${schemaCounts.get(spec.code)} schemas`,
-  );
 }
+
+const index: FloorspecIndex = { specifications: current.specs.map(publish), earlier: earlier.map(publish) };
+for (const [key, count] of schemaCounts) if (!current.specs.some((s) => `${s.code}/${s.version}` === key)) report.push(`schema/${key}: ${count} schemas`);
+
+const sortedPins = Object.fromEntries(
+  Object.entries(earlierPins)
+    .sort(([a], [b]) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b))
+    .map(([code, versions]) => [code, Object.fromEntries(Object.entries(versions).sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true })))]),
+);
 
 writeFileSync(join(generated, 'index.json'), json(index));
 writeFileSync(publishedPath, json(sortedPublished));
-writeFileSync(
-  join(out, 'floorspec.lock.json'),
-  json({ repository: REPO, commit, committedAt, specifications: Object.fromEntries(specs.map((s) => [s.code, s.version])) }),
-);
+writeFileSync(lockPath, json({ repository: REPO, commit, committedAt, specifications: currentVersions, earlier: sortedPins }));
 
 if (added.length) report.push(`newly published: ${added.join(', ')}`);
 console.log(report.join('\n'));

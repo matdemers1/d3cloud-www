@@ -4,31 +4,35 @@ import { Link } from '../router';
 import { Band, Kicker, PrimaryButton, SecondaryButton, WRAP } from '../components/Marketing';
 import { ProductMark } from '../components/ProductMark';
 import { workshopBySlug, workshopPath } from '../content/ecosystem';
-import type { ChapterSummary, Coverage, CoverageRow, SpecIndex } from './ast';
+import type { Block, ChapterSummary, Coverage, CoverageRow, RetiredStatement, SpecIndex } from './ast';
 import { loadChapter, loadCoverage } from './load';
 // Every published schema file, by its path under the site root (and its SHA-256, which only the
 // tests read). Imported here, in the lazy chunk, rather than beside the routes.
 import PUBLISHED_SCHEMAS from './published-schemas.json';
-import { Blocks, LevelBadge } from './Prose';
+import { Blocks, Inlines, LINK, LevelBadge } from './Prose';
 import { CopyContext } from './copy';
 import {
   CORE,
+  EARLIER,
   FLOORSPEC,
   FLOORSPEC_LOCK,
   FLOORSPEC_REPO,
-  SHORT_SHA,
   SPECS,
   chapterBySlug,
   chapterLabel,
   chapterPath,
+  earlierOf,
+  isCurrent,
   pinnedTree,
+  specAt,
   specByCode,
   specName,
 } from './spec';
 
 /**
- * The Floorspec standard's pages (DI-T-10.2, DI-T-10.4, FLR-ADR-018): the landing page, a page
- * per chapter of each drafted specification (Core and Ops), and the conformance coverage of both.
+ * The Floorspec standard's pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, FLR-ADR-018): the landing page,
+ * a page per chapter of each specification's current draft (Core and Ops) and of every earlier
+ * draft still published (Core 0.1, Ops 0.1), and the conformance coverage of all of them.
  * All of it is one lazily loaded chunk, and each chapter's text is another, so none of it weighs
  * on the rest of the site.
  */
@@ -40,11 +44,25 @@ const APP_PATH = (() => {
 
 const firstChapter = (spec: SpecIndex) => chapterPath(spec, spec.chapters[0]!.slug);
 
+/** The same chapter in another draft, or that draft's first chapter when it has no such chapter. */
+const sameChapter = (spec: SpecIndex, slug: string) =>
+  chapterBySlug(spec, slug) ? chapterPath(spec, slug) : firstChapter(spec);
+
+/** A draft's section on the coverage page: `#core` for the current one, `#core-0.1` for an earlier one. */
+const coverageAnchor = (spec: SpecIndex) => (isCurrent(spec) ? spec.spec : `${spec.spec}-${spec.version}`);
+
+const shortSha = (commit: string) => commit.slice(0, 7);
+
 /** Every published schema of one draft of one specification, by its path under the site root. */
 const schemasOf = (spec: SpecIndex) =>
   Object.keys(PUBLISHED_SCHEMAS)
     .filter((path) => path.startsWith(`floorspec/schema/${spec.spec}/${spec.version}/`))
     .sort();
+
+/** The extension registry's schemas (Core 0.2, 12.2): not a specification's, so listed on their own. */
+const REGISTRY_SCHEMAS = Object.keys(PUBLISHED_SCHEMAS)
+  .filter((path) => path.startsWith('floorspec/schema/registry/'))
+  .sort();
 
 /**
  * A chapter's summary from its README table, as a sentence: "Merging junctions, …". One that
@@ -74,13 +92,61 @@ function DraftBanner({ compact = false, version = CORE.version }: { compact?: bo
   );
 }
 
+/**
+ * An earlier draft's banner in place of the draft banner: it is kept exactly as published so links
+ * and implementations that target it keep working, and it says where the current draft is.
+ */
+function SupersededBanner({ spec, slug }: { spec: SpecIndex; slug?: string }) {
+  const now = specByCode(spec.spec)!;
+  return (
+    <div role="note" aria-label="Earlier draft" className="flex flex-col gap-1.5 rounded-lg border border-border-field bg-surface px-4 py-3">
+      <p className="font-mono text-12 font-semibold tracking-label text-fg-muted uppercase">
+        Draft {spec.version} — superseded by Draft {now.version}
+      </p>
+      <p className="text-14 text-fg">
+        This is {specName(spec)}, an earlier draft, kept exactly as it was published. The current draft
+        is{' '}
+        <Link to={slug ? sameChapter(now, slug) : firstChapter(now)}>
+          {specName(now)}
+          {slug && chapterBySlug(now, slug) ? ` — this chapter` : ''}
+        </Link>
+        .
+      </p>
+    </div>
+  );
+}
+
+/** On a current draft's chapter: which draft it is, and where each earlier one is (DI-T-10.5). */
+function VersionNote({ spec, slug }: { spec: SpecIndex; slug: string }) {
+  const older = earlierOf(spec.spec);
+  if (!older.length) return null;
+  const isNew = older.every((old) => !chapterBySlug(old, slug));
+  return (
+    <p className="text-14 text-fg-muted">
+      <span className="font-semibold text-fg">
+        {spec.short} {spec.version} Draft
+      </span>
+      {isNew && ` · new in ${spec.version}`}
+      {older.map((old) => (
+        <span key={old.version}>
+          {' · '}
+          {spec.short} {old.version} is published, unchanged, at{' '}
+          <Link to={sameChapter(old, slug)} className="font-mono text-13 break-all">
+            {chapterBySlug(old, slug) ? chapterPath(old, slug) : `${old.base}/…`}
+          </Link>
+        </span>
+      ))}
+    </p>
+  );
+}
+
 /** "From matdemers1/floorspec@2c7b253", linking to that commit's tree — or to a file in it. */
-function Pinned({ path, className = '' }: { path?: string; className?: string }) {
+function Pinned({ path, commit = FLOORSPEC_LOCK.commit, className = '' }: { path?: string; commit?: string; className?: string }) {
   return (
     <p className={`text-13 text-fg-muted ${className}`}>
       From{' '}
-      <UiLink href={pinnedTree(path)}>
-        {FLOORSPEC_LOCK.repository}@{SHORT_SHA}
+      <UiLink href={pinnedTree(path, commit)}>
+        {FLOORSPEC_LOCK.repository}@{shortSha(commit)}
       </UiLink>
       {path ? ` · ${path}` : ''}
     </p>
@@ -172,27 +238,30 @@ const SPECIFICATIONS: { code: string; name: string; text: string; title: string;
   {
     code: 'core',
     name: 'Floorspec Core',
-    text: 'The document: levels, walls on a junction graph, rooms, openings, types and materials — what makes it valid, the exact geometry derived from it, and its canonical form.',
+    text: 'The document: levels, walls on a junction graph, rooms, openings, types and materials, the program, extensions, hosted elements and circulation — what makes it valid, the exact geometry derived from it, and its canonical form.',
     title: 'The document.',
     intro: (
       <>
         What a house <em>is</em>: the document, its units and identity, walls and the rooms they
-        enclose, openings, types and materials — what makes a document valid, the exact geometry
-        every reader derives from it, its one canonical form, and a mapping to IFC.
+        enclose, openings, types and materials, the program it is designed against, extensions, the
+        elements hosted on walls and floors with the clearances they need, and how you get from room
+        to room — what makes a document valid, the exact geometry every reader derives from it, its
+        one canonical form, and a mapping to IFC.
       </>
     ),
   },
   {
     code: 'ops',
     name: 'Floorspec Ops',
-    text: 'The normative edit operations: a relative reference grammar, atomic batches and locks — how a person or an agent changes a document.',
+    text: 'The normative edit operations: a relative reference grammar, atomic batches and locks — how a person or an agent changes a document, its program and the devices on its walls.',
     title: 'The edits.',
     intro: (
       <>
         How a house <em>changes</em>: a batch of operations applied as one transaction that either
         commits or changes nothing, five primitives and the composites people actually ask for, a
         reference grammar that turns “two foot six” and “the north wall of the kitchen” into exact
-        values, normalization, and locks. It operates on Core documents and is versioned on its own.
+        values, normalization, and locks — and edits to the program and to hosted elements. It
+        operates on Core documents and is versioned on its own.
       </>
     ),
   },
@@ -262,13 +331,128 @@ function SpecBand({ spec, sunken }: { spec: SpecIndex; sunken: boolean }) {
             </p>
           )}
         </div>
+        {(spec.spec === 'core' && REGISTRY_SCHEMAS.length > 0) || earlierOf(spec.spec).length > 0 ? (
+          <div className="flex max-w-3xl flex-col gap-2 text-14 text-fg-muted">
+            {spec.spec === 'core' &&
+              REGISTRY_SCHEMAS.map((path) => (
+                <p key={path}>
+                  The extension registry’s entry schema (chapter 12):{' '}
+                  <UiLink href={`/${path}`}>{path.replace('floorspec/schema/', '')}</UiLink>
+                </p>
+              ))}
+            {earlierOf(spec.spec).map((old) => (
+              <p key={old.version}>
+                {specName(old)} stays published exactly as it was:{' '}
+                <Link to={firstChapter(old)}>its chapters</Link>
+                {schemasOf(old).length > 0 && (
+                  <>
+                    , and its schemas at{' '}
+                    <span className="font-mono text-13 whitespace-nowrap">
+                      /floorspec/schema/{old.spec}/{old.version}/
+                    </span>
+                  </>
+                )}
+                .
+              </p>
+            ))}
+          </div>
+        ) : null}
         <Pinned path={`spec/${spec.spec}`} />
       </div>
     </Band>
   );
 }
 
+/** What Draft 0.2 adds, on the landing page while 0.2 is the current draft (DI-T-10.5). */
+const NEW_IN_02: { spec: string; slug: string; hash?: string; title: string; text: ReactNode }[] = [
+  {
+    spec: 'core',
+    slug: 'program',
+    title: 'The program',
+    text: 'The brief a house is designed against — what spaces, how many and how large, and which should or must not be next to each other — kept in the document, with each room saying which item it fulfils.',
+  },
+  {
+    spec: 'core',
+    slug: 'extensions',
+    title: 'Extensions, in full',
+    text: 'Declarations, registry entries, dependencies, the elements extensions add, and the fallbacks that keep them visible to software that has never heard of them.',
+  },
+  {
+    spec: 'core',
+    slug: 'hosting',
+    title: 'Hosting and clearances',
+    text: 'An outlet on a wall face, a toilet on a floor, a sofa on a level: elements placed relative to a host that move with it, and the space each needs kept clear.',
+  },
+  {
+    spec: 'core',
+    slug: 'circulation',
+    title: 'Circulation',
+    text: 'The door graph of each building, its entries, which rooms can be reached — and a bedroom you can only reach through another.',
+  },
+  {
+    spec: 'ops',
+    slug: 'composites',
+    hash: '4.9',
+    title: 'Edits for the program and hosted devices',
+    text: (
+      <>
+        Ops 0.2 adds <code className="font-mono">addProgramItem</code>,{' '}
+        <code className="font-mono">setAdjacency</code> and <code className="font-mono">setRoomBrief</code>{' '}
+        for the brief, <code className="font-mono">placeElement</code> and{' '}
+        <code className="font-mono">moveElement</code> for devices and fixtures, and hosted elements that
+        follow their walls.
+      </>
+    ),
+  },
+];
+
+function WhatsNew({ sunken }: { sunken: boolean }) {
+  const items = NEW_IN_02.flatMap((item) => {
+    const spec = specByCode(item.spec);
+    return spec && chapterBySlug(spec, item.slug) ? [{ ...item, spec, chapter: chapterBySlug(spec, item.slug)! }] : [];
+  });
+  return (
+    <Band label="Draft 0.2" title="What 0.2 adds." sunken={sunken}>
+      <div className="flex flex-col gap-8">
+        <ul className="grid gap-4 md:grid-cols-2">
+          {items.map((item) => (
+            <li key={`${item.spec.spec}/${item.slug}`}>
+              <Link
+                to={chapterPath(item.spec, item.slug, item.hash)}
+                variant="muted"
+                className="flex h-full flex-col gap-1.5 rounded-lg border border-border bg-surface p-5 no-underline hover:bg-surface-hover"
+              >
+                <span className="font-mono text-12 text-fg-faint">
+                  {item.spec.short} {item.spec.version} · {chapterLabel(item.chapter)}
+                </span>
+                <span className="text-16 font-semibold text-fg">{item.title}</span>
+                <span className="text-14 text-fg-muted">{item.text}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {EARLIER.length > 0 && (
+          <p className="max-w-3xl text-14 text-fg-muted">
+            {EARLIER.map((old, i) => (
+              <span key={`${old.spec}/${old.version}`}>
+                {i > 0 && (i === EARLIER.length - 1 ? ' and ' : ', ')}
+                <Link to={firstChapter(old)}>{specName(old)}</Link>
+              </span>
+            ))}{' '}
+            stay published exactly as they were, at their own addresses, and every schema already
+            published keeps its URL.
+          </p>
+        )}
+      </div>
+    </Band>
+  );
+}
+
 export function StandardPage() {
+  // The bands alternate plain and sunken, whichever of them are shown.
+  let band = 0;
+  const sunk = () => band++ % 2 === 0;
+  const news = CORE.version === '0.2';
   return (
     <>
       <section aria-labelledby="floorspec-title" className="relative overflow-hidden">
@@ -310,7 +494,7 @@ export function StandardPage() {
         </div>
       </section>
 
-      <Band label="Why" title="Houses as code." sunken>
+      <Band label="Why" title="Houses as code." sunken={sunk()}>
         <div className="flex flex-col gap-10">
           <p className="max-w-3xl text-16 text-fg sm:text-20">
             Floor plans live in drawings and in proprietary files. A drawing cannot be diffed, and a
@@ -332,7 +516,9 @@ export function StandardPage() {
         </div>
       </Band>
 
-      <Band label="The specifications" title="Three of them.">
+      {news && <WhatsNew sunken={sunk()} />}
+
+      <Band label="The specifications" title="Three of them." sunken={sunk()}>
         <ul className="flex flex-col gap-4">
           {SPECIFICATIONS.map((copy) => {
             const spec = specByCode(copy.code);
@@ -373,11 +559,11 @@ export function StandardPage() {
         </ul>
       </Band>
 
-      {SPECS.map((spec, i) => (
-        <SpecBand key={spec.spec} spec={spec} sunken={i % 2 === 0} />
+      {SPECS.map((spec) => (
+        <SpecBand key={spec.spec} spec={spec} sunken={sunk()} />
       ))}
 
-      <Band label="Conformance" title="Every MUST, tested." sunken={SPECS.length % 2 === 0}>
+      <Band label="Conformance" title="Every MUST, tested." sunken={sunk()}>
         <div className="flex max-w-3xl flex-col gap-6">
           <p className="text-16 text-fg-muted">
             Every MUST and MUST NOT needs at least one test in its specification’s conformance suite,
@@ -402,7 +588,7 @@ export function StandardPage() {
         </div>
       </Band>
 
-      <Band label="Reference implementation" title="D3 Floorspec." sunken={SPECS.length % 2 === 1}>
+      <Band label="Reference implementation" title="D3 Floorspec." sunken={sunk()}>
         <div className="flex max-w-3xl flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
           <ProductMark slug="floorspec-app" accent={FLOORSPEC.accent} size={72} className="text-fg" />
           <div className="flex flex-col gap-4">
@@ -419,7 +605,7 @@ export function StandardPage() {
         </div>
       </Band>
 
-      <Band label="Licence" title="Yours to use." sunken={SPECS.length % 2 === 0}>
+      <Band label="Licence" title="Yours to use." sunken={sunk()}>
         <div className="flex max-w-3xl flex-col gap-3 text-16 text-fg">
           <p>
             The specification text is{' '}
@@ -472,9 +658,77 @@ function useLateFragment(loaded: unknown) {
   }, [loaded]);
 }
 
+/**
+ * Where a statement ID this draft retired used to be (DI-T-10.5): a link to it — from an old
+ * citation, or from the earlier draft's own pages — lands here, and says what replaced it and where
+ * the statement as it was is still published.
+ */
+function RetiredNote({ spec, item }: { spec: SpecIndex; item: RetiredStatement }) {
+  return (
+    <aside
+      id={item.id}
+      aria-label={`Retired statement ${item.id}`}
+      className="flex scroll-mt-28 flex-col gap-1.5 rounded-md border border-dashed border-border-field px-4 py-3 text-14 text-fg-muted target:border-warning target:bg-warning-muted"
+    >
+      <p className="font-mono text-11 font-semibold tracking-label text-fg-faint uppercase">
+        {item.id} · retired in {spec.short} {spec.version}
+      </p>
+      <p>
+        {item.replacedBy && (
+          <>
+            Replaced by{' '}
+            {item.replacedBy.href.startsWith('/') ? (
+              <Link to={item.replacedBy.href} className={`font-mono text-13 ${LINK}`}>
+                {item.replacedBy.id}
+              </Link>
+            ) : (
+              <a href={item.replacedBy.href} className={`font-mono text-13 ${LINK}`}>
+                {item.replacedBy.id}
+              </a>
+            )}{' '}
+            —{' '}
+          </>
+        )}
+        <Inlines items={item.why} />. The statement as it was is in{' '}
+        <Link to={item.was.href} className={LINK}>
+          {spec.short} {item.was.version}
+        </Link>
+        .
+      </p>
+    </aside>
+  );
+}
+
+/** A chapter's blocks, with a note for each retired statement placed at the end of the section it was in. */
+function ChapterBlocks({ spec, blocks, retired }: { spec: SpecIndex; blocks: Block[]; retired: RetiredStatement[] }) {
+  if (!retired.length) return <Blocks blocks={blocks} />;
+  const out: ReactNode[] = [];
+  const placed = new Set<string>();
+  let start = 0;
+  let section: string | undefined;
+  const close = (end: number) => {
+    if (end > start) out.push(<Blocks key={`b${start}`} blocks={blocks.slice(start, end)} />);
+    start = end;
+    for (const item of retired.filter((r) => r.section === section)) {
+      out.push(<RetiredNote key={item.id} spec={spec} item={item} />);
+      placed.add(item.id);
+    }
+  };
+  blocks.forEach((block, i) => {
+    if (block.t === 'h' && block.depth <= 2) {
+      close(i);
+      section = block.number;
+    }
+  });
+  close(blocks.length);
+  for (const item of retired) if (!placed.has(item.id)) out.push(<RetiredNote key={item.id} spec={spec} item={item} />);
+  return <>{out}</>;
+}
+
 function ChapterBody({ spec, summary }: { spec: SpecIndex; summary: ChapterSummary }) {
-  const chapter = use(loadChapter(spec.spec, summary.slug));
+  const chapter = use(loadChapter(spec, summary.slug));
   useLateFragment(chapter);
+  const retired = (spec.retired ?? []).filter((item) => item.chapter === summary.slug);
 
   const index = (
     <ol className="flex flex-col gap-0.5 text-14">
@@ -513,7 +767,7 @@ function ChapterBody({ spec, summary }: { spec: SpecIndex; summary: ChapterSumma
         </>
       )}
       <article className="flex max-w-4xl min-w-0 flex-1 flex-col gap-6">
-        <Blocks blocks={chapter.blocks} />
+        <ChapterBlocks spec={spec} blocks={chapter.blocks} retired={retired} />
       </article>
     </div>
   );
@@ -543,9 +797,12 @@ function ChapterNav({ spec, summary }: { spec: SpecIndex; summary: ChapterSummar
           <span className="text-16 font-semibold text-fg">{chapterLabel(next)}</span>
         </Link>
       ) : (
-        <Link to={`/floorspec/coverage#${spec.spec}`} variant="muted" className={`${card} sm:text-right`}>
+        <Link to={`/floorspec/coverage#${coverageAnchor(spec)}`} variant="muted" className={`${card} sm:text-right`}>
           <span className="text-13 text-fg-muted">Next →</span>
-          <span className="text-16 font-semibold text-fg">Conformance coverage of {spec.short}</span>
+          <span className="text-16 font-semibold text-fg">
+            Conformance coverage of {spec.short}
+            {isCurrent(spec) ? '' : ` ${spec.version}`}
+          </span>
         </Link>
       )}
     </nav>
@@ -560,8 +817,9 @@ function Loading({ what }: { what: string }) {
   );
 }
 
-export function ChapterPage({ spec: code, slug }: { spec: string; slug: string }) {
-  const spec = specByCode(code)!;
+export function ChapterPage({ spec: code, version, slug }: { spec: string; version: string; slug: string }) {
+  const spec = specAt(code, version)!;
+  const current = isCurrent(spec);
   const summary = chapterBySlug(spec, slug)!;
   const [note, copy] = useCopiedNote();
   const numbered = /^\d+$/.test(summary.number);
@@ -585,8 +843,9 @@ export function ChapterPage({ spec: code, slug }: { spec: string; slug: string }
               {asSentence(summary.summary)}
             </p>
           )}
-          <Pinned path={summary.file} />
-          <DraftBanner compact version={spec.version} />
+          <Pinned path={summary.file} commit={spec.commit} />
+          {current && <VersionNote spec={spec} slug={slug} />}
+          {current ? <DraftBanner compact version={spec.version} /> : <SupersededBanner spec={spec} slug={slug} />}
         </header>
 
         <Suspense fallback={<Loading what="the chapter" />}>
@@ -662,17 +921,20 @@ function CoverageTable({ spec, rows }: { spec: SpecIndex; rows: CoverageRow[] })
   );
 }
 
-/** Both specifications' coverage, fetched together and cached, so `use` sees one promise. */
+/** Every draft's coverage, current and earlier, fetched together and cached, so `use` sees one promise. */
+const ALL = [...SPECS, ...EARLIER];
 let allCoverage: Promise<Coverage[]> | undefined;
-const loadAllCoverage = () => (allCoverage ??= Promise.all(SPECS.map((spec) => loadCoverage(spec.spec))));
+const loadAllCoverage = () => (allCoverage ??= Promise.all(ALL.map((spec) => loadCoverage(spec))));
 
 function SpecCoverage({ spec, coverage }: { spec: SpecIndex; coverage: Coverage }) {
   const fraction = coverage.mandatory ? coverage.covered / coverage.mandatory : 0;
+  const anchor = coverageAnchor(spec);
   return (
-    <section aria-labelledby={spec.spec} className="flex scroll-mt-24 flex-col gap-10">
+    <section aria-labelledby={anchor} className="flex scroll-mt-24 flex-col gap-10">
       <div className="flex flex-col gap-5">
-        <h2 id={spec.spec} className="scroll-mt-24 font-display text-display-md text-fg">
+        <h2 id={anchor} className="scroll-mt-24 font-display text-display-md text-fg">
           {specName(spec)}
+          {!isCurrent(spec) && <span className="text-fg-faint"> · earlier draft</span>}
         </h2>
         <p className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
           <span className="font-display text-stat text-fg">
@@ -692,9 +954,10 @@ function SpecCoverage({ spec, coverage }: { spec: SpecIndex; coverage: Coverage 
           />
         </span>
         <p className="max-w-3xl text-14 text-fg-muted">
-          Counted by the {coverage.source} at {FLOORSPEC_LOCK.repository}@{SHORT_SHA}, over
-          conformance/{spec.spec}/{spec.version}. SHOULD and MAY statements are listed too; the suite
-          is not required to test them.
+          {coverage.source.startsWith('scan of ')
+            ? `Counted by a ${coverage.source} at ${FLOORSPEC_LOCK.repository}@${shortSha(spec.commit)}.`
+            : `Counted by the ${coverage.source} at ${FLOORSPEC_LOCK.repository}@${shortSha(spec.commit)}, over conformance/${spec.spec}/${spec.version}.`}{' '}
+          SHOULD and MAY statements are listed too; the suite is not required to test them.
         </p>
       </div>
 
@@ -704,9 +967,9 @@ function SpecCoverage({ spec, coverage }: { spec: SpecIndex; coverage: Coverage 
           const rows = coverage.statements.filter((row) => row.chapter === chapter.slug);
           const must = rows.filter((row) => row.level === 'MUST' || row.level === 'MUST NOT');
           return (
-            <section key={chapter.slug} aria-labelledby={`cov-${spec.spec}-${chapter.slug}`} className="flex flex-col gap-4">
+            <section key={chapter.slug} aria-labelledby={`cov-${anchor}-${chapter.slug}`} className="flex flex-col gap-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 id={`cov-${spec.spec}-${chapter.slug}`} className="text-20 font-semibold text-fg">
+                <h3 id={`cov-${anchor}-${chapter.slug}`} className="text-20 font-semibold text-fg">
                   <Link to={chapterPath(spec, chapter.slug)} variant="muted" className="no-underline hover:underline">
                     {chapterLabel(chapter)}
                   </Link>
@@ -726,27 +989,49 @@ function SpecCoverage({ spec, coverage }: { spec: SpecIndex; coverage: Coverage 
 function CoverageBody() {
   const coverages = use(loadAllCoverage());
   useLateFragment(coverages);
+  const coverageOf = (spec: SpecIndex) => coverages[ALL.indexOf(spec)]!;
+  const pill = (spec: SpecIndex, muted: boolean) => (
+    <a
+      key={coverageAnchor(spec)}
+      href={`#${coverageAnchor(spec)}`}
+      className={`flex min-h-11 items-center gap-3 rounded-lg border px-4 text-14 no-underline hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-focus ${muted ? 'border-dashed border-border-field text-fg-muted' : 'border-border bg-surface text-fg'}`}
+    >
+      <span className="font-semibold">{specName(spec)}</span>
+      <span className="font-mono text-12 text-fg-muted">
+        {spec.covered} of {spec.mandatory}
+      </span>
+    </a>
+  );
   return (
     <div className="flex flex-col gap-20">
-      {SPECS.length > 1 && (
-        <nav aria-label="Specifications" className="flex flex-wrap gap-3">
-          {SPECS.map((spec) => (
-            <a
-              key={spec.spec}
-              href={`#${spec.spec}`}
-              className="flex min-h-11 items-center gap-3 rounded-lg border border-border bg-surface px-4 text-14 text-fg no-underline hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-focus"
-            >
-              <span className="font-semibold">{specName(spec)}</span>
-              <span className="font-mono text-12 text-fg-muted">
-                {spec.covered} of {spec.mandatory}
-              </span>
-            </a>
-          ))}
+      {ALL.length > 1 && (
+        <nav aria-label="Specifications" className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-3">{SPECS.map((spec) => pill(spec, false))}</div>
+          {EARLIER.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-13 text-fg-muted">Earlier drafts</span>
+              {EARLIER.map((spec) => pill(spec, true))}
+            </div>
+          )}
         </nav>
       )}
-      {SPECS.map((spec, i) => (
-        <SpecCoverage key={spec.spec} spec={spec} coverage={coverages[i]!} />
+      {SPECS.map((spec) => (
+        <SpecCoverage key={coverageAnchor(spec)} spec={spec} coverage={coverageOf(spec)} />
       ))}
+      {EARLIER.length > 0 && (
+        <div className="flex flex-col gap-20 border-t border-border pt-16">
+          <div className="flex max-w-3xl flex-col gap-3">
+            <Kicker>Earlier drafts</Kicker>
+            <p className="text-16 text-fg-muted">
+              Each earlier draft is counted against its own suite, at the commit it is published from,
+              and stays as it was published.
+            </p>
+          </div>
+          {EARLIER.map((spec) => (
+            <SpecCoverage key={coverageAnchor(spec)} spec={spec} coverage={coverageOf(spec)} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -763,7 +1048,7 @@ export function CoveragePage() {
           Every MUST and MUST NOT in {SPECS.map((spec) => specName(spec)).join(' and ')} needs at
           least one test in its conformance suite, and the standard’s coverage gate fails until each
           one has it. This is where that stands, statement by statement, at the commit this site
-          publishes.
+          publishes{EARLIER.length > 0 ? ' — and, below, where each earlier draft stood when it was published' : ''}.
         </p>
         <DraftBanner compact />
       </header>

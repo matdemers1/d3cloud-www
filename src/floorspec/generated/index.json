@@ -4,7 +4,328 @@
    "spec": "core",
    "name": "Floorspec Core",
    "short": "Core",
+   "version": "0.2",
+   "base": "/floorspec/core",
+   "commit": "6f9bc07b08dfc229719a9b93e344bd47f33b3ccd",
+   "chapters": [
+    {
+     "slug": "conventions",
+     "file": "spec/core/00-conventions.md",
+     "number": "0",
+     "title": "Conventions",
+     "summary": "normative language, conformance classes, notation, what this draft does not define, changes from 0.1",
+     "statements": 0
+    },
+    {
+     "slug": "model",
+     "file": "spec/core/01-model.md",
+     "number": "1",
+     "title": "Document model",
+     "summary": "the document, version, spatial structure, collections, defaults, extensions, extras",
+     "statements": 26
+    },
+    {
+     "slug": "units",
+     "file": "spec/core/02-units.md",
+     "number": "2",
+     "title": "Units, quantities and coordinates",
+     "summary": "base unit, exact derivation and rounding, axes, angles, polygons",
+     "statements": 5
+    },
+    {
+     "slug": "identity",
+     "file": "spec/core/03-identity.md",
+     "number": "3",
+     "title": "Identity and references",
+     "summary": "IDs, references, level consistency",
+     "statements": 8
+    },
+    {
+     "slug": "taxonomy",
+     "file": "spec/core/04-taxonomy.md",
+     "number": "4",
+     "title": "Taxonomies",
+     "summary": "room functions, extension terms, layer functions",
+     "statements": 3
+    },
+    {
+     "slug": "walls",
+     "file": "spec/core/05-walls.md",
+     "number": "5",
+     "title": "Walls",
+     "summary": "junctions, walls, separators, planarity, face lines, wedges, outlines, joins, heights",
+     "statements": 22
+    },
+    {
+     "slug": "rooms",
+     "file": "spec/core/06-rooms.md",
+     "number": "6",
+     "title": "Rooms",
+     "summary": "faces, room polygons, anchors and identity, net area, slabs",
+     "statements": 8
+    },
+    {
+     "slug": "openings",
+     "file": "spec/core/07-openings.md",
+     "number": "7",
+     "title": "Openings",
+     "summary": "hosted openings, typed dimensions, placement",
+     "statements": 8
+    },
+    {
+     "slug": "types",
+     "file": "spec/core/08-types.md",
+     "number": "8",
+     "title": "Types, materials and assets",
+     "summary": "types and overrides, layers, door and window types, materials, assets",
+     "statements": 10
+    },
+    {
+     "slug": "serialization",
+     "file": "spec/core/09-serialization.md",
+     "number": "9",
+     "title": "Serialization",
+     "summary": "encoding, canonical form, content hash",
+     "statements": 6
+    },
+    {
+     "slug": "diagnostics",
+     "file": "spec/core/10-diagnostics.md",
+     "number": "10",
+     "title": "Validation and diagnostics",
+     "summary": "tiers, diagnostics, order of evaluation, the catalogue, fixes",
+     "statements": 4
+    },
+    {
+     "slug": "program",
+     "file": "spec/core/11-program.md",
+     "number": "11",
+     "title": "The program",
+     "summary": "program items, the adjacency graph, rooms that fulfil items, adjacent and connected rooms",
+     "statements": 9
+    },
+    {
+     "slug": "extensions",
+     "file": "spec/core/12-extensions.md",
+     "number": "12",
+     "title": "Extensions",
+     "summary": "declarations, the registry and known extensions, dependencies, extension elements, fallbacks",
+     "statements": 16
+    },
+    {
+     "slug": "hosting",
+     "file": "spec/core/13-hosting.md",
+     "number": "13",
+     "title": "Hosting and clearances",
+     "summary": "local frames, boxes, hosts and placement, clearance envelopes, the overlap measure",
+     "statements": 12
+    },
+    {
+     "slug": "circulation",
+     "file": "spec/core/14-circulation.md",
+     "number": "14",
+     "title": "Circulation",
+     "summary": "the door graph, entries, reachable rooms, sleeping rooms reached through another",
+     "statements": 4
+    },
+    {
+     "slug": "ifc",
+     "file": "spec/core/annex-ifc.md",
+     "number": "A",
+     "title": "IFC4 mapping",
+     "summary": "every core kind and its IFC4 entity",
+     "statements": 0
+    }
+   ],
+   "statements": 141,
+   "mandatory": 130,
+   "covered": 130,
+   "tests": 491,
+   "retired": [
+    {
+     "id": "FS-CORE-1.2.1",
+     "replacedBy": {
+      "id": "FS-CORE-1.2.3",
+      "href": "#FS-CORE-1.2.3"
+     },
+     "why": [
+      "a document targeting this draft declares ",
+      {
+       "t": "code",
+       "v": "\"0.2\""
+      }
+     ],
+     "section": "1.2",
+     "chapter": "model",
+     "was": {
+      "version": "0.1",
+      "href": "/floorspec/core/0.1/model#FS-CORE-1.2.1"
+     }
+    },
+    {
+     "id": "FS-CORE-1.6.5",
+     "replacedBy": {
+      "id": "FS-CORE-1.6.9",
+      "href": "#FS-CORE-1.6.9"
+     },
+     "why": [
+      "a reader derives fallbacks, placements and clearances from extension elements it does not implement (",
+      {
+       "t": "a",
+       "href": "/floorspec/core/extensions#12.5",
+       "c": [
+        "12.5"
+       ]
+      },
+      ")"
+     ],
+     "section": "1.6",
+     "chapter": "model",
+     "was": {
+      "version": "0.1",
+      "href": "/floorspec/core/0.1/model#FS-CORE-1.6.5"
+     }
+    }
+   ]
+  },
+  {
+   "spec": "ops",
+   "name": "Floorspec Ops",
+   "short": "Ops",
+   "version": "0.2",
+   "base": "/floorspec/ops",
+   "commit": "6f9bc07b08dfc229719a9b93e344bd47f33b3ccd",
+   "chapters": [
+    {
+     "slug": "conventions",
+     "file": "spec/ops/00-conventions.md",
+     "number": "0",
+     "title": "Conventions",
+     "summary": "what Ops is, the applier, elements (program items and extension elements too), changes from 0.1, what this draft does not cover",
+     "statements": 0
+    },
+    {
+     "slug": "transactions",
+     "file": "spec/ops/01-transactions.md",
+     "number": "1",
+     "title": "Operations, batches and transactions",
+     "summary": "the request, the six-step transaction, the result, the echo, minting IDs, the inverse",
+     "statements": 10
+    },
+    {
+     "slug": "primitives",
+     "file": "spec/ops/02-primitives.md",
+     "number": "2",
+     "title": "Primitive operations",
+     "summary": "addElement and its shorthands, removeElement and cascades, setProperty, unsetProperty, moveJunction, setAdjacency, removeAdjacency, hosted elements following their hosts",
+     "statements": 10
+    },
+    {
+     "slug": "references",
+     "file": "spec/ops/03-references.md",
+     "number": "3",
+     "title": "References",
+     "summary": "lengths in feet-inches-fractions and metric, points, vectors, selectors (program items too), sides, positions, areas",
+     "statements": 6
+    },
+    {
+     "slug": "composites",
+     "file": "spec/ops/04-composites.md",
+     "number": "4",
+     "title": "Composite operations",
+     "summary": "drawWall, moveWall, moveRoom, resizeRoom, addOpening, moveOpening, addRoom, setRoomFinish, setRoomBrief, removeWall, addLevel, addProgramItem, placeElement, moveElement",
+     "statements": 12
+    },
+    {
+     "slug": "normalization",
+     "file": "spec/ops/05-normalization.md",
+     "number": "5",
+     "title": "Normalization",
+     "summary": "merging junctions, planarizing by snap rounding, re-hosting openings and hosted elements, join cleanup",
+     "statements": 5
+    },
+    {
+     "slug": "locks",
+     "file": "spec/ops/06-locks.md",
+     "number": "6",
+     "title": "Locks",
+     "summary": "element, length and distance locks",
+     "statements": 2
+    },
+    {
+     "slug": "diagnostics",
+     "file": "spec/ops/07-diagnostics.md",
+     "number": "7",
+     "title": "Diagnostics",
+     "summary": "the FS-OPS catalogue",
+     "statements": 3
+    }
+   ],
+   "statements": 48,
+   "mandatory": 47,
+   "covered": 47,
+   "tests": 359,
+   "retired": [
+    {
+     "id": "FS-OPS-1.1.1",
+     "replacedBy": {
+      "id": "FS-OPS-1.1.2",
+      "href": "#FS-OPS-1.1.2"
+     },
+     "why": [
+      "a request has the shape ",
+      {
+       "t": "code",
+       "v": "schema/ops/0.2"
+      },
+      " gives it"
+     ],
+     "section": "1.1",
+     "chapter": "transactions",
+     "was": {
+      "version": "0.1",
+      "href": "/floorspec/ops/0.1/transactions#FS-OPS-1.1.1"
+     }
+    },
+    {
+     "id": "FS-OPS-4.5.1",
+     "replacedBy": {
+      "id": "FS-OPS-4.5.3",
+      "href": "#FS-OPS-4.5.3"
+     },
+     "why": [
+      {
+       "t": "code",
+       "v": "moveOpening"
+      },
+      " also moves by a length (",
+      {
+       "t": "a",
+       "href": "#FS-OPS-4.5.2",
+       "c": [
+        "4.5.2"
+       ]
+      },
+      "), which needs no width"
+     ],
+     "section": "4.5",
+     "chapter": "composites",
+     "was": {
+      "version": "0.1",
+      "href": "/floorspec/ops/0.1/composites#FS-OPS-4.5.1"
+     }
+    }
+   ]
+  }
+ ],
+ "earlier": [
+  {
+   "spec": "core",
+   "name": "Floorspec Core",
+   "short": "Core",
    "version": "0.1",
+   "base": "/floorspec/core/0.1",
+   "commit": "3bf4f35cd4e22f7c982ba330e027280f368a5388",
    "chapters": [
     {
      "slug": "conventions",
@@ -113,6 +434,8 @@
    "name": "Floorspec Ops",
    "short": "Ops",
    "version": "0.1",
+   "base": "/floorspec/ops/0.1",
+   "commit": "3bf4f35cd4e22f7c982ba330e027280f368a5388",
    "chapters": [
     {
      "slug": "conventions",

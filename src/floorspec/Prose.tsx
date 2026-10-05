@@ -48,7 +48,7 @@ function StatementBadge({ id, level }: { id: string; level: Level }) {
   );
 }
 
-function Inlines({ items }: { items: Inline[] }) {
+export function Inlines({ items }: { items: Inline[] }) {
   return (
     <>
       {items.map((item, index) => (
@@ -58,7 +58,7 @@ function Inlines({ items }: { items: Inline[] }) {
   );
 }
 
-const LINK = 'text-accent underline decoration-border-field underline-offset-4 hover:decoration-accent';
+export const LINK = 'text-accent underline decoration-border-field underline-offset-4 hover:decoration-accent';
 
 function InlineNode({ item }: { item: Inline }): ReactNode {
   if (typeof item === 'string') return item;

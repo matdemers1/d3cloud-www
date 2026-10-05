@@ -1,7 +1,8 @@
 import { LEGAL_DOCS } from './content/legal';
 import { BRAND, PROJECTS, projectBySlug } from './content/projects';
 import { WORKSHOP, workshopPath, type WorkshopItem } from './content/ecosystem';
-import { SPECS, chapterBySlug, chapterLabel, chapterPath, specByCode, specName } from './floorspec/spec';
+import { EARLIER, SPECS, chapterBySlug, chapterLabel, chapterPath, earlierOf, isCurrent, specAt, specByCode, specName } from './floorspec/spec';
+import type { ChapterSummary, SpecIndex } from './floorspec/ast';
 
 /**
  * Every page the site has, in one place.
@@ -48,6 +49,8 @@ export interface RouteMeta {
   doc?: string;
   /** For `floorspec-chapter`: the specification the chapter belongs to — `core`, `ops`. */
   spec?: string;
+  /** For `floorspec-chapter`: the draft — `0.2`, or `0.1` for an earlier draft at /floorspec/<spec>/0.1/<chapter>. */
+  version?: string;
 }
 
 function projectRoute(slug: string): RouteMeta | null {
@@ -79,10 +82,13 @@ function workshopRoute(item: WorkshopItem | undefined): RouteMeta | null {
 }
 
 /**
- * The Floorspec standard, published here by FLR-ADR-018: `/floorspec`, a page per chapter of each
- * drafted specification at `/floorspec/<spec>/<chapter>` (Core and Ops today), and
- * `/floorspec/coverage`. Its schemas are files under /floorspec/schema/, served by the assets
- * binding, not pages.
+ * The Floorspec standard, published here by FLR-ADR-018: `/floorspec`, a page per chapter of the
+ * current draft of each specification at `/floorspec/<spec>/<chapter>` (Core and Ops today), every
+ * earlier draft at `/floorspec/<spec>/<version>/<chapter>` (DI-T-10.5), and `/floorspec/coverage`.
+ * `/floorspec/<spec>/<current version>/<chapter>` redirects to the current page, so a versioned
+ * link can be made today and still work when the draft is superseded; a chapter the current draft
+ * no longer has redirects to the newest earlier draft that does. Its schemas are files under
+ * /floorspec/schema/, served by the assets binding, not pages.
  */
 const FLOORSPEC_DESCRIPTION =
   'An open standard for describing houses as code: exact integer geometry, walls on a junction graph, rooms derived from them, the edits that change them, and a conformance test for every MUST.';
@@ -109,20 +115,36 @@ function floorspecRoute(segments: string[]): RouteMeta | null {
       )}.`,
     };
   }
-  const spec = segments.length === 3 ? specByCode(segments[1]) : undefined;
-  if (spec) {
+  if (segments.length === 3) {
+    const spec = specByCode(segments[1]);
+    if (!spec) return null;
     const chapter = chapterBySlug(spec, segments[2]);
-    if (!chapter) return null;
-    return {
-      path: chapterPath(spec, chapter.slug),
-      kind: 'floorspec-chapter',
-      title: `${chapterLabel(chapter)} — ${specName(spec)} — ${BRAND}`,
-      description: `${specName(spec)} (Draft), ${/^\d+$/.test(chapter.number) ? `chapter ${chapter.number}` : `Annex ${chapter.number}`}: ${chapter.summary}.`,
-      doc: chapter.slug,
-      spec: spec.spec,
-    };
+    if (chapter) return chapterRoute(spec, chapter);
+    for (const old of earlierOf(spec.spec)) {
+      const was = chapterBySlug(old, segments[2]);
+      if (was) return chapterRoute(old, was);
+    }
+    return null;
+  }
+  if (segments.length === 4) {
+    const spec = specAt(segments[1], segments[2]);
+    const chapter = spec && chapterBySlug(spec, segments[3]);
+    return chapter ? chapterRoute(spec, chapter) : null;
   }
   return null;
+}
+
+function chapterRoute(spec: SpecIndex, chapter: ChapterSummary): RouteMeta {
+  const where = /^\d+$/.test(chapter.number) ? `chapter ${chapter.number}` : `Annex ${chapter.number}`;
+  return {
+    path: chapterPath(spec, chapter.slug),
+    kind: 'floorspec-chapter',
+    title: `${chapterLabel(chapter)} — ${specName(spec)} — ${BRAND}`,
+    description: `${specName(spec)} (${isCurrent(spec) ? 'Draft' : 'an earlier Draft, kept as published'}), ${where}: ${chapter.summary}.`,
+    doc: chapter.slug,
+    spec: spec.spec,
+    version: spec.version,
+  };
 }
 
 function subRoute(slug: string, page: string): RouteMeta | null {
@@ -191,7 +213,9 @@ export function resolveRoute(
           : null);
   if (!meta) return null;
 
-  return { meta, redirect: renamed || trailingSlash };
+  // A page known by another address — a renamed slug, a trailing slash, a versioned link to the
+  // current Floorspec draft — redirects to its canonical one.
+  return { meta, redirect: renamed || trailingSlash || meta.path !== path };
 }
 
 /** Every canonical page, home first — the sitemap's contents. */
@@ -208,8 +232,8 @@ export function allRoutes(): RouteMeta[] {
   }
   for (const item of WORKSHOP) routes.push(workshopRoute(item)!);
   routes.push(floorspecRoute(['floorspec'])!);
-  for (const spec of SPECS) {
-    for (const chapter of spec.chapters) routes.push(floorspecRoute(['floorspec', spec.spec, chapter.slug])!);
+  for (const spec of [...SPECS, ...EARLIER]) {
+    for (const chapter of spec.chapters) routes.push(chapterRoute(spec, chapter));
   }
   routes.push(floorspecRoute(['floorspec', 'coverage'])!);
   return routes;

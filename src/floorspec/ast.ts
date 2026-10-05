@@ -64,7 +64,23 @@ export interface ChapterSummary {
   statements: number;
 }
 
-/** One specification — Core, Ops — as the routes, the landing page and the navigation see it. */
+/**
+ * A statement ID a later draft retired (its chapter 0, "Changes from"): never reused, and a link to
+ * it still lands on the page it was on, which says what replaced it and where it is still published.
+ */
+export interface RetiredStatement {
+  id: string;
+  /** The statement that took its place in the same draft, and its address (`#…` when on the same page). */
+  replacedBy?: { id: string; href: string };
+  why: Inline[];
+  /** "1.2": the section it was in, and the chapter of the current draft that section is in. */
+  section: string;
+  chapter: string;
+  /** The newest earlier draft that has it, and its address there. */
+  was: { version: string; href: string };
+}
+
+/** One draft of one specification — Core 0.2, Ops 0.1 — as the routes, the landing page and the navigation see it. */
 export interface SpecIndex {
   /** Its directory under spec/, and its path segment here: `core` → /floorspec/core/<chapter>. */
   spec: string;
@@ -72,8 +88,12 @@ export interface SpecIndex {
   name: string;
   /** "Ops" — what another specification calls it ("Core §5.3"). */
   short: string;
-  /** Its draft version, from its README: "0.1". */
+  /** Its draft version, from its README: "0.2". */
   version: string;
+  /** Where its chapters are: `/floorspec/core` for the current draft, `/floorspec/core/0.1` for an earlier one. */
+  base: string;
+  /** The floorspec commit its text, suite and coverage come from. */
+  commit: string;
   chapters: ChapterSummary[];
   statements: number;
   /** MUST and MUST NOT: the statements the suite must cover. */
@@ -81,11 +101,15 @@ export interface SpecIndex {
   /** How many of those have at least one conformance test, and how many tests there are. */
   covered: number;
   tests: number;
+  /** The statement IDs this draft retired (current drafts only). */
+  retired?: RetiredStatement[];
 }
 
-/** Every specification the pinned commit has chapters for, in the order the site shows them. */
 export interface FloorspecIndex {
+  /** The current draft of every specification the pinned commit has chapters for, in the order the site shows them. */
   specifications: SpecIndex[];
+  /** Every earlier draft still published, from the commit that pinned it — newest version first within a specification. */
+  earlier: SpecIndex[];
 }
 
 export interface CoverageRow {
