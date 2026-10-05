@@ -391,7 +391,7 @@ function RulePacks({ packs }: { packs: Packs }) {
             </UiLink>{' '}
             <span className="text-fg-muted">
               · {pack.rules} {pack.rules === 1 ? 'rule' : 'rules'}
-              {pack.synthetic ? ' · synthetic codes, which stand for no real code' : ''}
+              {pack.synthetic ? ' · the codes it cites stand for no real code' : ''}
             </span>
           </li>
         ))}

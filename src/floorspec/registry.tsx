@@ -131,7 +131,7 @@ function ExtensionFacts({ ext }: { ext: ExtensionDetail }) {
                 {(kind.asset || kind.symbol) && (
                   <span className="text-fg-muted">
                     {' '}
-                    · every one carries a {listOf([kind.asset ? 'glTF model' : '', kind.symbol ? 'plan symbol' : ''].filter(Boolean))}
+                    · every one carries {listOf([kind.asset ? 'a glTF model' : '', kind.symbol ? 'a plan symbol' : ''].filter(Boolean))}
                   </span>
                 )}
               </li>
