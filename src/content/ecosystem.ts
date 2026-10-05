@@ -76,6 +76,7 @@ export interface LogEntry {
 }
 
 export const BUILD_LOG: LogEntry[] = [
+  { date: '2026-10-05', slug: 'floorspec-app', text: 'D3 Floorspec’s engine listed in the extension registry for all six official extensions, with evidence from its public CI run' },
   { date: '2026-10-05', slug: 'floorspec-app', text: 'Floorspec Core and Ops Drafts 0.3 — floors and ceilings, roofs, stairs, materials and finishes, design options — and Rules Draft 0.1 published, with the extension registry and two libraries; 0.2 and 0.1 stay as they were' },
   { date: '2026-10-05', slug: 'floorspec-app', text: 'Floorspec Core and Ops Drafts 0.2 — the program, extensions, hosting and clearances, circulation — published beside 0.1, which stays as it was' },
   { date: '2026-10-04', slug: 'floorspec-app', text: 'Floorspec Ops Draft 0.1 — how a house changes — is published beside Core, with a test for every MUST' },
@@ -151,9 +152,9 @@ export const WORKSHOP: WorkshopItem[] = [
     path: '/floorspec/app',
     name: 'D3 Floorspec',
     role: 'House design',
-    stage: 'Being built — Phases 0 to 3',
+    stage: 'Being built — Phases 0 to 9',
     stageNote:
-      'Floorspec Core and Ops are published as 0.3 drafts, with Rules 0.1, the extension registry and two libraries, beside 0.2 and 0.1, which stay as they were. The reference engine passed every conformance test of Core and Ops 0.2, and of the four building-system extensions. The 2D editor is built — drawing, Claude’s changesets, history and diff — and runs privately while the program, layouts and building systems are built. There is nothing public to try yet.',
+      'Floorspec Core and Ops are published as 0.3 drafts, with Rules 0.1, the extension registry and two libraries, beside 0.2 and 0.1, which stay as they were. The reference engine passes every conformance test of Core and Ops 0.3 and of all six official extensions, in its public CI. The editor is built — 2D and 3D, Claude’s changesets, the program and its layouts, building systems, materials and furniture, and exports — and runs privately, by invitation. There is nothing public to try yet.',
     line: 'Design a house with Claude — every edit validated, attributed and yours to accept.',
     tagline: 'Design a house with Claude. Every edit checked, and yours to accept.',
     quote:
@@ -167,11 +168,11 @@ export const WORKSHOP: WorkshopItem[] = [
       { text: 'Draw walls and rooms in 2D, by pointer or keyboard alone', built: true },
       { text: 'Claude edits over MCP, as reviewable changesets you accept or reject', built: true },
       { text: 'Every edit validated by the exact engine, with coded diagnostics and fixes', built: true },
-      { text: 'From a program of rooms to a bubble diagram to layout candidates', built: false },
-      { text: 'Building systems — electrical, plumbing, mechanical — as devices on walls', built: false },
+      { text: 'From a program of rooms to a bubble diagram to layout candidates', built: true },
+      { text: 'Building systems — electrical, plumbing, mechanical — as devices on walls', built: true },
       { text: 'Advisory code findings with citations, which never say “compliant”', built: false },
-      { text: 'A 3D walkthrough with materials, textures and furniture', built: false },
-      { text: 'Export to IFC, glTF, PDF and DXF', built: false },
+      { text: 'A 3D walkthrough with materials, textures and furniture', built: true },
+      { text: 'Export to IFC, glTF, PDF and DXF', built: true },
       { text: 'Its own login and Sign in with D3 Auth, side by side', built: true },
       { text: 'Self-hosted with Docker Compose, with no telemetry', built: true },
     ],

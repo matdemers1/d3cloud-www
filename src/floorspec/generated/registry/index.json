@@ -1,5 +1,5 @@
 {
- "commit": "c66ba3226ff5d80e501bd58ad957624db4d69d50",
+ "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
  "readme": [
   {
    "t": "p",
@@ -311,7 +311,7 @@
     ", and every move is a pull request to this repository (FLR-REQ-138) made with the extension template (",
     {
      "t": "a",
-     "href": "https://github.com/matdemers1/floorspec/tree/c66ba3226ff5d80e501bd58ad957624db4d69d50/.github/PULL_REQUEST_TEMPLATE/extension.md",
+     "href": "https://github.com/matdemers1/floorspec/tree/8a99d02b3a2111aacd9ed81c3e415af47f73505e/.github/PULL_REQUEST_TEMPLATE/extension.md",
      "c": [
       {
        "t": "code",
@@ -332,7 +332,7 @@
     ") runs ",
     {
      "t": "a",
-     "href": "https://github.com/matdemers1/floorspec/tree/c66ba3226ff5d80e501bd58ad957624db4d69d50/tools/registry-gates.ts",
+     "href": "https://github.com/matdemers1/floorspec/tree/8a99d02b3a2111aacd9ed81c3e415af47f73505e/tools/registry-gates.ts",
      "c": [
       {
        "t": "code",
@@ -543,7 +543,7 @@
      "t": "code",
      "v": "tools/oracle/ext/"
     },
-    ") implements every official extension, but it wrote the expected outputs its suite is checked against, so its passing proves nothing about the suite. An implementation is software that someone uses: D3 Floorspec's engine is one, and is listed for the four building systems."
+    ") implements every official extension, but it wrote the expected outputs its suite is checked against, so its passing proves nothing about the suite. An implementation is software that someone uses: D3 Floorspec's engine is one, and is listed for every official extension."
    ]
   },
   {
@@ -719,7 +719,7 @@
     "An owner may waive one gate for one version of one extension, by an entry in ",
     {
      "t": "a",
-     "href": "https://github.com/matdemers1/floorspec/tree/c66ba3226ff5d80e501bd58ad957624db4d69d50/registry/exceptions.json",
+     "href": "https://github.com/matdemers1/floorspec/tree/8a99d02b3a2111aacd9ed81c3e415af47f73505e/registry/exceptions.json",
      "c": [
       {
        "t": "code",
@@ -732,7 +732,7 @@
      "t": "code",
      "v": "releaseCandidate.implementation"
     },
-    "); nothing of Ratified can. The gates fail when an exception names an entry or version that is not there, or a rule that now passes, so an exception is removed when it ends. There is one: FS_furniture 0.1.0 is a Release Candidate with no implementation, by the owner's decision when it was published (FLR-T-8.3), until D3 Floorspec's engine passes its suite and is listed."
+    "); nothing of Ratified can. The gates fail when an exception names an entry or version that is not there, or a rule that now passes, so an exception is removed when it ends. There are none: the last, FS_furniture 0.1.0's, published as a Release Candidate with no implementation (FLR-T-8.3), ended when D3 Floorspec's engine passed its suite and was listed."
    ]
   },
   {
@@ -754,7 +754,7 @@
     " in ",
     {
      "t": "a",
-     "href": "https://github.com/matdemers1/floorspec/tree/c66ba3226ff5d80e501bd58ad957624db4d69d50/.github/CODEOWNERS",
+     "href": "https://github.com/matdemers1/floorspec/tree/8a99d02b3a2111aacd9ed81c3e415af47f73505e/.github/CODEOWNERS",
      "c": [
       {
        "t": "code",
@@ -1014,12 +1014,12 @@
   {
    "t": "p",
    "c": [
-    "The four building systems list one implementation, D3 Floorspec's engine, with evidence of its passing their suites at 441a066 (",
+    "All six list one implementation, D3 Floorspec's engine, with evidence of its passing their suites at 3b8d35a in a public CI run (",
     {
      "t": "code",
      "v": "<NAME>/evidence/"
     },
-    "); each suite has gained a test since — an element in a design option — so the gates warn until the engine runs them again. Each stays a Release Candidate until a second, independent implementation passes its suite (FLR-REQ-092). FS_furniture lists none yet, by recorded exception (above). FS_structural is a Draft: the oracle passes its suite, and it becomes a Release Candidate when an implementation does. The conformance oracle in ",
+    "). Each Release Candidate stays one until a second, independent implementation passes its suite (FLR-REQ-092). FS_structural is a Draft whose suite the engine passes; it becomes a Release Candidate by its own pull request, which freezes it. The conformance oracle in ",
     {
      "t": "code",
      "v": "tools/oracle/ext/"
@@ -1133,21 +1133,21 @@
      "implementation": {
       "name": "D3 Floorspec (@floorspec/engine)",
       "url": "https://github.com/matdemers1/d3-floorspec",
-      "version": "ee6939f64cbfbf92f0ade7112cbe8df62744853a"
+      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
      },
      "maintainer": "matdemers1",
      "sharesCodeWith": [],
      "extensionVersion": "0.1.0",
      "suite": {
-      "commit": "441a066de5285ce7998e045e1add1bffa92d58a0",
-      "tests": 59
+      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
+      "tests": 60
      },
      "result": {
-      "passed": 59,
+      "passed": 60,
       "failed": 0
      },
      "ran": "2026-10-05",
-     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37276088906"
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
     }
    ],
    "exceptions": [],
@@ -1213,21 +1213,21 @@
      "implementation": {
       "name": "D3 Floorspec (@floorspec/engine)",
       "url": "https://github.com/matdemers1/d3-floorspec",
-      "version": "ee6939f64cbfbf92f0ade7112cbe8df62744853a"
+      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
      },
      "maintainer": "matdemers1",
      "sharesCodeWith": [],
      "extensionVersion": "0.1.0",
      "suite": {
-      "commit": "441a066de5285ce7998e045e1add1bffa92d58a0",
-      "tests": 39
+      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
+      "tests": 40
      },
      "result": {
-      "passed": 39,
+      "passed": 40,
       "failed": 0
      },
      "ran": "2026-10-05",
-     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37276088906"
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
     }
    ],
    "exceptions": [],
@@ -1293,21 +1293,21 @@
      "implementation": {
       "name": "D3 Floorspec (@floorspec/engine)",
       "url": "https://github.com/matdemers1/d3-floorspec",
-      "version": "ee6939f64cbfbf92f0ade7112cbe8df62744853a"
+      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
      },
      "maintainer": "matdemers1",
      "sharesCodeWith": [],
      "extensionVersion": "0.1.0",
      "suite": {
-      "commit": "441a066de5285ce7998e045e1add1bffa92d58a0",
-      "tests": 35
+      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
+      "tests": 36
      },
      "result": {
-      "passed": 35,
+      "passed": 36,
       "failed": 0
      },
      "ran": "2026-10-05",
-     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37276088906"
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
     }
    ],
    "exceptions": [],
@@ -1379,21 +1379,21 @@
      "implementation": {
       "name": "D3 Floorspec (@floorspec/engine)",
       "url": "https://github.com/matdemers1/d3-floorspec",
-      "version": "ee6939f64cbfbf92f0ade7112cbe8df62744853a"
+      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
      },
      "maintainer": "matdemers1",
      "sharesCodeWith": [],
      "extensionVersion": "0.1.0",
      "suite": {
-      "commit": "441a066de5285ce7998e045e1add1bffa92d58a0",
-      "tests": 31
+      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
+      "tests": 32
      },
      "result": {
-      "passed": 31,
+      "passed": 32,
       "failed": 0
      },
      "ran": "2026-10-05",
-     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37276088906"
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
     }
    ],
    "exceptions": [],
@@ -1441,15 +1441,36 @@
     }
    ],
    "terms": [],
-   "implementations": [],
-   "evidence": [],
-   "exceptions": [
+   "implementations": [
     {
-     "waives": "releaseCandidate.implementation",
-     "decision": "Owner decision with FLR-T-8.3 (merged 8cc76a9): FS_furniture 0.1.0 is published at Release Candidate with no implementation listed; the conformance oracle passes its suite but wrote its expected outputs, so it is not evidence.",
-     "until": "D3 Floorspec's engine passes the FS_furniture 0.1.0 suite and is listed, with evidence, in registry/FS_furniture/extension.json."
+     "name": "D3 Floorspec (@floorspec/engine)",
+     "url": "https://github.com/matdemers1/d3-floorspec"
     }
    ],
+   "evidence": [
+    {
+     "file": "registry/FS_furniture/evidence/d3-floorspec-engine.json",
+     "implementation": {
+      "name": "D3 Floorspec (@floorspec/engine)",
+      "url": "https://github.com/matdemers1/d3-floorspec",
+      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
+     },
+     "maintainer": "matdemers1",
+     "sharesCodeWith": [],
+     "extensionVersion": "0.1.0",
+     "suite": {
+      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
+      "tests": 56
+     },
+     "result": {
+      "passed": 56,
+      "failed": 0
+     },
+     "ran": "2026-10-05",
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
+    }
+   ],
+   "exceptions": [],
    "schemas": [
     {
      "file": "furniture.schema.json",
@@ -1479,8 +1500,35 @@
    "requires": {},
    "kinds": [],
    "terms": [],
-   "implementations": [],
-   "evidence": [],
+   "implementations": [
+    {
+     "name": "D3 Floorspec (@floorspec/engine)",
+     "url": "https://github.com/matdemers1/d3-floorspec"
+    }
+   ],
+   "evidence": [
+    {
+     "file": "registry/FS_structural/evidence/d3-floorspec-engine.json",
+     "implementation": {
+      "name": "D3 Floorspec (@floorspec/engine)",
+      "url": "https://github.com/matdemers1/d3-floorspec",
+      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
+     },
+     "maintainer": "matdemers1",
+     "sharesCodeWith": [],
+     "extensionVersion": "0.1.0",
+     "suite": {
+      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
+      "tests": 72
+     },
+     "result": {
+      "passed": 72,
+      "failed": 0
+     },
+     "ran": "2026-10-05",
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
+    }
+   ],
    "exceptions": [],
    "schemas": [
     {

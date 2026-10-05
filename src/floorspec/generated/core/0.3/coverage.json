@@ -1,10 +1,10 @@
 {
  "spec": "core",
  "version": "0.3",
- "source": "scan of conformance/core/0.3",
- "tests": 809,
- "mandatory": 192,
- "covered": 192,
+ "source": "scan of conformance/core/0.3 and conformance/migration/0.3",
+ "tests": 845,
+ "mandatory": 205,
+ "covered": 205,
  "statements": [
   {
    "id": "FS-CORE-1.1.1",
@@ -44,7 +44,7 @@
    "section": "1.2",
    "chapter": "model",
    "text": "A reader that implements this draft MUST also read a document that declares \"0.1\" or \"0.2\": it MUST apply the schema of the draft the document declares to it at the schema tier, and otherwise read it as a 0.3 document in which every member that a later draft than the one it declares adds is absent.",
-   "tests": 25
+   "tests": 27
   },
   {
    "id": "FS-CORE-1.3.1",
@@ -588,7 +588,7 @@
    "section": "6.7",
    "chapter": "rooms",
    "text": "A slab's thickness MUST be greater than zero.",
-   "tests": 3
+   "tests": 4
   },
   {
    "id": "FS-CORE-6.7.2",
@@ -708,7 +708,7 @@
    "section": "8.1",
    "chapter": "types",
    "text": "A type's or a material's source MUST have exactly the members of this table, each always present: a library that is an absolute https URI with an authority, a version that matches the pattern of 1.6.7, and an item that matches the pattern of 3.1.1.",
-   "tests": 13
+   "tests": 16
   },
   {
    "id": "FS-CORE-8.2.1",
@@ -836,7 +836,7 @@
    "section": "9.2",
    "chapter": "serialization",
    "text": "A canonicalizer MUST produce exactly the canonical form of every valid document it is given.",
-   "tests": 40
+   "tests": 41
   },
   {
    "id": "FS-CORE-9.2.2",
@@ -852,7 +852,7 @@
    "section": "9.3",
    "chapter": "serialization",
    "text": "A deriver MUST compute a document's content hash as this section defines it.",
-   "tests": 12
+   "tests": 13
   },
   {
    "id": "FS-CORE-10.1.1",
@@ -932,7 +932,7 @@
    "section": "11.3",
    "chapter": "program",
    "text": "A deriver MUST derive these values for every program item of a valid document, comparing areas exactly.",
-   "tests": 6
+   "tests": 7
   },
   {
    "id": "FS-CORE-11.4.1",
@@ -940,7 +940,7 @@
    "section": "11.4",
    "chapter": "program",
    "text": "A deriver MUST derive these values for every adjacency of a valid document.",
-   "tests": 11
+   "tests": 12
   },
   {
    "id": "FS-CORE-11.5.1",
@@ -1172,7 +1172,7 @@
    "section": "13.4",
    "chapter": "hosting",
    "text": "A deriver MUST derive the placement of every extension element that has a host, in a valid document.",
-   "tests": 15
+   "tests": 16
   },
   {
    "id": "FS-CORE-13.5.1",
@@ -1204,7 +1204,7 @@
    "section": "14.1",
    "chapter": "circulation",
    "text": "A deriver MUST link two rooms in the door graph exactly when this section says they are linked.",
-   "tests": 3
+   "tests": 5
   },
   {
    "id": "FS-CORE-14.3.1",
@@ -1252,7 +1252,7 @@
    "section": "15.1",
    "chapter": "floors-ceilings-slabs",
    "text": "A deriver MUST derive the floor of every room — its top, bottom and box — as this section defines them.",
-   "tests": 7
+   "tests": 8
   },
   {
    "id": "FS-CORE-15.2.1",
@@ -1284,7 +1284,7 @@
    "section": "15.3",
    "chapter": "floors-ceilings-slabs",
    "text": "A deriver MUST compute the elevation of a vaulted ceiling, and its low and high over its room polygon, exactly as this section defines them, rounding each value it outputs once.",
-   "tests": 11
+   "tests": 13
   },
   {
    "id": "FS-CORE-15.4.1",
@@ -1308,7 +1308,7 @@
    "section": "15.5",
    "chapter": "floors-ceilings-slabs",
    "text": "A deriver MUST derive every room's ceiling as this section defines it.",
-   "tests": 15
+   "tests": 16
   },
   {
    "id": "FS-CORE-15.6.1",
@@ -1324,7 +1324,7 @@
    "section": "15.7",
    "chapter": "floors-ceilings-slabs",
    "text": "A deriver MUST derive the outline, top, bottom and box of every slab as this section defines them.",
-   "tests": 3
+   "tests": 5
   },
   {
    "id": "FS-CORE-16.1.1",
@@ -1380,7 +1380,7 @@
    "section": "16.4",
    "chapter": "roofs",
    "text": "A deriver MUST derive the surface of every flat roof, of every shed roof that 16.4.2 says is derived, and of every equal-pitch roof that 16.4.3 says is derived, exactly as this section defines it, and MUST derive no surface for any other roof; a validator MUST report every other roof with FS-LINT-015.",
-   "tests": 18
+   "tests": 21
   },
   {
    "id": "FS-CORE-16.5.1",
@@ -1388,7 +1388,7 @@
    "section": "16.5",
    "chapter": "roofs",
    "text": "A deriver MUST derive every roof as this section defines it.",
-   "tests": 20
+   "tests": 23
   },
   {
    "id": "FS-CORE-17.1.1",
@@ -1444,7 +1444,7 @@
    "section": "17.4",
    "chapter": "stairs",
    "text": "A deriver MUST derive these values for every stair of a valid document, as this section and 17.3 define them.",
-   "tests": 16
+   "tests": 18
   },
   {
    "id": "FS-CORE-17.5.1",
@@ -1452,7 +1452,7 @@
    "section": "17.5",
    "chapter": "stairs",
    "text": "A deriver MUST derive the steps, the run and the walkline of every straight, L-shaped and U-shaped stair of a valid document as this section defines them.",
-   "tests": 7
+   "tests": 9
   },
   {
    "id": "FS-CORE-17.6.1",
@@ -1460,7 +1460,7 @@
    "section": "17.6",
    "chapter": "stairs",
    "text": "A deriver MUST derive the headroom of every straight, L-shaped and U-shaped stair of a valid document that has one, as headroom, exactly as this section defines it, and no headroom member for one that has none.",
-   "tests": 9
+   "tests": 11
   },
   {
    "id": "FS-CORE-17.7.1",
@@ -1677,6 +1677,110 @@
    "chapter": "options",
    "text": "A validator SHOULD report FS-LINT-017 (info) for each option set with exactly one option: it has nothing to choose between.",
    "tests": 1
+  },
+  {
+   "id": "FS-CORE-20.1.1",
+   "level": "MUST",
+   "section": "20.1",
+   "chapter": "migration",
+   "text": "A migrator MUST write the migration of a document to a draft — the document this chapter defines — exactly as step 2 of 9.2 writes a value: its members sorted, two spaces of indentation, a final line feed.",
+   "tests": 1
+  },
+  {
+   "id": "FS-CORE-20.1.2",
+   "level": "MUST",
+   "section": "20.1",
+   "chapter": "migration",
+   "text": "The migration of a document to the draft it declares MUST be the document itself.",
+   "tests": 2
+  },
+  {
+   "id": "FS-CORE-20.1.3",
+   "level": "MUST",
+   "section": "20.1",
+   "chapter": "migration",
+   "text": "The migration of a document from a draft N to a later draft M MUST be the result of applying every step from N to M in order: from 0.1 to 0.3, the step from 0.2 to 0.3 applied to the result of the step from 0.1 to 0.2.",
+   "tests": 5
+  },
+  {
+   "id": "FS-CORE-20.1.4",
+   "level": "MUST NOT",
+   "section": "20.1",
+   "chapter": "migration",
+   "text": "A migration MUST NOT change anything in a document but what its steps change: the version declaration, the members they move, and the record of what they moved (20.3).",
+   "tests": 4
+  },
+  {
+   "id": "FS-CORE-20.2.1",
+   "level": "MUST",
+   "section": "20.2",
+   "chapter": "migration",
+   "text": "A migrator MUST refuse a document that is not a well-formed JSON text as 9.1 requires, that does not declare a draft the migrator implements, or that does not match the schema of the draft it declares, and report for it exactly the diagnostics that a validator implementing every extension reports for it at tiers 1 to 3 (10.1): FS-JSON-001 to FS-JSON-003, FS-DOC-001 or FS-SCH-001.",
+   "tests": 6
+  },
+  {
+   "id": "FS-CORE-20.2.2",
+   "level": "MUST",
+   "section": "20.2",
+   "chapter": "migration",
+   "text": "A migrator MUST migrate every other document, including one whose extensionsRequired names an extension the migrator does not implement and one that breaks an invariant.",
+   "tests": 2
+  },
+  {
+   "id": "FS-CORE-20.2.3",
+   "level": "MUST",
+   "section": "20.2",
+   "chapter": "migration",
+   "text": "A migrator MUST refuse a target that is not a draft it implements, or that is earlier than the draft the document declares, with the diagnostic FS-MIG-001.",
+   "tests": 4
+  },
+  {
+   "id": "FS-CORE-20.3.1",
+   "level": "MUST",
+   "section": "20.3",
+   "chapter": "migration",
+   "text": "A step that moves members MUST remove each of them from the document and append one record to the array floorspec:migration of the document's extras — creating the array, and extras, when the document has none — whose moved lists them sorted by pointer, comparing pointers as sequences of UTF-16 code units.",
+   "tests": 7
+  },
+  {
+   "id": "FS-CORE-20.3.2",
+   "level": "MUST NOT",
+   "section": "20.3",
+   "chapter": "migration",
+   "text": "A step that moves nothing MUST NOT add a record, nor change extras.",
+   "tests": 5
+  },
+  {
+   "id": "FS-CORE-20.3.3",
+   "level": "MUST",
+   "section": "20.3",
+   "chapter": "migration",
+   "text": "A migrator MUST refuse a document whose extras has a member floorspec:migration that is not an array when a step of the migration moves something, with the diagnostic FS-MIG-002.",
+   "tests": 2
+  },
+  {
+   "id": "FS-CORE-20.4.1",
+   "level": "MUST",
+   "section": "20.4",
+   "chapter": "migration",
+   "text": "The step from 0.1 to 0.2 MUST make the document declare \"0.2\", and move the member collections of every extension's top-level data that is an object with that member, and change nothing else.",
+   "tests": 9
+  },
+  {
+   "id": "FS-CORE-20.5.1",
+   "level": "MUST",
+   "section": "20.5",
+   "chapter": "migration",
+   "text": "The step from 0.2 to 0.3 MUST make the document declare \"0.3\", and move the member option of every extension element (12.5) that has one, and change nothing else.",
+   "tests": 5
+  },
+  {
+   "id": "FS-CORE-20.6.1",
+   "level": "MUST",
+   "section": "20.6",
+   "chapter": "migration",
+   "text": "A reader of the target draft that implements no extension and is configured with no known extensions MUST report for the migration of a document the validity and the diagnostics it reports for the document, and derive from it exactly the values it derives from the document.",
+   "tests": 12
   }
  ]
 }

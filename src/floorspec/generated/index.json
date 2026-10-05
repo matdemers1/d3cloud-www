@@ -6,7 +6,7 @@
    "short": "Core",
    "version": "0.3",
    "base": "/floorspec/core",
-   "commit": "c66ba3226ff5d80e501bd58ad957624db4d69d50",
+   "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
    "chapters": [
     {
      "slug": "conventions",
@@ -149,6 +149,13 @@
      "statements": 12
     },
     {
+     "slug": "migration",
+     "number": "20",
+     "title": "Migration",
+     "summary": "migrating a document to a later draft: the steps from 0.1 to 0.2 and from 0.2 to 0.3, moved members and their record, what a migration preserves, the previous major",
+     "statements": 13
+    },
+    {
      "slug": "ifc",
      "number": "A",
      "title": "IFC4 mapping",
@@ -156,10 +163,10 @@
      "statements": 0
     }
    ],
-   "statements": 209,
-   "mandatory": 192,
-   "covered": 192,
-   "tests": 809,
+   "statements": 222,
+   "mandatory": 205,
+   "covered": 205,
+   "tests": 845,
    "retired": 4
   },
   {
@@ -168,7 +175,7 @@
    "short": "Ops",
    "version": "0.3",
    "base": "/floorspec/ops",
-   "commit": "c66ba3226ff5d80e501bd58ad957624db4d69d50",
+   "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
    "chapters": [
     {
      "slug": "conventions",
@@ -239,7 +246,7 @@
    "short": "Rules",
    "version": "0.1",
    "base": "/floorspec/rules",
-   "commit": "c66ba3226ff5d80e501bd58ad957624db4d69d50",
+   "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
    "chapters": [
     {
      "slug": "conventions",

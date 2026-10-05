@@ -417,9 +417,9 @@ describe('the Floorspec pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6)', () 
         expect(anchors(chapter(spec.spec, resolveRoute(to!)!.meta.doc!).blocks)).toContain(replacedBy.id);
       }
     }
-    // Ops 0.2 replaced FS-OPS-1.1.1 with FS-OPS-1.1.2, which Ops 0.3 retired in turn: followed to 1.1.3.
+    // Ops 0.2 replaced FS-OPS-1.1.1 with FS-OPS-1.1.2, which Ops 0.3 retired in turn; 0.3's table names 1.1.3.
     expect(retiredIn(OPS).find((r) => r.id === 'FS-OPS-1.1.1')).toMatchObject({
-      replacedBy: { id: 'FS-OPS-1.1.3', via: ['FS-OPS-1.1.2'] },
+      replacedBy: { id: 'FS-OPS-1.1.3' },
       was: { version: '0.1' },
     });
     expect(retiredIn(OPS).find((r) => r.id === 'FS-OPS-1.1.2')).toMatchObject({ replacedBy: { id: 'FS-OPS-1.1.3' }, was: { version: '0.2' } });
@@ -527,9 +527,9 @@ describe('the Floorspec pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6)', () 
     expect(electrical.kinds.map((k) => k.collection)).toContain('receptacles');
     expect(electrical.evidence[0]).toMatchObject({ result: { failed: 0 }, implementation: { name: 'D3 Floorspec (@floorspec/engine)' } });
     expect(electrical.covered).toBe(electrical.mandatory);
-    expect(REGISTRY.extensions.find((ext) => ext.name === 'FS_furniture')!.exceptions).toEqual([
-      expect.objectContaining({ waives: 'releaseCandidate.implementation' }),
-    ]);
+    // FS_furniture's exception ended when D3 Floorspec's engine passed its suite: every extension has evidence.
+    for (const ext of REGISTRY.extensions) expect(ext.exceptions, ext.name).toEqual([]);
+    for (const ext of REGISTRY.extensions) expect(ext.evidence.length, ext.name).toBeGreaterThan(0);
     expect(REGISTRY.extensions.find((ext) => ext.name === 'FS_structural')).toMatchObject({ status: 'draft', kinds: [] });
     // The README renders, its links to the extensions land on their pages.
     expect(linksIn(REGISTRY.readme).map((l) => l.href)).toContain('/floorspec/registry/FS_electrical');

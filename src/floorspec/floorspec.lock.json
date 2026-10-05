@@ -1,7 +1,7 @@
 {
  "repository": "matdemers1/floorspec",
- "commit": "c66ba3226ff5d80e501bd58ad957624db4d69d50",
- "committedAt": "2026-10-05T05:11:45-04:00",
+ "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
+ "committedAt": "2026-10-05T07:54:58-04:00",
  "specifications": {
   "core": "0.3",
   "ops": "0.3",
