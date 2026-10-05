@@ -1,16 +1,16 @@
 /**
  * Pins a commit of the Floorspec standard and turns it into this site's /floorspec pages
- * (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-REQ-042, FLR-ADR-018):
+ * (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6, DI-REQ-042, FLR-ADR-018):
  *
  *   npm run sync:floorspec [-- <path to the floorspec checkout>]   (or FLOORSPEC_DIR=…; default ../floorspec)
  *
- * Every specification under spec/ that has chapters is published — Core and Ops today, Rules when
- * it has some — at its current draft, and every earlier draft stays published as it was:
+ * Every specification under spec/ that has chapters is published — Core, Ops and Rules — at its
+ * current draft, and every earlier draft stays published as it was:
  *
- * 1. Refuses a checkout with uncommitted changes under spec/, schema/ or conformance/ — what is
- *    published has to be a commit someone can look at.
+ * 1. Refuses a checkout with uncommitted changes under spec/, schema/, conformance/, registry/,
+ *    library/ or rules/ — what is published has to be a commit someone can look at.
  * 2. Records the commit, and each specification's draft version (from its README), in
- *    src/floorspec/floorspec.lock.json. When a specification's version moves on (Core 0.1 → 0.2),
+ *    src/floorspec/floorspec.lock.json. When a specification's version moves on (Core 0.2 → 0.3),
  *    the commit the lock pinned for the old version is kept under `earlier`, and that draft goes
  *    on being published from that commit — read with `git archive`, never from the working tree —
  *    at /floorspec/<spec>/<version>/<chapter>. Earlier pins are never dropped or moved.
@@ -22,15 +22,32 @@
  * 4. Extracts the normative statements with floorspec's own tools/statements.ts at the same commit
  *    (imported, not copied), refuses if it reports a problem, and checks every statement it found
  *    is anchored. The IDs a draft retired (the "Changes from" table of its chapter 0) are recorded
- *    with what replaced them and where the old statement is still published.
+ *    with what replaced them — followed to the current draft when the replacement was retired in
+ *    turn — and where the old statement is still published.
  * 5. Coverage: for the current drafts, the repo's own gate (`pnpm coverage`, when its dependencies
  *    are installed) writes build/coverage.json, which is read; otherwise, and for every earlier
  *    draft, conformance/<spec>/<version>/**\/test.json at that draft's commit is scanned.
- * 6. Copies every schema/<name>/<version>/*.json byte for byte into
- *    public/floorspec/schema/<name>/<version>/ — the specifications' schemas and the extension
- *    registry's. A schema URL never changes once published: src/floorspec/published-schemas.json
- *    records each file's SHA-256, new files are added to it, and the sync refuses if a published
- *    file would change or disappear. src/floorspec/floorspec.test.ts holds public/ to the record.
+ * 6. The extension registry: every registry/<NAME>/extension.json, its specification (spec.md,
+ *    parsed like a chapter, statements anchored in its own ID space; or proposal.md), evidence,
+ *    recorded exceptions and suite, and registry/README.md, for /floorspec/registry and
+ *    /floorspec/registry/<NAME>.
+ * 7. Copies every schema byte for byte into public/: each schema/<name>/<version>/*.json — the
+ *    specifications' and the registry's — to public/floorspec/schema/<name>/<version>/, and each
+ *    extension's registry/<NAME>/*.schema.json to the path its `$id` names
+ *    (https://d3cloud.io/floorspec/schema/ext/<NAME>/<version>/<short>.schema.json). A schema URL
+ *    never changes once published: src/floorspec/published-schemas.json records each file's
+ *    SHA-256, new files are added to it, and the sync refuses if a published file would change, or
+ *    if a specification's schema disappears from the checkout. An extension's schema for an earlier
+ *    version is no longer in the checkout once the registry moves on; it stays in public/ as
+ *    recorded.
+ * 8. Libraries: each library/<name>/<version>/ (manifest index.json) and each extension's
+ *    registry/<NAME>/library/ (manifest library.json) is copied byte for byte to
+ *    public/floorspec/library/<name>/<version>/ — <name> and <version> read from the manifest: the
+ *    last segment of its `library` URL, or the extension it belongs to — and every file's SHA-256 is
+ *    recorded in src/floorspec/published-libraries.json under the same never-change rule. Every file
+ *    a manifest names, and every digest it gives, is checked.
+ *
+ * Nothing is written until everything has been read and checked.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -46,9 +63,17 @@ import type {
   ChapterSection,
   Coverage,
   CoverageRow,
+  Evidence,
+  ExtensionDetail,
+  ExtensionStatus,
   FloorspecIndex,
   Inline,
   Level,
+  Libraries,
+  LibraryItem,
+  LibraryVersion,
+  Packs,
+  Registry,
   RetiredStatement,
   SpecIndex,
 } from '../src/floorspec/ast';
@@ -56,12 +81,16 @@ import type {
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const source = resolve(root, process.argv[2] ?? process.env.FLOORSPEC_DIR ?? '../floorspec');
 const REPO = 'matdemers1/floorspec';
+const SITE = 'https://d3cloud.io';
 /** The order the site presents them in; any other specification follows, alphabetically. */
 const ORDER = ['core', 'ops', 'rules'];
+/** Path segments under /floorspec that are not specifications. */
+const RESERVED = new Set(['app', 'coverage', 'registry', 'library', 'schema']);
 
 const out = join(root, 'src/floorspec');
 const generated = join(out, 'generated');
 const publishedPath = join(out, 'published-schemas.json');
+const librariesPath = join(out, 'published-libraries.json');
 const lockPath = join(out, 'floorspec.lock.json');
 
 function fail(message: string): never {
@@ -70,13 +99,28 @@ function fail(message: string): never {
 }
 
 const git = (...args: string[]) => execFileSync('git', ['-C', source, ...args], { encoding: 'utf8' }).trim();
+const isDir = (p: string) => existsSync(p) && statSync(p).isDirectory();
+const readJson = <T,>(p: string): T => JSON.parse(readFileSync(p, 'utf8')) as T;
+const sha256 = (path: string) => createHash('sha256').update(readFileSync(path)).digest('hex');
+
+/** Every file under `dir`, as paths relative to it, sorted. */
+function filesUnder(dir: string, prefix = ''): string[] {
+  const found: string[] = [];
+  for (const entry of readdirSync(join(dir, prefix)).sort()) {
+    const rel = prefix ? `${prefix}/${entry}` : entry;
+    if (isDir(join(dir, rel))) found.push(...filesUnder(dir, rel));
+    else found.push(rel);
+  }
+  return found;
+}
 
 // ---------------------------------------------------------------------------------------------
 // 1–2. The checkout, clean, and its commit.
 
 if (!existsSync(join(source, 'spec', 'core'))) fail(`no Floorspec checkout at ${source} (pass a path, or set FLOORSPEC_DIR)`);
-const dirty = git('status', '--porcelain', '--untracked-files=all', '--', 'spec', 'schema', 'conformance');
-if (dirty) fail(`${source} has uncommitted changes under spec/, schema/ or conformance/ — commit them first:\n${dirty}`);
+const WATCHED = ['spec', 'schema', 'conformance', 'registry', 'library', 'rules'].filter((d) => existsSync(join(source, d)));
+const dirty = git('status', '--porcelain', '--untracked-files=all', '--', ...WATCHED);
+if (dirty) fail(`${source} has uncommitted changes under ${WATCHED.join('/, ')}/ — commit them first:\n${dirty}`);
 const commit = git('rev-parse', 'HEAD');
 const committedAt = git('show', '-s', '--format=%cI', 'HEAD');
 
@@ -91,7 +135,15 @@ interface Statement {
   file: string;
   line: number;
 }
-type Extract = (root: string, spec: string) => { statements: Statement[]; problems: { file: string; line: number; message: string }[] };
+type Problems = { file: string; line: number; message: string }[];
+type Extract = (root: string, spec: string) => { statements: Statement[]; problems: Problems };
+interface ExtensionSpecs {
+  extensionSpecs?: (root: string) => { specs: { name: string; version: string; code: string; file: string }[]; problems: Problems };
+  extractExtension?: (root: string, ext: { name: string; version: string; code: string; file: string; suite: string }) => {
+    statements: Statement[];
+    problems: Problems;
+  };
+}
 
 /** `05-walls.md` → `walls`; `annex-ifc.md` → `ifc`. */
 const slugOf = (file: string) => basename(file, '.md').replace(/^\d+-/, '').replace(/^annex-/, '');
@@ -109,6 +161,8 @@ interface Snapshot extends Pin {
   specs: Spec[];
   /** "Core" → Core at this commit: a cross-reference resolves within the commit it was written at. */
   byShort: Map<string, Spec>;
+  /** A file or directory of the repo that is published on this site → its address here. Current commit only. */
+  published: Map<string, string>;
 }
 
 interface Spec {
@@ -121,6 +175,8 @@ interface Spec {
   base: string;
   snap: Snapshot;
   dir: string;
+  /** Its directory in the repo, which its relative links are relative to: spec/core, registry/FS_electrical. */
+  src: string;
   files: string[];
   summaries: Map<string, string>;
   statements: Statement[];
@@ -128,6 +184,8 @@ interface Spec {
   chapterOf: Map<string, string>; // chapter number → slug
   sectionOf: Map<string, string>; // "5.3" → slug
   slugByFile: Map<string, string>;
+  /** One page holding several `# n.` chapters — an extension's spec.md: a chapter is an anchor on it. */
+  single?: boolean;
 }
 
 /**
@@ -141,13 +199,14 @@ async function loadSnapshot(
   current?: { versions: Record<string, string>; earlier: Record<string, Record<string, Pin>> },
 ): Promise<Snapshot> {
   const { extract } = (await import(pathToFileURL(join(root, 'tools/statements.ts')).href)) as { extract: Extract };
-  const snap: Snapshot = { ...pin, root, specs: [], byShort: new Map() };
+  const snap: Snapshot = { ...pin, root, specs: [], byShort: new Map(), published: new Map() };
   snap.specs = readdirSync(join(root, 'spec'))
     .filter((code) => statSync(join(root, 'spec', code)).isDirectory())
     .filter((code) => readdirSync(join(root, 'spec', code)).some((f) => f.endsWith('.md') && f !== 'README.md'))
     .sort((a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b))
     .map((code): Spec => {
       const at = pin.commit.slice(0, 7);
+      if (RESERVED.has(code) || !/^[a-z]+$/.test(code)) fail(`spec/${code} at ${at}: "${code}" cannot be a specification's path segment under /floorspec`);
       const dir = join(root, 'spec', code);
       const readme = readFileSync(join(dir, 'README.md'), 'utf8');
       const name = /^#\s+(Floorspec \S+)\s*$/m.exec(readme)?.[1];
@@ -192,6 +251,7 @@ async function loadSnapshot(
         base: versioned ? `/floorspec/${code}/${version}` : `/floorspec/${code}`,
         snap,
         dir,
+        src: `spec/${code}`,
         files,
         summaries,
         statements,
@@ -267,6 +327,317 @@ earlier.sort(
 );
 
 // ---------------------------------------------------------------------------------------------
+// 7. Schemas, read and checked (written last): copied byte for byte, and never changed once published.
+
+/** A file to publish under public/: its path under the site root, and where it comes from. */
+interface Copy {
+  path: string;
+  from: string;
+}
+
+const publishedSchemas: Record<string, string> = existsSync(publishedPath) ? readJson(publishedPath) : {};
+const publishedLibraries: Record<string, string> = existsSync(librariesPath) ? readJson(librariesPath) : {};
+
+/** Every schema/<name>/<version>/ with JSON in it: each specification's drafts, and the registry's. */
+const schemaCopies: Copy[] = [];
+const schemaCounts = new Map<string, number>();
+for (const name of readdirSync(join(source, 'schema')).sort()) {
+  if (!isDir(join(source, 'schema', name))) continue;
+  if (name === 'ext') fail('schema/ext/ is where the site publishes extension schemas; the repository has a directory of that name');
+  for (const version of readdirSync(join(source, 'schema', name)).sort()) {
+    const from = join(source, 'schema', name, version);
+    if (!isDir(from)) continue;
+    const incoming = readdirSync(from)
+      .filter((f) => f.endsWith('.json'))
+      .sort();
+    if (!incoming.length) continue;
+    schemaCounts.set(`${name}/${version}`, incoming.length);
+    for (const file of incoming) schemaCopies.push({ path: `floorspec/schema/${name}/${version}/${file}`, from: join(from, file) });
+  }
+}
+
+// ---------------------------------------------------------------------------------------------
+// 6. The extension registry (current commit only).
+
+interface ExtensionSource {
+  entry: {
+    name: string;
+    version: string;
+    status: ExtensionStatus;
+    schema?: string;
+    title: string;
+    requires?: Record<string, string>;
+    kinds?: Record<string, { title: string; fallback?: { asset?: boolean; symbol?: boolean } }>;
+    terms?: { roomFunctions?: string[] };
+    implementations?: { name: string; url: string }[];
+  };
+  dir: string;
+  /** Its specification, parsed like a chapter, when it has one (spec.md) — or its proposal.md, without statements. */
+  spec?: Spec;
+  document?: string;
+  schemas: { file: string; path: string }[];
+}
+
+const STATUSES: ExtensionStatus[] = ['proposal', 'draft', 'releaseCandidate', 'ratified'];
+const registryDir = join(source, 'registry');
+const tools = (await import(pathToFileURL(join(source, 'tools/statements.ts')).href)) as ExtensionSpecs;
+const extensionCodes = new Map<string, string>();
+if (isDir(registryDir)) {
+  if (!tools.extensionSpecs || !tools.extractExtension) fail('registry/ has extensions, but tools/statements.ts exports no extensionSpecs/extractExtension');
+  const { specs, problems } = tools.extensionSpecs(source);
+  if (problems.length) fail(`floorspec's statement checker reports problems in registry/:\n${problems.map((p) => `  ${p.file}:${p.line}: ${p.message}`).join('\n')}`);
+  for (const s of specs) extensionCodes.set(s.name, s.code);
+}
+
+const extensions: ExtensionSource[] = [];
+for (const name of isDir(registryDir) ? readdirSync(registryDir).sort() : []) {
+  const dir = join(registryDir, name);
+  if (!existsSync(join(dir, 'extension.json'))) continue;
+  const entry = readJson<ExtensionSource['entry']>(join(dir, 'extension.json'));
+  if (entry.name !== name) fail(`registry/${name}/extension.json names ${entry.name}`);
+  if (!/^[A-Za-z0-9_]+$/.test(name)) fail(`registry/${name}: an extension's name must be a path segment`);
+  if (!STATUSES.includes(entry.status)) fail(`registry/${name}/extension.json has status "${entry.status}"`);
+
+  // Its schema files, each published at the URL its own $id names — read, never constructed.
+  const schemas: ExtensionSource['schemas'] = [];
+  for (const file of readdirSync(dir).filter((f) => f.endsWith('.schema.json')).sort()) {
+    const id = readJson<{ $id?: unknown }>(join(dir, file)).$id;
+    if (typeof id !== 'string' || !id.startsWith(`${SITE}/floorspec/schema/`))
+      fail(`registry/${name}/${file}: its $id (${String(id)}) is not under ${SITE}/floorspec/schema/`);
+    const path = id.slice(SITE.length + 1);
+    if (!/^floorspec\/schema\/ext\/[^/]+\/[^/]+\/[^/]+\.json$/.test(path) || basename(path) !== file)
+      fail(`registry/${name}/${file}: its $id ${id} is not floorspec/schema/ext/<NAME>/<version>/${file}`);
+    schemas.push({ file, path });
+    schemaCopies.push({ path, from: join(dir, file) });
+  }
+  if (entry.schema && !schemas.some((s) => `${SITE}/${s.path}` === entry.schema))
+    fail(`registry/${name}/extension.json gives schema ${entry.schema}, which no schema file in registry/${name}/ has as its $id`);
+
+  const ext: ExtensionSource = { entry, dir, schemas };
+  const code = extensionCodes.get(name);
+  if (existsSync(join(dir, 'spec.md'))) {
+    if (!code) fail(`registry/${name}/spec.md has no statement code`);
+    const { statements, problems } = tools.extractExtension!(source, {
+      name,
+      version: entry.version,
+      code,
+      file: join(dir, 'spec.md'),
+      suite: join(source, 'conformance', 'ext', name, entry.version),
+    });
+    if (problems.length) fail(`floorspec's statement checker reports problems in registry/${name}/spec.md:\n${problems.map((p) => `  ${p.file}:${p.line}: ${p.message}`).join('\n')}`);
+    const text = readFileSync(join(dir, 'spec.md'), 'utf8');
+    const chapterOf = new Map<string, string>();
+    const sectionOf = new Map<string, string>();
+    for (const m of text.matchAll(/^#\s+(\d+)\.\s/gm)) chapterOf.set(m[1]!, name);
+    for (const m of text.matchAll(/^##\s+(\d+\.\d+)\s/gm)) sectionOf.set(m[1]!, name);
+    ext.spec = {
+      code: code.toLowerCase(),
+      short: name,
+      name,
+      version: entry.version,
+      base: '/floorspec/registry',
+      snap: current,
+      dir,
+      src: `registry/${name}`,
+      files: ['spec.md'],
+      summaries: new Map(),
+      statements,
+      statementIds: new Set(statements.map((s) => s.id)),
+      chapterOf,
+      sectionOf,
+      slugByFile: new Map([['spec.md', name]]),
+      single: true,
+    };
+    ext.document = `registry/${name}/spec.md`;
+  } else if (existsSync(join(dir, 'proposal.md'))) {
+    ext.document = `registry/${name}/proposal.md`;
+  }
+  extensions.push(ext);
+}
+
+// The order of the registry's own table of official extensions, then any other, alphabetically.
+const registryReadme = existsSync(join(registryDir, 'README.md')) ? readFileSync(join(registryDir, 'README.md'), 'utf8') : '';
+/** "What it describes", by extension name, from the registry README's table of extensions. */
+const describes = new Map<string, string>();
+{
+  let column = -1;
+  for (const line of registryReadme.split('\n')) {
+    if (!line.startsWith('|')) {
+      column = -1;
+      continue;
+    }
+    const cells = line.replace(/^\|/, '').replace(/\|\s*$/, '').split('|').map((c) => c.trim());
+    if (/^Extension$/i.test(cells[0] ?? '')) column = cells.findIndex((c) => /describ/i.test(c));
+    else if (column >= 0) {
+      const name = /`([A-Za-z0-9_]+)`/.exec(cells[0] ?? '')?.[1];
+      if (name) describes.set(name, cells[column]!.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/`/g, ''));
+    }
+  }
+}
+const tableOrder = [...describes.keys()];
+extensions.sort(
+  (a, b) => (tableOrder.indexOf(a.entry.name) + 1 || 99) - (tableOrder.indexOf(b.entry.name) + 1 || 99) || a.entry.name.localeCompare(b.entry.name),
+);
+for (const ext of extensions) current.published.set(`registry/${ext.entry.name}/spec.md`, `/floorspec/registry/${ext.entry.name}`);
+if (extensions.length) {
+  current.published.set('registry/README.md', '/floorspec/registry');
+  current.published.set('registry', '/floorspec/registry');
+}
+
+// ---------------------------------------------------------------------------------------------
+// 8. Libraries (current commit only, earlier versions carried forward from public/).
+
+interface LibrarySource {
+  dir: string;
+  version: LibraryVersion;
+  manifest: Record<string, unknown>;
+}
+
+const libraries: LibrarySource[] = [];
+const libraryCopies: Copy[] = [];
+
+function readLibrary(dir: string, manifestFile: string): LibrarySource {
+  const where = relative(source, dir);
+  const manifest = readJson<Record<string, unknown>>(join(dir, manifestFile));
+  const version = manifest.version;
+  if (typeof version !== 'string' || !/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(version)) fail(`${where}/${manifestFile} has no version`);
+  // Its name: the last segment of the URL its manifest names, or the extension it belongs to.
+  let name: string | undefined;
+  let canonical = false;
+  if (typeof manifest.library === 'string' && manifest.library.startsWith(`${SITE}/floorspec/library/`)) {
+    name = manifest.library.slice(`${SITE}/floorspec/library/`.length);
+    canonical = true;
+  } else if (typeof manifest.extension === 'string') name = manifest.extension;
+  if (!name || !/^[A-Za-z0-9_-]+$/.test(name)) fail(`${where}/${manifestFile}: no library name — a "library" URL under ${SITE}/floorspec/library/, or an "extension"`);
+  const base = `/floorspec/library/${name}/${version}`;
+  if (canonical && manifest.uri !== undefined && manifest.uri !== `${SITE}${base}/`)
+    fail(`${where}/${manifestFile} says it is published at ${String(manifest.uri)}, not ${SITE}${base}/`);
+  if (where.startsWith('library/') && where !== `library/${name}/${version}`)
+    fail(`${where}/${manifestFile} names ${name} ${version}, which belongs in library/${name}/${version}/`);
+
+  const files = filesUnder(dir);
+  const present = new Set(files);
+  const bytes = new Map(files.map((f) => [f, statSync(join(dir, f)).size]));
+
+  // Every file the manifest names exists, with the digest and length it gives.
+  const named = (value: unknown, found: Set<string>): void => {
+    if (Array.isArray(value)) value.forEach((v) => named(v, found));
+    else if (value && typeof value === 'object') {
+      const o = value as Record<string, unknown>;
+      if (typeof o.path === 'string') {
+        if (!present.has(o.path)) fail(`${where}/${manifestFile} names ${o.path}, which is not in ${where}/`);
+        if (typeof o.sha256 === 'string' && sha256(join(dir, o.path)) !== o.sha256) fail(`${where}/${o.path} does not have the SHA-256 ${manifestFile} gives`);
+        if (typeof o.byteLength === 'number' && bytes.get(o.path) !== o.byteLength) fail(`${where}/${o.path} is not the byteLength ${manifestFile} gives`);
+        found.add(o.path);
+      }
+      for (const v of Object.values(o)) named(v, found);
+    } else if (typeof value === 'string' && value.startsWith(`${SITE}${base}/`) && value !== `${SITE}${base}/`) {
+      const path = value.slice(`${SITE}${base}/`.length);
+      if (!present.has(path)) fail(`${where}/${manifestFile} names ${value}, which is not in ${where}/`);
+      found.add(path);
+    }
+  };
+  // A SHA256SUMS beside it is checked too.
+  if (present.has('SHA256SUMS'))
+    for (const line of readFileSync(join(dir, 'SHA256SUMS'), 'utf8').split('\n').filter(Boolean)) {
+      const m = /^([0-9a-f]{64})\s+\*?(.+)$/.exec(line);
+      if (!m) fail(`${where}/SHA256SUMS: cannot read "${line}"`);
+      if (!present.has(m[2]!) || sha256(join(dir, m[2]!)) !== m[1]) fail(`${where}/SHA256SUMS: ${m[2]} does not match`);
+    }
+
+  const items: LibraryItem[] = [];
+  const list = manifest.items;
+  if (list && typeof list === 'object')
+    for (const [id, item] of Object.entries(list as Record<string, Record<string, unknown>>)) {
+      const found = new Set<string>();
+      named(item, found);
+      const element = item.element as { name?: unknown } | undefined;
+      items.push({
+        id,
+        kind: String(item.kind ?? ''),
+        name: String(item.name ?? element?.name ?? id),
+        files: [...found].sort(),
+      });
+    }
+  named(manifest, new Set());
+
+  const title = String(manifest.name ?? manifest.library ?? name);
+  return {
+    dir,
+    manifest,
+    version: {
+      name,
+      version,
+      title,
+      description: String(manifest.description ?? ''),
+      ...(typeof manifest.license === 'string' ? { license: manifest.license } : {}),
+      ...(typeof manifest.licenseUrl === 'string' ? { licenseUrl: manifest.licenseUrl } : {}),
+      ...(typeof manifest.extension === 'string' ? { extension: manifest.extension } : {}),
+      ...(typeof manifest.floorspec === 'string' ? { floorspec: manifest.floorspec } : {}),
+      source: where,
+      commit,
+      base,
+      manifest: manifestFile,
+      canonical,
+      files: files.map((path) => ({ path, bytes: bytes.get(path)! })),
+      bytes: [...bytes.values()].reduce((a, b) => a + b, 0),
+      items,
+    },
+  };
+}
+
+const MANIFESTS = ['index.json', 'library.json'];
+const manifestIn = (dir: string) => MANIFESTS.find((m) => existsSync(join(dir, m)));
+for (const name of isDir(join(source, 'library')) ? readdirSync(join(source, 'library')).sort() : []) {
+  for (const version of isDir(join(source, 'library', name)) ? readdirSync(join(source, 'library', name)).sort() : []) {
+    const dir = join(source, 'library', name, version);
+    const manifest = isDir(dir) && manifestIn(dir);
+    if (manifest) libraries.push(readLibrary(dir, manifest));
+  }
+}
+for (const ext of extensions) {
+  const dir = join(ext.dir, 'library');
+  const manifest = isDir(dir) && manifestIn(dir);
+  if (manifest) libraries.push(readLibrary(dir, manifest));
+}
+for (const lib of libraries) {
+  const { name, version, base, source: where } = lib.version;
+  if (libraries.filter((l) => l.version.name === name && l.version.version === version).length > 1) fail(`two libraries are ${name} ${version}`);
+  for (const file of lib.version.files) libraryCopies.push({ path: `${base.slice(1)}/${file.path}`, from: join(lib.dir, file.path) });
+  current.published.set(where, `/floorspec/library/${name}/${version}`);
+  for (const file of lib.version.files) current.published.set(`${where}/${file.path}`, `${base}/${file.path}`);
+  if (where.startsWith('library/')) current.published.set(dirname(where), `/floorspec/library/${name}`);
+}
+
+// The never-change rule, for schemas and libraries alike: a file published once keeps its bytes.
+function checkPublished(record: Record<string, string>, copies: Copy[], what: string, mustStay: (path: string) => boolean): string[] {
+  const breaks: string[] = [];
+  const incoming = new Map(copies.map((c) => [c.path, c.from]));
+  for (const [path, hash] of Object.entries(record)) {
+    const from = incoming.get(path);
+    if (from) {
+      if (sha256(from) !== hash) breaks.push(`${path} is published and its content would change (${relative(source, from)})`);
+      continue;
+    }
+    // Not in the checkout any more: a specification's schema must be; an extension's earlier
+    // version and a library's are kept in public/ exactly as they were published.
+    if (mustStay(path)) breaks.push(`${path} is published but the checkout no longer has it`);
+    else if (!existsSync(join(root, 'public', path)) || sha256(join(root, 'public', path)) !== hash)
+      breaks.push(`${path} is published, is no longer in the checkout, and public/ no longer holds it as published`);
+  }
+  for (const c of copies) if (copies.filter((o) => o.path === c.path).length > 1) breaks.push(`${c.path} would be published from two files`);
+  if (breaks.length)
+    fail(
+      `a published ${what} URL must never change (FLR-ADR-018, DI-REQ-042):\n  ${[...new Set(breaks)].join('\n  ')}\n` +
+        `Publish the change under a new version instead.`,
+    );
+  return copies.filter((c) => !record[c.path]).map((c) => c.path);
+}
+const addedSchemas = checkPublished(publishedSchemas, schemaCopies, 'schema', (path) => !path.startsWith('floorspec/schema/ext/'));
+const addedLibraries = checkPublished(publishedLibraries, libraryCopies, 'library', () => false);
+for (const c of schemaCopies) current.published.set(relative(source, c.from), `/${c.path}`);
+
+// ---------------------------------------------------------------------------------------------
 // 3. Chapters.
 
 const TAG = /\{#(FS-[A-Z]+-\d+\.\d+\.\d+) (MUST NOT|MUST|SHOULD NOT|SHOULD|MAY)\}/g;
@@ -276,7 +647,7 @@ const TAG = /\{#(FS-[A-Z]+-\d+\.\d+\.\d+) (MUST NOT|MUST|SHOULD NOT|SHOULD|MAY)\
  * when it is a version ("Core 0.1", "IFC 4.3", "Semantic Versioning 2.0.0").
  */
 const REF = /\b[Cc]hapter (\d+)\b|\bAnnex A\b|(?<![\d.,])(\d+)\.(\d+)(?:\.(\d+))?(?![\d]|\.\d)/g;
-const NOT_A_REF = /([Cc]ore|Ops|Rules|IFC4?|[Dd]raft|[Vv]ersion|Versioning|Floorspec|RFC|ISO|BCP|ADD2|TC1|§)\s*$/;
+const NOT_A_REF = /([Cc]ore|Ops|Rules|IFC4?|[Dd]raft|[Vv]ersion|Versioning|Floorspec|RFC|ISO|BCP|ADD2|TC1|§|FS_[a-z]+)\s*$/;
 /** Chapter 0's sections share their numbers with the draft itself ("a 0.1 document"): linked only as "(0.5)" or "see 0.5". */
 const CHAPTER_ZERO_REF = /(\(|see )$/;
 /** A number named as another specification's: "Core §5.3", "Core 5.2.1". */
@@ -306,7 +677,7 @@ function crossRefs(text: string, spec: Spec, here: string): Inline[] {
     let href: string | undefined;
     if (m[1] !== undefined) {
       const slug = spec.chapterOf.get(m[1]);
-      if (slug) href = page(spec, slug);
+      if (slug) href = spec.single ? page(spec, slug, `chapter-${m[1]}`) : page(spec, slug);
     } else if (m[0] === 'Annex A') {
       const slug = spec.chapterOf.get('A');
       if (slug) href = page(spec, slug);
@@ -335,16 +706,22 @@ function crossRefs(text: string, spec: Spec, here: string): Inline[] {
   return parts;
 }
 
-/** A Markdown link target: a chapter of any specification becomes its page; anything else in the repo, GitHub. */
+/**
+ * A Markdown link target: a chapter of any specification becomes its page; an extension's
+ * specification, the registry, a published schema or library file its address here; anything else
+ * in the repo, GitHub at the commit the text comes from.
+ */
 function linkTarget(href: string, spec: Spec): string {
   if (/^[a-z]+:/i.test(href) || href.startsWith('#')) return href;
   const [file, hash] = href.split('#');
-  const path = posix.join('spec', spec.code, file!);
+  const path = posix.normalize(posix.join(spec.src, file!)).replace(/\/$/, '');
   const m = /^spec\/([^/]+)\/([^/]+\.md)$/.exec(path);
   const target = m ? spec.snap.specs.find((s) => s.code === m[1]) : undefined;
   const slug = target?.slugByFile.get(m![2]!);
   if (target && slug) return page(target, slug, hash);
-  return `https://github.com/${REPO}/tree/${spec.snap.commit}/${posix.join('spec', spec.code, href)}`;
+  const here = spec.snap.published.get(path);
+  if (here) return `${here}${hash ? `#${hash}` : ''}`;
+  return `https://github.com/${REPO}/tree/${spec.snap.commit}/${path}${hash ? `#${hash}` : ''}`;
 }
 
 /** Text with statement tags and cross-references found in it. Tags become markers, grouped later. */
@@ -448,11 +825,20 @@ function blocks(tokens: Token[], spec: Spec, here: string, sections: ChapterSect
         break;
       case 'heading': {
         const h = token as Tokens.Heading;
-        if (h.depth === 1) break; // the chapter title, rendered by the page
+        if (h.depth === 1) {
+          // The chapter title, rendered by the page — except on a page of several chapters (an
+          // extension's spec.md), where each `# n. Title` is a chapter of it, with an anchor.
+          const c = spec.single ? /^(\d+)\.\s+(.*)$/.exec(h.text) : null;
+          if (!c) break;
+          const title = group(inlines(marked.Lexer.lexInline(c[2]!), spec, here, false));
+          sections.push({ id: `chapter-${c[1]}`, number: c[1], title: plain(title) });
+          list.push({ t: 'h', depth: 1, id: `chapter-${c[1]}`, number: c[1], c: title });
+          break;
+        }
         const m = /^(\d+\.\d+)\s+(.*)$/.exec(h.text);
         const c = group(inlines(m ? marked.Lexer.lexInline(m[2]!) : h.tokens, spec, here, false));
         const id = m ? m[1]! : slugify(h.text);
-        if (h.depth === 2) sections.push({ id, number: m?.[1], title: plain(c) });
+        if (h.depth === 2 && !spec.single) sections.push({ id, number: m?.[1], title: plain(c) });
         list.push({ t: 'h', depth: h.depth, id, number: m?.[1], c });
         break;
       }
@@ -530,6 +916,16 @@ function anchored(items: (Block | Inline)[], into: string[]): string[] {
   return into;
 }
 
+function checkAnchors(spec: Spec, chapters: Chapter[], where: string) {
+  const seen = chapters.flatMap((ch) => anchored(ch.blocks, []));
+  const missing = spec.statements.filter((s) => !seen.includes(s.id));
+  const extra = seen.filter((id) => !spec.statementIds.has(id));
+  if (missing.length || extra.length || new Set(seen).size !== seen.length)
+    fail(
+      `${where}: statement anchors do not match the extractor: missing ${missing.map((s) => s.id).join(', ') || 'none'}, unknown ${extra.join(', ') || 'none'}`,
+    );
+}
+
 function chaptersOf(spec: Spec): Chapter[] {
   const chapters: Chapter[] = [];
   for (const file of spec.files) {
@@ -538,15 +934,9 @@ function chaptersOf(spec: Spec): Chapter[] {
     const c = CHAPTER.exec(text)!;
     const sections: ChapterSection[] = [];
     const parsed = blocks(marked.lexer(text), spec, slug, sections);
-    chapters.push({ slug, number: c[1]!, title: c[2]!.replace(/^Annex:\s*/, '').trim(), sections, blocks: parsed });
+    chapters.push({ slug, number: c[1]!, title: c[2]!.replace(/^Annex:\s*/, '').trim(), file: `${spec.src}/${file}`, sections, blocks: parsed });
   }
-  const seen = chapters.flatMap((ch) => anchored(ch.blocks, []));
-  const missing = spec.statements.filter((s) => !seen.includes(s.id));
-  const extra = seen.filter((id) => !spec.statementIds.has(id));
-  if (missing.length || extra.length || new Set(seen).size !== seen.length)
-    fail(
-      `spec/${spec.code}: statement anchors do not match the extractor: missing ${missing.map((s) => s.id).join(', ') || 'none'}, unknown ${extra.join(', ') || 'none'}`,
-    );
+  checkAnchors(spec, chapters, `spec/${spec.code}`);
   return chapters;
 }
 
@@ -555,8 +945,8 @@ function chaptersOf(spec: Spec): Chapter[] {
 
 const MANDATORY: Level[] = ['MUST', 'MUST NOT'];
 
-function scanSuite(spec: Spec): { tests: number; coveredBy: Map<string, number> } {
-  const dir = join(spec.snap.root, 'conformance', spec.code, spec.version);
+/** Every test.json under a suite: how many, and how many name each statement. */
+function scanTests(dir: string, rootDir: string, at: string, known: (id: string) => boolean): { tests: number; coveredBy: Map<string, number> } {
   const coveredBy = new Map<string, number>();
   let tests = 0;
   const walk = (d: string) => {
@@ -566,10 +956,10 @@ function scanSuite(spec: Spec): { tests: number; coveredBy: Map<string, number> 
       if (statSync(p).isDirectory()) walk(p);
       else if (entry === 'test.json') {
         const t = JSON.parse(readFileSync(p, 'utf8')) as { covers?: unknown };
-        if (!Array.isArray(t.covers)) fail(`${relative(spec.snap.root, p)}: "covers" must be an array of statement IDs`);
+        if (!Array.isArray(t.covers)) fail(`${relative(rootDir, p)}: "covers" must be an array of statement IDs`);
         tests += 1;
         for (const id of t.covers as string[]) {
-          if (!spec.statementIds.has(id)) fail(`${spec.snap.commit.slice(0, 7)}:${relative(spec.snap.root, p)} covers ${id}, which no statement has`);
+          if (!known(id)) fail(`${at}:${relative(rootDir, p)} covers ${id}, which no statement has`);
           coveredBy.set(id, (coveredBy.get(id) ?? 0) + 1);
         }
       }
@@ -577,6 +967,26 @@ function scanSuite(spec: Spec): { tests: number; coveredBy: Map<string, number> 
   };
   walk(dir);
   return { tests, coveredBy };
+}
+
+/**
+ * The suites a draft is gated against, as floorspec's conformance/coverage.ts counts them: its own,
+ * conformance/<spec>/<version>/, and for Core the migration suite (Core chapter 20),
+ * conformance/migration/<version>/, where the commit has one.
+ */
+const suitesOf = (spec: Spec) =>
+  [`conformance/${spec.code}/${spec.version}`, ...(spec.code === 'core' ? [`conformance/migration/${spec.version}`] : [])].filter(
+    (dir, i) => i === 0 || existsSync(join(spec.snap.root, dir)),
+  );
+
+function scanSuite(spec: Spec) {
+  const total = { tests: 0, coveredBy: new Map<string, number>() };
+  for (const dir of suitesOf(spec)) {
+    const found = scanTests(join(spec.snap.root, dir), spec.snap.root, spec.snap.commit.slice(0, 7), (id) => spec.statementIds.has(id));
+    total.tests += found.tests;
+    for (const [id, n] of found.coveredBy) total.coveredBy.set(id, (total.coveredBy.get(id) ?? 0) + n);
+  }
+  return total;
 }
 
 type GateReport = Record<string, { tests: number; statements: { id: string; tests: string[] }[] } | undefined>;
@@ -613,7 +1023,7 @@ function coverageOf(spec: Spec): Coverage {
   return {
     spec: spec.code,
     version: spec.version,
-    source: data ? 'floorspec coverage gate' : `scan of conformance/${spec.code}/${spec.version}`,
+    source: data ? 'floorspec coverage gate' : `scan of ${suitesOf(spec).join(' and ')}`,
     tests: counted.tests,
     mandatory: mandatory.length,
     covered: mandatory.filter((r) => r.tests > 0).length,
@@ -622,31 +1032,46 @@ function coverageOf(spec: Spec): Coverage {
 }
 
 // ---------------------------------------------------------------------------------------------
-// 4b. Retired statement IDs: the "Changes from" table of a draft's chapter 0 — `| \`FS-CORE-1.2.1\` |
+// 4b. Retired statement IDs: the "Changes from" tables of a draft's chapter 0 — `| \`FS-CORE-1.2.1\` |
 // \`FS-CORE-1.2.3\` | why |`. A link to a retired ID still lands somewhere: the page it was on says
 // what replaced it, and where the earlier draft that had it is published.
 
 const RETIRED_ROW = /^\|\s*`(FS-[A-Z]+-\d+\.\d+\.\d+)`\s*\|\s*(?:`(FS-[A-Z]+-\d+\.\d+\.\d+)`)?\s*\|\s*(.*?)\s*\|\s*$/;
+const sectionOfId = (id: string) => id.replace(/^FS-[A-Z]+-/, '').replace(/\.\d+$/, '');
 
 function retiredOf(spec: Spec): RetiredStatement[] {
   const conventions = spec.files.find((f) => spec.slugByFile.get(f) === 'conventions');
   if (!conventions) return [];
-  const list: RetiredStatement[] = [];
+  const rows = new Map<string, { replacedBy?: string; why: string }>();
   for (const line of readFileSync(join(spec.dir, conventions), 'utf8').split('\n')) {
     const m = RETIRED_ROW.exec(line);
     if (!m || !m[1]!.startsWith(`FS-${spec.code.toUpperCase()}-`)) continue;
-    const [, id, replacedBy, why] = m as unknown as [string, string, string | undefined, string];
+    if (rows.has(m[1]!)) fail(`spec/${spec.code}: ${m[1]} is listed as retired twice`);
+    rows.set(m[1]!, { replacedBy: m[2], why: m[3]! });
+  }
+  const list: RetiredStatement[] = [];
+  for (const [id, { replacedBy: named, why }] of rows) {
     if (spec.statementIds.has(id)) fail(`spec/${spec.code}: ${id} is listed as retired, and is still a statement`);
-    if (replacedBy && !spec.statementIds.has(replacedBy)) fail(`spec/${spec.code}: ${id} is replaced by ${replacedBy}, which no statement has`);
-    const section = id.replace(/^FS-[A-Z]+-/, '').replace(/\.\d+$/, '');
+    // A replacement a later draft retired in turn is followed to the statement that replaces it now.
+    let replacedBy = named;
+    const via: string[] = [];
+    while (replacedBy && !spec.statementIds.has(replacedBy) && rows.has(replacedBy) && !via.includes(replacedBy)) {
+      via.push(replacedBy);
+      replacedBy = rows.get(replacedBy)!.replacedBy;
+    }
+    if (named && (!replacedBy || !spec.statementIds.has(replacedBy)))
+      fail(`spec/${spec.code}: ${id} is replaced by ${named}, which no statement has${via.length ? ` (followed through ${via.join(', ')})` : ''}`);
+    const section = sectionOfId(id);
     const chapter = spec.sectionOf.get(section) ?? spec.chapterOf.get(section.split('.')[0]!);
     if (!chapter) fail(`spec/${spec.code}: retired ${id} belongs to no chapter of ${spec.name} ${spec.version}`);
     const was = earlier.find((e) => e.code === spec.code && e.statementIds.has(id));
     if (!was) fail(`spec/${spec.code}: retired ${id} is in no earlier draft this site publishes`);
-    const by = replacedBy && spec.sectionOf.get(replacedBy.replace(/^FS-[A-Z]+-/, '').replace(/\.\d+$/, ''));
+    const by = replacedBy && spec.sectionOf.get(sectionOfId(replacedBy));
     list.push({
       id,
-      ...(replacedBy && by ? { replacedBy: { id: replacedBy, href: by === chapter ? `#${replacedBy}` : page(spec, by, replacedBy) } } : {}),
+      ...(replacedBy && by
+        ? { replacedBy: { id: replacedBy, href: by === chapter ? `#${replacedBy}` : page(spec, by, replacedBy), ...(via.length ? { via } : {}) } }
+        : {}),
       why: group(inlines(marked.Lexer.lexInline(why), spec, chapter)),
       section,
       chapter,
@@ -657,68 +1082,23 @@ function retiredOf(spec: Spec): RetiredStatement[] {
 }
 
 // ---------------------------------------------------------------------------------------------
-// 6. Schemas: copied byte for byte, and never changed once published.
-
-const sha256 = (path: string) => createHash('sha256').update(readFileSync(path)).digest('hex');
-const published: Record<string, string> = existsSync(publishedPath) ? JSON.parse(readFileSync(publishedPath, 'utf8')) : {};
-
-const breaks: string[] = [];
-for (const [path, hash] of Object.entries(published)) {
-  const from = join(source, path.replace(/^floorspec\//, ''));
-  if (!existsSync(from)) breaks.push(`${path} is published but ${relative(root, from)} no longer exists`);
-  else if (sha256(from) !== hash) breaks.push(`${path} is published and its content would change`);
-}
-if (breaks.length)
-  fail(
-    `a published schema URL must never change (FLR-ADR-018, DI-REQ-042):\n  ${breaks.join('\n  ')}\n` +
-      `Publish the change under a new version instead.`,
-  );
-
-/** Every schema/<name>/<version>/ with JSON in it: each specification's drafts, and the registry's. */
-const added: string[] = [];
-const schemaCounts = new Map<string, number>();
-const isDir = (p: string) => existsSync(p) && statSync(p).isDirectory();
-for (const name of readdirSync(join(source, 'schema')).sort()) {
-  if (!isDir(join(source, 'schema', name))) continue;
-  for (const version of readdirSync(join(source, 'schema', name)).sort()) {
-    const from = join(source, 'schema', name, version);
-    if (!isDir(from)) continue;
-    const incoming = readdirSync(from)
-      .filter((f) => f.endsWith('.json'))
-      .sort();
-    if (!incoming.length) continue;
-    schemaCounts.set(`${name}/${version}`, incoming.length);
-    const to = join(root, 'public/floorspec/schema', name, version);
-    mkdirSync(to, { recursive: true });
-    for (const file of incoming) {
-      const path = `floorspec/schema/${name}/${version}/${file}`;
-      copyFileSync(join(from, file), join(to, file));
-      if (!published[path]) {
-        published[path] = sha256(join(from, file));
-        added.push(path);
-      }
-    }
-  }
-}
-const sortedPublished = Object.fromEntries(Object.entries(published).sort(([a], [b]) => a.localeCompare(b)));
-
-// ---------------------------------------------------------------------------------------------
-// Write.
-
-const json = (value: unknown) => `${JSON.stringify(value, null, 1)}\n`;
-rmSync(generated, { recursive: true, force: true });
+// Everything, read and checked, in memory.
 
 const report: string[] = [`floorspec @ ${commit.slice(0, 7)} (${committedAt})`];
+/** generated/<path> → its content. */
+const files = new Map<string, string>();
+const json = (value: unknown) => `${JSON.stringify(value, null, 1)}\n`;
 
-/** Writes one draft's chapters and coverage under generated/<spec>/<version>/, and returns its index entry. */
+/** One draft's chapters and coverage under generated/<spec>/<version>/, and its index entry. */
 function publish(spec: Spec): SpecIndex {
   const chapters = chaptersOf(spec);
   const coverage = coverageOf(spec);
   const retired = spec.snap === current ? retiredOf(spec) : [];
-  const dir = join(generated, spec.code, spec.version);
-  mkdirSync(join(dir, 'chapters'), { recursive: true });
-  for (const ch of chapters) writeFileSync(join(dir, 'chapters', `${ch.slug}.json`), JSON.stringify(ch) + '\n');
-  writeFileSync(join(dir, 'coverage.json'), json(coverage));
+  for (const ch of chapters) {
+    const notes = retired.filter((r) => r.chapter === ch.slug);
+    files.set(`${spec.code}/${spec.version}/chapters/${ch.slug}.json`, JSON.stringify(notes.length ? { ...ch, retired: notes } : ch) + '\n');
+  }
+  files.set(`${spec.code}/${spec.version}/coverage.json`, json(coverage));
 
   const schemas = schemaCounts.get(`${spec.code}/${spec.version}`) ?? 0;
   report.push(
@@ -733,37 +1113,221 @@ function publish(spec: Spec): SpecIndex {
     version: spec.version,
     base: spec.base,
     commit: spec.snap.commit,
-    chapters: chapters.map((ch) => {
-      const file = spec.files.find((f) => slugOf(f) === ch.slug)!;
-      return {
-        slug: ch.slug,
-        file: `spec/${spec.code}/${file}`,
-        number: ch.number,
-        title: ch.title,
-        summary: spec.summaries.get(file) ?? '',
-        statements: spec.statements.filter((s) => spec.sectionOf.get(s.section) === ch.slug).length,
-      };
-    }),
+    chapters: chapters.map((ch) => ({
+      slug: ch.slug,
+      number: ch.number,
+      title: ch.title,
+      summary: spec.summaries.get(basename(ch.file)) ?? '',
+      statements: spec.statements.filter((s) => spec.sectionOf.get(s.section) === ch.slug).length,
+    })),
     statements: spec.statements.length,
     mandatory: coverage.mandatory,
     covered: coverage.covered,
     tests: coverage.tests,
-    ...(retired.length ? { retired } : {}),
+    ...(retired.length ? { retired: retired.length } : {}),
   };
 }
 
-const index: FloorspecIndex = { specifications: current.specs.map(publish), earlier: earlier.map(publish) };
+const specifications = current.specs.map(publish);
+const earlierIndex = earlier.map(publish);
 for (const [key, count] of schemaCounts) if (!current.specs.some((s) => `${s.code}/${s.version}` === key)) report.push(`schema/${key}: ${count} schemas`);
+
+// The registry: its README, every entry, and each extension's specification.
+const exceptionsFile = join(registryDir, 'exceptions.json');
+const exceptions = existsSync(exceptionsFile)
+  ? readJson<{ exceptions?: { extension: string; version: string; waives: string; decision: string; until: string }[] }>(exceptionsFile).exceptions ?? []
+  : [];
+for (const e of exceptions)
+  if (!extensions.some((x) => x.entry.name === e.extension && x.entry.version === e.version))
+    fail(`registry/exceptions.json names ${e.extension} ${e.version}, which the registry does not have`);
+
+const readmeSpec: Spec = {
+  code: 'registry',
+  short: 'registry',
+  name: 'registry',
+  version: '',
+  base: '/floorspec',
+  snap: current,
+  dir: registryDir,
+  src: 'registry',
+  files: [],
+  summaries: new Map(),
+  statements: [],
+  statementIds: new Set(),
+  chapterOf: new Map(),
+  sectionOf: new Map(),
+  slugByFile: new Map(),
+};
+
+const details: ExtensionDetail[] = extensions.map((ext): ExtensionDetail => {
+  const { entry } = ext;
+  const name = entry.name;
+  if (ext.spec) {
+    const sections: ChapterSection[] = [];
+    const text = readFileSync(join(ext.dir, 'spec.md'), 'utf8');
+    const parsed = blocks(marked.lexer(text), ext.spec, name, sections);
+    const chapter: Chapter = { slug: name, number: '', title: entry.title, file: ext.document!, sections, blocks: parsed };
+    checkAnchors(ext.spec, [chapter], `registry/${name}/spec.md`);
+    files.set(`registry/${name}.json`, JSON.stringify(chapter) + '\n');
+  } else if (ext.document) {
+    const sections: ChapterSection[] = [];
+    const parsed = blocks(marked.lexer(readFileSync(join(source, ext.document), 'utf8')), { ...readmeSpec, src: `registry/${name}` }, name, sections);
+    files.set(`registry/${name}.json`, JSON.stringify({ slug: name, number: '', title: entry.title, file: ext.document, sections, blocks: parsed } satisfies Chapter) + '\n');
+  }
+  const suite = `conformance/ext/${name}/${entry.version}`;
+  const own = ext.spec?.statementIds ?? new Set<string>();
+  // An extension's test may also cover Core or Ops statements; only its own are counted here.
+  const counted = scanTests(join(source, suite), source, commit.slice(0, 7), () => true);
+  const mandatory = (ext.spec?.statements ?? []).filter((s) => MANDATORY.includes(s.level));
+  const evidenceDir = join(ext.dir, 'evidence');
+  const evidence: Evidence[] = isDir(evidenceDir)
+    ? readdirSync(evidenceDir)
+        .filter((f) => f.endsWith('.json'))
+        .sort()
+        .map((f) => {
+          const e = readJson<Omit<Evidence, 'file'> & { extension?: string }>(join(evidenceDir, f));
+          if (e.extension !== undefined && e.extension !== name) fail(`registry/${name}/evidence/${f} is evidence for ${e.extension}`);
+          return {
+            file: `registry/${name}/evidence/${f}`,
+            implementation: e.implementation,
+            maintainer: e.maintainer,
+            sharesCodeWith: e.sharesCodeWith ?? [],
+            extensionVersion: e.extensionVersion,
+            suite: e.suite,
+            result: e.result,
+            ran: e.ran,
+            run: e.run,
+          };
+        })
+    : [];
+  const library = libraries.find((l) => l.dir === join(ext.dir, 'library'))?.version;
+  const earlierSchemas = Object.keys(publishedSchemas)
+    .filter((p) => p.startsWith(`floorspec/schema/ext/${name}/`) && !ext.schemas.some((s) => s.path === p))
+    .sort();
+  report.push(
+    `${name} ${entry.version} (${entry.status}) → /floorspec/registry/${name}: ${ext.spec?.statements.length ?? 0} statements, ` +
+      `${mandatory.filter((s) => counted.coveredBy.has(s.id)).length} of ${mandatory.length} MUST covered by ${counted.tests} tests; ` +
+      `${ext.schemas.length} schemas, ${evidence.length} evidence`,
+  );
+  return {
+    name,
+    version: entry.version,
+    status: entry.status,
+    title: entry.title,
+    ...(ext.spec ? { code: ext.spec.code.toUpperCase() } : {}),
+    summary: describes.get(name) ?? '',
+    ...(entry.schema ? { schema: entry.schema } : {}),
+    requires: entry.requires ?? {},
+    kinds: Object.entries(entry.kinds ?? {}).map(([collection, kind]) => ({
+      collection,
+      title: kind.title,
+      asset: kind.fallback?.asset === true,
+      symbol: kind.fallback?.symbol === true,
+    })),
+    terms: entry.terms?.roomFunctions ?? [],
+    implementations: entry.implementations ?? [],
+    evidence,
+    exceptions: exceptions.filter((e) => e.extension === name && e.version === entry.version).map(({ waives, decision, until }) => ({ waives, decision, until })),
+    schemas: ext.schemas,
+    earlierSchemas,
+    ...(ext.document ? { document: ext.document } : {}),
+    statements: ext.spec?.statements.length ?? 0,
+    mandatory: mandatory.length,
+    covered: mandatory.filter((s) => own.has(s.id) && counted.coveredBy.has(s.id)).length,
+    tests: counted.tests,
+    suite,
+    ...(library ? { library: { name: library.name, version: library.version } } : {}),
+  };
+});
+if (extensions.length) {
+  const registry: Registry = {
+    commit,
+    readme: blocks(marked.lexer(registryReadme), readmeSpec, 'registry', []),
+    extensions: details,
+  };
+  files.set('registry/index.json', json(registry));
+}
+
+// Libraries: every version in the checkout, and every earlier version still published.
+const previousLibraries: Libraries = existsSync(join(generated, 'libraries.json')) ? readJson(join(generated, 'libraries.json')) : { libraries: [] };
+const libraryVersions: LibraryVersion[] = libraries.map((l) => l.version);
+for (const lib of previousLibraries.libraries)
+  for (const v of lib.versions)
+    if (!libraryVersions.some((x) => x.name === v.name && x.version === v.version)) {
+      // Carried forward only when public/ still holds every file of it as recorded.
+      for (const f of v.files) if (!publishedLibraries[`${v.base.slice(1)}/${f.path}`]) fail(`${v.name} ${v.version} was published, but ${f.path} is not recorded`);
+      libraryVersions.push(v);
+    }
+const versionOrder = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true });
+const libraryNames = [...new Set(libraryVersions.map((v) => v.name))].sort((a, b) => {
+  // A standalone library before an extension's.
+  const ext = (n: string) => (libraryVersions.find((v) => v.name === n)?.extension ? 1 : 0);
+  return ext(a) - ext(b) || a.localeCompare(b);
+});
+const librariesData: Libraries = {
+  libraries: libraryNames.map((name) => {
+    const versions = libraryVersions.filter((v) => v.name === name).sort((a, b) => versionOrder(a.version, b.version));
+    return { name, title: versions[versions.length - 1]!.title, versions };
+  }),
+};
+if (libraryVersions.length) files.set('libraries.json', json(librariesData));
+for (const lib of libraries)
+  report.push(
+    `library ${lib.version.name} ${lib.version.version} (${lib.version.source}) → ${lib.version.base}/: ${lib.version.files.length} files, ${lib.version.bytes} bytes, ${lib.version.items.length} items${lib.version.canonical ? '' : ' — its manifest names no URL; the site chose this one'}`,
+  );
+
+// The rule packs: what rules/ holds, for the landing page.
+const rulesDir = join(source, 'rules');
+if (isDir(rulesDir)) {
+  const packs: Packs = { packs: [], viewers: [], covered: 0 };
+  for (const name of readdirSync(rulesDir).sort()) {
+    const manifest = join(rulesDir, name, 'pack.json');
+    if (!existsSync(manifest)) continue;
+    const p = readJson<{ name: string; version: string; title: string; description?: string; synthetic?: boolean; license?: string }>(manifest);
+    const rules = isDir(join(rulesDir, name, 'rules')) ? readdirSync(join(rulesDir, name, 'rules')).filter((r) => isDir(join(rulesDir, name, 'rules', r))).length : 0;
+    packs.packs.push({ name: p.name, version: p.version, title: p.title, description: p.description ?? '', synthetic: p.synthetic === true, rules, license: p.license ?? '' });
+  }
+  if (existsSync(join(rulesDir, 'viewers.json')))
+    packs.viewers = readJson<{ viewers: { host: string; publisher: string }[] }>(join(rulesDir, 'viewers.json')).viewers.map(({ host, publisher }) => ({ host, publisher }));
+  if (existsSync(join(rulesDir, 'coverage.json'))) packs.covered = (readJson<{ packs?: unknown[] }>(join(rulesDir, 'coverage.json')).packs ?? []).length;
+  files.set('packs.json', json(packs));
+}
+
+const index: FloorspecIndex = {
+  specifications,
+  earlier: earlierIndex,
+  extensions: details.map(({ name, version, status, title }) => ({ name, version, status, title })),
+  libraries: librariesData.libraries.map(({ name, title, versions }) => ({ name, title, versions: versions.map((v) => v.version) })),
+};
+files.set('index.json', json(index));
+
+// ---------------------------------------------------------------------------------------------
+// Write.
+
+rmSync(generated, { recursive: true, force: true });
+for (const [path, content] of files) {
+  mkdirSync(dirname(join(generated, path)), { recursive: true });
+  writeFileSync(join(generated, path), content);
+}
+
+const record = (copies: Copy[], published: Record<string, string>) => {
+  for (const c of copies) {
+    mkdirSync(dirname(join(root, 'public', c.path)), { recursive: true });
+    copyFileSync(c.from, join(root, 'public', c.path));
+    published[c.path] ??= sha256(c.from);
+  }
+  return Object.fromEntries(Object.entries(published).sort(([a], [b]) => a.localeCompare(b)));
+};
+writeFileSync(publishedPath, json(record(schemaCopies, publishedSchemas)));
+writeFileSync(librariesPath, json(record(libraryCopies, publishedLibraries)));
 
 const sortedPins = Object.fromEntries(
   Object.entries(earlierPins)
     .sort(([a], [b]) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b))
     .map(([code, versions]) => [code, Object.fromEntries(Object.entries(versions).sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true })))]),
 );
-
-writeFileSync(join(generated, 'index.json'), json(index));
-writeFileSync(publishedPath, json(sortedPublished));
 writeFileSync(lockPath, json({ repository: REPO, commit, committedAt, specifications: currentVersions, earlier: sortedPins }));
 
-if (added.length) report.push(`newly published: ${added.join(', ')}`);
+if (addedSchemas.length) report.push(`newly published schemas: ${addedSchemas.join(', ')}`);
+if (addedLibraries.length) report.push(`newly published library files: ${addedLibraries.length}`);
 console.log(report.join('\n'));

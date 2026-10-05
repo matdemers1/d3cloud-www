@@ -1,7 +1,8 @@
 import { useContext, type ReactNode } from 'react';
 import { Link } from '../router';
 import type { Block, CalloutKind, Inline, Level } from './ast';
-import { CopyContext } from './copy';
+import { CopyContext, HeadingShift } from './copy';
+import { isPage } from './util';
 
 /**
  * Renders a chapter's AST (src/floorspec/ast.ts) as React elements — never as an HTML string.
@@ -60,6 +61,7 @@ export function Inlines({ items }: { items: Inline[] }) {
 
 export const LINK = 'text-accent underline decoration-border-field underline-offset-4 hover:decoration-accent';
 
+
 function InlineNode({ item }: { item: Inline }): ReactNode {
   if (typeof item === 'string') return item;
   switch (item.t) {
@@ -85,7 +87,7 @@ function InlineNode({ item }: { item: Inline }): ReactNode {
     case 'br':
       return <br />;
     case 'a':
-      if (item.href.startsWith('/')) {
+      if (isPage(item.href)) {
         return (
           <Link to={item.href} className={LINK}>
             <Inlines items={item.c} />
@@ -163,32 +165,41 @@ export function Blocks({ blocks }: { blocks: Block[] }) {
   );
 }
 
+const HEADING_STYLE = {
+  /** A chapter of a page that holds several (an extension's `# n.`). */
+  chapter: 'group scroll-mt-28 border-t border-border pt-12 font-display text-display-sm text-fg first:border-t-0 first:pt-0',
+  /** A numbered section: a chapter's `##`. */
+  section: 'group scroll-mt-28 border-t border-border pt-10 text-24 font-semibold text-fg first:border-t-0 first:pt-0',
+  /** A section under a chapter heading on the same page. */
+  inner: 'group scroll-mt-28 pt-4 text-24 font-semibold text-fg',
+  sub: 'group scroll-mt-28 pt-2 text-20 font-semibold text-fg',
+};
+
+function Heading({ block }: { block: Extract<Block, { t: 'h' }> }) {
+  const shift = useContext(HeadingShift);
+  // depth 1 is only ever a chapter of a several-chapter page; depth 2 is a section; deeper, a subsection.
+  const style =
+    block.depth === 1 ? HEADING_STYLE.chapter : block.depth === 2 ? (shift ? HEADING_STYLE.inner : HEADING_STYLE.section) : HEADING_STYLE.sub;
+  const Tag = `h${Math.min(6, Math.max(2, block.depth + shift))}` as 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  return (
+    <Tag id={block.id} className={style}>
+      {block.number && <span className="mr-3 font-mono text-fg-faint">{block.number}</span>}
+      <Inlines items={block.c} />
+      <a
+        href={`#${block.id}`}
+        aria-label={`Link to ${block.depth === 1 ? 'chapter' : 'section'} ${block.number ?? ''}`}
+        className="ml-2 text-fg-faint no-underline opacity-0 group-hover:opacity-100 hover:text-accent focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus"
+      >
+        #
+      </a>
+    </Tag>
+  );
+}
+
 function BlockNode({ block }: { block: Block }): ReactNode {
   switch (block.t) {
-    case 'h': {
-      const title = (
-        <>
-          {block.number && <span className="mr-3 font-mono text-fg-faint">{block.number}</span>}
-          <Inlines items={block.c} />
-          <a
-            href={`#${block.id}`}
-            aria-label={`Link to section ${block.number ?? ''}`}
-            className="ml-2 text-fg-faint no-underline opacity-0 group-hover:opacity-100 hover:text-accent focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-focus"
-          >
-            #
-          </a>
-        </>
-      );
-      return block.depth === 2 ? (
-        <h2 id={block.id} className="group scroll-mt-28 border-t border-border pt-10 text-24 font-semibold text-fg first:border-t-0 first:pt-0">
-          {title}
-        </h2>
-      ) : (
-        <h3 id={block.id} className="group scroll-mt-28 pt-2 text-20 font-semibold text-fg">
-          {title}
-        </h3>
-      );
-    }
+    case 'h':
+      return <Heading block={block} />;
     case 'p':
       return (
         <p className="text-16 leading-relaxed text-fg">

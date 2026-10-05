@@ -42,21 +42,35 @@ function secure(response: Response): Response {
 }
 
 /**
- * Floorspec's JSON Schemas (FLR-ADR-018, DI-REQ-042). A published schema URL never changes — the
- * sync refuses to alter one, and a test holds public/ to the record — so any origin may fetch
- * them (validators and editors load them cross-origin) and any cache may keep them for a year.
+ * Floorspec's published files (FLR-ADR-018, DI-REQ-042): its JSON Schemas under /floorspec/schema/
+ * — each specification's, the registry's, and each extension's at the path its `$id` names — and
+ * every file of every library version under /floorspec/library/<name>/<version>/ (DI-T-10.6). A
+ * published URL never changes — the sync refuses to alter one, and a test holds public/ to the
+ * record — so any origin may fetch them (validators, editors and engines load them cross-origin)
+ * and any cache may keep them for a year.
  */
 // Not exported: a Worker module's exports must be handlers, and the runtime refuses a string.
 const SCHEMA_PREFIX = '/floorspec/schema/';
+const LIBRARY_PREFIX = '/floorspec/library/';
 export const SCHEMA_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Cache-Control': 'public, max-age=31536000, immutable',
 };
 
-function schema(response: Response): Response {
+/**
+ * A published, immutable file: anything under /floorspec/schema/, or a file inside a library
+ * version — /floorspec/library/<name>/<version>/<file…>, which may have no extension (SHA256SUMS).
+ * /floorspec/library/<name> and /floorspec/library/<name>/<version> are pages.
+ */
+const isPublished = (pathname: string) =>
+  pathname.startsWith(SCHEMA_PREFIX) || (pathname.startsWith(LIBRARY_PREFIX) && pathname.split('/').filter(Boolean).length >= 5);
+
+function published(pathname: string, response: Response): Response {
   if (!response.ok && response.status !== 304) return response;
   const headers = new Headers(response.headers);
   for (const [key, value] of Object.entries(SCHEMA_HEADERS)) headers.set(key, value);
+  // A file without an extension (a library's SHA256SUMS) is plain text, not a download.
+  if (!/\.[a-z0-9]+$/i.test(pathname)) headers.set('Content-Type', 'text/plain; charset=utf-8');
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
@@ -80,12 +94,13 @@ export default {
       return secure(Response.redirect(url.toString(), 301));
     }
 
-    if (isAsset(url.pathname)) {
-      const file = await env.ASSETS.fetch(request);
-      return secure(url.pathname.startsWith(SCHEMA_PREFIX) ? schema(file) : file);
+    if (isPublished(url.pathname) && !url.pathname.endsWith('/')) {
+      return secure(published(url.pathname, await env.ASSETS.fetch(request)));
     }
-
+    // A page first: a library version's page, /floorspec/library/us-starter/0.1.0, looks like a file.
     const route = resolveRoute(url.pathname);
+    if (!route && isAsset(url.pathname)) return secure(await env.ASSETS.fetch(request));
+
     if (route?.redirect) {
       url.pathname = route.meta.path;
       return secure(Response.redirect(url.toString(), 301));
