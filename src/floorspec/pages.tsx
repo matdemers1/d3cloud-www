@@ -1031,7 +1031,7 @@ function SpecCoverage({ spec, coverage }: { spec: SpecIndex; coverage: Coverage 
         <p className="max-w-3xl text-14 text-fg-muted">
           {coverage.source.startsWith('scan of ')
             ? `Counted by a ${coverage.source} at ${FLOORSPEC_LOCK.repository}@${shortSha(spec.commit)}.`
-            : `Counted by the ${coverage.source} at ${FLOORSPEC_LOCK.repository}@${shortSha(spec.commit)}, over conformance/${spec.spec}/${spec.version}.`}{' '}
+            : `Counted by the ${coverage.source} at ${FLOORSPEC_LOCK.repository}@${shortSha(spec.commit)}, over its conformance suite.`}{' '}
           SHOULD and MAY statements are listed too; the suite is not required to test them.
         </p>
       </div>

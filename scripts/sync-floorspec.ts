@@ -969,8 +969,25 @@ function scanTests(dir: string, rootDir: string, at: string, known: (id: string)
   return { tests, coveredBy };
 }
 
-const scanSuite = (spec: Spec) =>
-  scanTests(join(spec.snap.root, 'conformance', spec.code, spec.version), spec.snap.root, spec.snap.commit.slice(0, 7), (id) => spec.statementIds.has(id));
+/**
+ * The suites a draft is gated against, as floorspec's conformance/coverage.ts counts them: its own,
+ * conformance/<spec>/<version>/, and for Core the migration suite (Core chapter 20),
+ * conformance/migration/<version>/, where the commit has one.
+ */
+const suitesOf = (spec: Spec) =>
+  [`conformance/${spec.code}/${spec.version}`, ...(spec.code === 'core' ? [`conformance/migration/${spec.version}`] : [])].filter(
+    (dir, i) => i === 0 || existsSync(join(spec.snap.root, dir)),
+  );
+
+function scanSuite(spec: Spec) {
+  const total = { tests: 0, coveredBy: new Map<string, number>() };
+  for (const dir of suitesOf(spec)) {
+    const found = scanTests(join(spec.snap.root, dir), spec.snap.root, spec.snap.commit.slice(0, 7), (id) => spec.statementIds.has(id));
+    total.tests += found.tests;
+    for (const [id, n] of found.coveredBy) total.coveredBy.set(id, (total.coveredBy.get(id) ?? 0) + n);
+  }
+  return total;
+}
 
 type GateReport = Record<string, { tests: number; statements: { id: string; tests: string[] }[] } | undefined>;
 
@@ -1006,7 +1023,7 @@ function coverageOf(spec: Spec): Coverage {
   return {
     spec: spec.code,
     version: spec.version,
-    source: data ? 'floorspec coverage gate' : `scan of conformance/${spec.code}/${spec.version}`,
+    source: data ? 'floorspec coverage gate' : `scan of ${suitesOf(spec).join(' and ')}`,
     tests: counted.tests,
     mandatory: mandatory.length,
     covered: mandatory.filter((r) => r.tests > 0).length,
