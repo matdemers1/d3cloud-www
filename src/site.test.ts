@@ -400,10 +400,13 @@ describe('D3 Floorspec on the bench (DI-T-10.3)', () => {
     expect(sitemap()).toContain('<loc>https://d3cloud.io/floorspec/app</loc>');
   });
 
-  it('marks every feature built or planned, built only where FLR-P-0 and FLR-P-1 delivered it', () => {
+  it('marks every feature built or planned, built only where FLR-P-0 to FLR-P-3 delivered it', () => {
     expect(app.features.filter((f) => f.built).map((f) => f.text)).toEqual([
-      'Floorspec Core Draft 0.1, published at d3cloud.io/floorspec',
+      'Floorspec Core and Ops, Draft 0.2, published at d3cloud.io/floorspec',
       'A reference engine with exact geometry, a validator and a CLI, passing every conformance test',
+      'Draw walls and rooms in 2D, by pointer or keyboard alone',
+      'Claude edits over MCP, as reviewable changesets you accept or reject',
+      'Every edit validated by the exact engine, with coded diagnostics and fixes',
       'Its own login and Sign in with D3 Auth, side by side',
       'Self-hosted with Docker Compose, with no telemetry',
     ]);

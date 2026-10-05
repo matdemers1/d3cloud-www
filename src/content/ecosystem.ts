@@ -150,9 +150,9 @@ export const WORKSHOP: WorkshopItem[] = [
     path: '/floorspec/app',
     name: 'D3 Floorspec',
     role: 'House design',
-    stage: 'Being built — Phase 0 and 1',
+    stage: 'Being built — Phases 0 to 3',
     stageNote:
-      'The standard’s first draft, Floorspec Core 0.1, is published, and the reference engine is being built against it. The app’s foundation — sign-in, projects, export — is being deployed. There is nothing to try yet.',
+      'Floorspec Core and Ops are published as 0.2 drafts beside 0.1, and the reference engine passes every conformance test of both. The 2D editor is built — drawing, Claude’s changesets, history and diff — and runs privately while the program, layouts and building systems are built. There is nothing public to try yet.',
     line: 'Design a house with Claude — every edit validated, attributed and yours to accept.',
     tagline: 'Design a house with Claude. Every edit checked, and yours to accept.',
     quote:
@@ -161,11 +161,11 @@ export const WORKSHOP: WorkshopItem[] = [
     audience:
       'For people who are not architects and want to design their own home, with the tools they already use — Claude Code first.',
     features: [
-      { text: 'Floorspec Core Draft 0.1, published at d3cloud.io/floorspec', built: true },
+      { text: 'Floorspec Core and Ops, Draft 0.2, published at d3cloud.io/floorspec', built: true },
       { text: 'A reference engine with exact geometry, a validator and a CLI, passing every conformance test', built: true },
-      { text: 'Draw walls and rooms in 2D', built: false },
-      { text: 'Claude edits over MCP, as reviewable changesets you accept or reject', built: false },
-      { text: 'Every edit validated by the exact engine, with coded diagnostics and fixes', built: false },
+      { text: 'Draw walls and rooms in 2D, by pointer or keyboard alone', built: true },
+      { text: 'Claude edits over MCP, as reviewable changesets you accept or reject', built: true },
+      { text: 'Every edit validated by the exact engine, with coded diagnostics and fixes', built: true },
       { text: 'From a program of rooms to a bubble diagram to layout candidates', built: false },
       { text: 'Building systems — electrical, plumbing, mechanical — as devices on walls', built: false },
       { text: 'Advisory code findings with citations, which never say “compliant”', built: false },
