@@ -85,7 +85,7 @@ const SITE = 'https://d3cloud.io';
 /** The order the site presents them in; any other specification follows, alphabetically. */
 const ORDER = ['core', 'ops', 'rules'];
 /** Path segments under /floorspec that are not specifications. */
-const RESERVED = new Set(['app', 'coverage', 'registry', 'library', 'schema']);
+const RESERVED = new Set(['app', 'coverage', 'registry', 'library', 'schema', 'playground']);
 
 const out = join(root, 'src/floorspec');
 const generated = join(out, 'generated');

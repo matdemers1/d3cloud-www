@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Link as UiLink, type LinkVariant } from '@d3cloud/ui';
+import { hasOwnPolicy, resolveRoute } from './routes';
 
 /**
  * The smallest router that does the job: History API + popstate, no dependency.
@@ -50,6 +51,12 @@ export function RouterProvider({ children }: { children: ReactNode }) {
     const next = normalize(url.pathname);
     const samePage = next === normalize(window.location.pathname);
     if (samePage && !url.hash) return;
+    // A page with a content security policy of its own (the playground's allows WebAssembly) needs a
+    // document loaded with that policy, and the next page needs one without it: a full load.
+    if (!samePage && hasOwnPolicy(resolveRoute(next)?.meta) !== hasOwnPolicy(resolveRoute(normalize(window.location.pathname))?.meta)) {
+      window.location.assign(`${next}${url.search}${url.hash}`);
+      return;
+    }
     window.history.pushState({}, '', `${next}${url.search}${url.hash}`);
     setPath(next);
     if (samePage) {

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { ChapterPage, CoveragePage, StandardPage } from './pages';
 import { ExtensionPage, LibraryPage, RegistryPage } from './registry';
 import { CORE, EXTENSIONS, LIBRARIES, SPECS } from './spec';
+import { PlaygroundPage } from './playground/Playground';
 
 /**
  * The Floorspec pages render, once their lazy data has loaded (DI-T-10.6): each is prerendered to
@@ -72,5 +73,16 @@ describe('the Floorspec pages render', () => {
     const furniture = await html(<LibraryPage name="FS_furniture" version="0.1.0" />);
     expect(furniture).toContain('href="/floorspec/library/FS_furniture/0.1.0/models/refrigerator-900.glb"');
     expect(furniture).toContain('names no address');
+  });
+
+  it('the playground, before a file: the heading, the drop zone and the three samples, with the current draft', async () => {
+    const out = await html(<PlaygroundPage />);
+    expect(out).toContain('Drop a Floorspec file.');
+    expect(out).toContain('Validated in your browser by the reference engine — nothing is uploaded. No account needed.');
+    expect(out).toContain(`Draft ${CORE.version}`);
+    for (const name of ['Ranch', 'Two-storey', 'Cabin']) expect(out).toContain(`>${name}<span class="sr-only">`);
+    expect(out).toContain('accept=".json,.floorspec,application/json,application/zip"');
+    expect(out).toContain('https://github.com/matdemers1/d3-floorspec/tree/');
+    expect(out).not.toMatch(/complian/i);
   });
 });

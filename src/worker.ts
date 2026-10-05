@@ -1,13 +1,13 @@
 import { renderHead, withHead } from './head';
-import { resolveRoute } from './routes';
+import { hasOwnPolicy, resolveRoute } from './routes';
 
 export interface Env {
   ASSETS: Fetcher;
 }
 
-const CSP = [
+const csp = (scriptSrc: string) => [
   "default-src 'self'",
-  "script-src 'self'",
+  `script-src ${scriptSrc}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "connect-src 'self'",
@@ -17,6 +17,7 @@ const CSP = [
   "form-action 'none'",
   "frame-ancestors 'none'",
 ].join('; ');
+const CSP = csp("'self'");
 
 export const SECURITY_HEADERS: Record<string, string> = {
   'Content-Security-Policy': CSP,
@@ -29,9 +30,22 @@ export const SECURITY_HEADERS: Record<string, string> = {
   'Cross-Origin-Opener-Policy': 'same-origin',
 };
 
-function secure(response: Response): Response {
+/**
+ * The playground's page (FLR-T-10.2) and only it: the same headers, with 'wasm-unsafe-eval' in
+ * script-src so the browser compiles manifold-3d's WebAssembly for the 3D view. That keyword permits
+ * WebAssembly compilation and nothing else — not eval, not new Function — and every script and the
+ * .wasm itself still come from this origin; connect-src stays 'self'. Every other page, and every
+ * file, keeps SECURITY_HEADERS. The router reaches or leaves the playground with a full page load,
+ * because a document keeps the policy it was loaded with.
+ */
+export const PLAYGROUND_HEADERS: Record<string, string> = {
+  ...SECURITY_HEADERS,
+  'Content-Security-Policy': csp("'self' 'wasm-unsafe-eval'"),
+};
+
+function secure(response: Response, policy: Record<string, string> = SECURITY_HEADERS): Response {
   const headers = new Headers(response.headers);
-  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+  for (const [key, value] of Object.entries(policy)) {
     headers.set(key, value);
   }
   return new Response(response.body, {
@@ -125,6 +139,7 @@ export default {
         status: route ? 200 : 404,
         headers,
       }),
+      hasOwnPolicy(route?.meta) ? PLAYGROUND_HEADERS : SECURITY_HEADERS,
     );
   },
 };
