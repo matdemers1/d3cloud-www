@@ -76,6 +76,7 @@ export interface LogEntry {
 }
 
 export const BUILD_LOG: LogEntry[] = [
+  { date: '2026-10-05', slug: 'floorspec-app', text: 'Floorspec Core and Ops Drafts 0.3 — floors and ceilings, roofs, stairs, materials and finishes, design options — and Rules Draft 0.1 published, with the extension registry and two libraries; 0.2 and 0.1 stay as they were' },
   { date: '2026-10-05', slug: 'floorspec-app', text: 'Floorspec Core and Ops Drafts 0.2 — the program, extensions, hosting and clearances, circulation — published beside 0.1, which stays as it was' },
   { date: '2026-10-04', slug: 'floorspec-app', text: 'Floorspec Ops Draft 0.1 — how a house changes — is published beside Core, with a test for every MUST' },
   { date: '2026-10-04', slug: 'floorspec-app', text: 'Floorspec Core Draft 0.1 is published, with a reference engine passing all 281 conformance tests' },
@@ -152,7 +153,7 @@ export const WORKSHOP: WorkshopItem[] = [
     role: 'House design',
     stage: 'Being built — Phases 0 to 3',
     stageNote:
-      'Floorspec Core and Ops are published as 0.2 drafts beside 0.1, and the reference engine passes every conformance test of both. The 2D editor is built — drawing, Claude’s changesets, history and diff — and runs privately while the program, layouts and building systems are built. There is nothing public to try yet.',
+      'Floorspec Core and Ops are published as 0.3 drafts, with Rules 0.1, the extension registry and two libraries, beside 0.2 and 0.1, which stay as they were. The reference engine passed every conformance test of Core and Ops 0.2, and of the four building-system extensions. The 2D editor is built — drawing, Claude’s changesets, history and diff — and runs privately while the program, layouts and building systems are built. There is nothing public to try yet.',
     line: 'Design a house with Claude — every edit validated, attributed and yours to accept.',
     tagline: 'Design a house with Claude. Every edit checked, and yours to accept.',
     quote:
@@ -161,7 +162,7 @@ export const WORKSHOP: WorkshopItem[] = [
     audience:
       'For people who are not architects and want to design their own home, with the tools they already use — Claude Code first.',
     features: [
-      { text: 'Floorspec Core and Ops, Draft 0.2, published at d3cloud.io/floorspec', built: true },
+      { text: 'Floorspec Core and Ops Draft 0.3, and Rules Draft 0.1, published at d3cloud.io/floorspec', built: true },
       { text: 'A reference engine with exact geometry, a validator and a CLI, passing every conformance test', built: true },
       { text: 'Draw walls and rooms in 2D, by pointer or keyboard alone', built: true },
       { text: 'Claude edits over MCP, as reviewable changesets you accept or reject', built: true },

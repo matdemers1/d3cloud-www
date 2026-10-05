@@ -1,7 +1,7 @@
 {
  "spec": "ops",
  "version": "0.2",
- "source": "floorspec coverage gate",
+ "source": "scan of conformance/ops/0.2",
  "tests": 359,
  "mandatory": 47,
  "covered": 47,

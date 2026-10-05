@@ -1,8 +1,24 @@
 import { LEGAL_DOCS } from './content/legal';
 import { BRAND, PROJECTS, projectBySlug } from './content/projects';
 import { WORKSHOP, workshopPath, type WorkshopItem } from './content/ecosystem';
-import { EARLIER, SPECS, chapterBySlug, chapterLabel, chapterPath, earlierOf, isCurrent, specAt, specByCode, specName } from './floorspec/spec';
-import type { ChapterSummary, SpecIndex } from './floorspec/ast';
+import {
+  EARLIER,
+  EXTENSIONS,
+  LIBRARIES,
+  SPECS,
+  STATUS_LABEL,
+  chapterBySlug,
+  chapterLabel,
+  chapterPath,
+  earlierOf,
+  extensionByName,
+  isCurrent,
+  libraryByName,
+  specAt,
+  specByCode,
+  specName,
+} from './floorspec/spec';
+import type { ChapterSummary, ExtensionIndex, LibraryIndex, SpecIndex } from './floorspec/ast';
 
 /**
  * Every page the site has, in one place.
@@ -31,10 +47,16 @@ export type RouteKind =
   | 'workshop'
   | 'legal'
   | 'support'
-  /** The Floorspec standard (FLR-ADR-018): its landing page, a chapter, and its coverage. */
+  /**
+   * The Floorspec standard (FLR-ADR-018): its landing page, a chapter, its coverage, the extension
+   * registry and an extension's page, and a library (DI-T-10.6).
+   */
   | 'floorspec'
   | 'floorspec-chapter'
-  | 'floorspec-coverage';
+  | 'floorspec-coverage'
+  | 'floorspec-registry'
+  | 'floorspec-extension'
+  | 'floorspec-library';
 
 export interface RouteMeta {
   /** Canonical path: no trailing slash, current slugs. */
@@ -45,11 +67,18 @@ export interface RouteMeta {
   /** One sentence, for search results and link previews. */
   description: string;
   slug?: string;
-  /** For `legal`: the key into LEGAL_DOCS[slug]. For `floorspec-chapter`: the chapter's slug. */
+  /**
+   * For `legal`: the key into LEGAL_DOCS[slug]. For `floorspec-chapter`: the chapter's slug. For
+   * `floorspec-extension`: the extension's name. For `floorspec-library`: the library's name.
+   */
   doc?: string;
-  /** For `floorspec-chapter`: the specification the chapter belongs to — `core`, `ops`. */
+  /** For `floorspec-chapter`: the specification the chapter belongs to — `core`, `ops`, `rules`. */
   spec?: string;
-  /** For `floorspec-chapter`: the draft — `0.2`, or `0.1` for an earlier draft at /floorspec/<spec>/0.1/<chapter>. */
+  /**
+   * For `floorspec-chapter`: the draft — `0.3`, or `0.2` for an earlier draft at
+   * /floorspec/<spec>/0.2/<chapter>. For `floorspec-library`: one version of the library, or absent
+   * for the library itself.
+   */
   version?: string;
 }
 
@@ -83,12 +112,15 @@ function workshopRoute(item: WorkshopItem | undefined): RouteMeta | null {
 
 /**
  * The Floorspec standard, published here by FLR-ADR-018: `/floorspec`, a page per chapter of the
- * current draft of each specification at `/floorspec/<spec>/<chapter>` (Core and Ops today), every
- * earlier draft at `/floorspec/<spec>/<version>/<chapter>` (DI-T-10.5), and `/floorspec/coverage`.
+ * current draft of each specification at `/floorspec/<spec>/<chapter>` (Core, Ops and Rules), every
+ * earlier draft at `/floorspec/<spec>/<version>/<chapter>` (DI-T-10.5), `/floorspec/coverage`, the
+ * extension registry at `/floorspec/registry` and `/floorspec/registry/<NAME>`, and each library at
+ * `/floorspec/library/<name>` and `/floorspec/library/<name>/<version>` (DI-T-10.6).
  * `/floorspec/<spec>/<current version>/<chapter>` redirects to the current page, so a versioned
  * link can be made today and still work when the draft is superseded; a chapter the current draft
- * no longer has redirects to the newest earlier draft that does. Its schemas are files under
- * /floorspec/schema/, served by the assets binding, not pages.
+ * no longer has redirects to the newest earlier draft that does. Its schemas and library files are
+ * files under /floorspec/schema/ and /floorspec/library/<name>/<version>/, served by the assets
+ * binding, not pages.
  */
 const FLOORSPEC_DESCRIPTION =
   'An open standard for describing houses as code: exact integer geometry, walls on a junction graph, rooms derived from them, the edits that change them, and a conformance test for every MUST.';
@@ -104,6 +136,17 @@ function floorspecRoute(segments: string[]): RouteMeta | null {
       title: `Floorspec — ${BRAND}`,
       description: `${FLOORSPEC_DESCRIPTION} ${list(SPECS.map(specName))} ${SPECS.length === 1 ? 'is a draft' : 'are drafts'}.`,
     };
+  }
+  if (segments.length === 2 && segments[1] === 'registry' && EXTENSIONS.length) return registryRoute();
+  if (segments[1] === 'registry') {
+    const ext = segments.length === 3 ? extensionByName(segments[2]) : undefined;
+    return ext ? extensionRoute(ext) : null;
+  }
+  if (segments[1] === 'library') {
+    const lib = segments.length === 3 || segments.length === 4 ? libraryByName(segments[2]) : undefined;
+    if (!lib) return null;
+    if (segments.length === 3) return libraryRoute(lib);
+    return lib.versions.includes(segments[3]) ? libraryRoute(lib, segments[3]) : null;
   }
   if (segments.length === 2 && segments[1] === 'coverage') {
     return {
@@ -132,6 +175,38 @@ function floorspecRoute(segments: string[]): RouteMeta | null {
     return chapter ? chapterRoute(spec, chapter) : null;
   }
   return null;
+}
+
+function registryRoute(): RouteMeta {
+  return {
+    path: '/floorspec/registry',
+    kind: 'floorspec-registry',
+    title: `Extension registry — Floorspec — ${BRAND}`,
+    description: `The Floorspec extension registry: ${list(EXTENSIONS.map((ext) => `${ext.name} ${ext.version}`))} — each with its status, specification, schema, implementations and the evidence that they pass its conformance suite.`,
+  };
+}
+
+function extensionRoute(ext: ExtensionIndex): RouteMeta {
+  return {
+    path: `/floorspec/registry/${ext.name}`,
+    kind: 'floorspec-extension',
+    title: `${ext.name} ${ext.version} — Floorspec registry — ${BRAND}`,
+    description: `${ext.name} ${ext.version} (${STATUS_LABEL[ext.status]}), the Floorspec extension for ${ext.title.toLowerCase()}: its specification, schema, kinds, implementations and evidence.`,
+    doc: ext.name,
+  };
+}
+
+function libraryRoute(lib: LibraryIndex, version?: string): RouteMeta {
+  return {
+    path: `/floorspec/library/${lib.name}${version ? `/${version}` : ''}`,
+    kind: 'floorspec-library',
+    title: `${lib.title}${version ? ` ${version}` : ''} — Floorspec — ${BRAND}`,
+    description: version
+      ? `${lib.title} ${version}: every item and file, published byte for byte at d3cloud.io/floorspec/library/${lib.name}/${version}/ and never changed.`
+      : `${lib.title}: published at immutable, versioned URLs — ${list(lib.versions)}.`,
+    doc: lib.name,
+    ...(version ? { version } : {}),
+  };
 }
 
 function chapterRoute(spec: SpecIndex, chapter: ChapterSummary): RouteMeta {
@@ -236,6 +311,12 @@ export function allRoutes(): RouteMeta[] {
     for (const chapter of spec.chapters) routes.push(chapterRoute(spec, chapter));
   }
   routes.push(floorspecRoute(['floorspec', 'coverage'])!);
+  if (EXTENSIONS.length) routes.push(registryRoute());
+  for (const ext of EXTENSIONS) routes.push(extensionRoute(ext));
+  for (const lib of LIBRARIES) {
+    routes.push(libraryRoute(lib));
+    for (const version of lib.versions) routes.push(libraryRoute(lib, version));
+  }
   return routes;
 }
 

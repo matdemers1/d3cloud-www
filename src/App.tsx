@@ -16,6 +16,11 @@ const floorspecPages = () => import('./floorspec/pages');
 const StandardPage = lazy(() => floorspecPages().then((m) => ({ default: m.StandardPage })));
 const ChapterPage = lazy(() => floorspecPages().then((m) => ({ default: m.ChapterPage })));
 const CoveragePage = lazy(() => floorspecPages().then((m) => ({ default: m.CoveragePage })));
+// The registry and the libraries (DI-T-10.6) are another.
+const floorspecRegistry = () => import('./floorspec/registry');
+const RegistryPage = lazy(() => floorspecRegistry().then((m) => ({ default: m.RegistryPage })));
+const ExtensionPage = lazy(() => floorspecRegistry().then((m) => ({ default: m.ExtensionPage })));
+const LibraryPage = lazy(() => floorspecRegistry().then((m) => ({ default: m.LibraryPage })));
 
 /** Nothing to show while the chunk loads; the header is already on screen. */
 const Lazy = ({ children }: { children: ReactNode }) => <Suspense fallback={null}>{children}</Suspense>;
@@ -53,12 +58,18 @@ function resolve(path: string): {
 
   const { meta } = route;
   const canonicalPath = route.redirect ? meta.path : undefined;
-  if (meta.kind === 'floorspec' || meta.kind === 'floorspec-chapter' || meta.kind === 'floorspec-coverage') {
+  if (meta.kind.startsWith('floorspec')) {
     const view =
       meta.kind === 'floorspec' ? (
         <StandardPage />
       ) : meta.kind === 'floorspec-chapter' ? (
         <ChapterPage key={meta.path} spec={meta.spec!} version={meta.version!} slug={meta.doc!} />
+      ) : meta.kind === 'floorspec-registry' ? (
+        <RegistryPage />
+      ) : meta.kind === 'floorspec-extension' ? (
+        <ExtensionPage key={meta.path} name={meta.doc!} />
+      ) : meta.kind === 'floorspec-library' ? (
+        <LibraryPage key={meta.path} name={meta.doc!} version={meta.version} />
       ) : (
         <CoveragePage />
       );

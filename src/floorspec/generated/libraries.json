@@ -1,0 +1,1227 @@
+{
+ "libraries": [
+  {
+   "name": "us-starter",
+   "title": "Floorspec US starter type library",
+   "versions": [
+    {
+     "name": "us-starter",
+     "version": "0.1.0",
+     "title": "Floorspec US starter type library",
+     "description": "Common US wall, door and window types and the materials their layers use, as Floorspec Core 0.3 types and materials ready to embed: a document copies each one it uses into its own types and materials collections, with its source, and never refers to the library by URL (Core 8.1). Lengths are integers in base units of 1/1280 mm (one inch is 32,512). Generic values only: no manufacturer's data, no building-code text or table. Written by tools/us-library.ts; a published version never changes.",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "floorspec": "0.3",
+     "source": "library/us-starter/0.1.0",
+     "commit": "c66ba3226ff5d80e501bd58ad957624db4d69d50",
+     "base": "/floorspec/library/us-starter/0.1.0",
+     "manifest": "index.json",
+     "canonical": true,
+     "files": [
+      {
+       "path": "README.md",
+       "bytes": 13522
+      },
+      {
+       "path": "SHA256SUMS",
+       "bytes": 6221
+      },
+      {
+       "path": "index.json",
+       "bytes": 128012
+      },
+      {
+       "path": "items/brick-veneer.json",
+       "bytes": 2103
+      },
+      {
+       "path": "items/cast-in-place-concrete.json",
+       "bytes": 2147
+      },
+      {
+       "path": "items/concrete-masonry-unit.json",
+       "bytes": 2154
+      },
+      {
+       "path": "items/door-bifold-30x80.json",
+       "bytes": 3086
+      },
+      {
+       "path": "items/door-bifold-36x80.json",
+       "bytes": 3088
+      },
+      {
+       "path": "items/door-bypass-48x80.json",
+       "bytes": 2545
+      },
+      {
+       "path": "items/door-bypass-60x80.json",
+       "bytes": 2545
+      },
+      {
+       "path": "items/door-double-swing-60x80.json",
+       "bytes": 3141
+      },
+      {
+       "path": "items/door-double-swing-72x80.json",
+       "bytes": 3143
+      },
+      {
+       "path": "items/door-exterior-swing-36x80.json",
+       "bytes": 3120
+      },
+      {
+       "path": "items/door-garage-overhead-16x7.json",
+       "bytes": 2545
+      },
+      {
+       "path": "items/door-garage-overhead-9x7.json",
+       "bytes": 2537
+      },
+      {
+       "path": "items/door-interior-swing-24x80.json",
+       "bytes": 3110
+      },
+      {
+       "path": "items/door-interior-swing-28x80.json",
+       "bytes": 3110
+      },
+      {
+       "path": "items/door-interior-swing-30x80.json",
+       "bytes": 3112
+      },
+      {
+       "path": "items/door-interior-swing-32x80.json",
+       "bytes": 3114
+      },
+      {
+       "path": "items/door-interior-swing-36x80.json",
+       "bytes": 3116
+      },
+      {
+       "path": "items/door-pocket-30x80.json",
+       "bytes": 2476
+      },
+      {
+       "path": "items/fibre-cement-siding.json",
+       "bytes": 2164
+      },
+      {
+       "path": "items/gypsum-board.json",
+       "bytes": 2094
+      },
+      {
+       "path": "items/osb-sheathing.json",
+       "bytes": 2081
+      },
+      {
+       "path": "items/rigid-foam-insulation.json",
+       "bytes": 2185
+      },
+      {
+       "path": "items/wall-2x4-exterior-brick-veneer.json",
+       "bytes": 5948
+      },
+      {
+       "path": "items/wall-2x4-exterior-fibre-cement.json",
+       "bytes": 5844
+      },
+      {
+       "path": "items/wall-2x4-interior.json",
+       "bytes": 3806
+      },
+      {
+       "path": "items/wall-2x6-exterior-brick-veneer.json",
+       "bytes": 5949
+      },
+      {
+       "path": "items/wall-2x6-exterior-fibre-cement-ci.json",
+       "bytes": 6669
+      },
+      {
+       "path": "items/wall-2x6-exterior-fibre-cement.json",
+       "bytes": 5844
+      },
+      {
+       "path": "items/wall-2x6-interior.json",
+       "bytes": 3806
+      },
+      {
+       "path": "items/wall-cmu-8-furred.json",
+       "bytes": 3801
+      },
+      {
+       "path": "items/wall-cmu-8.json",
+       "bytes": 2852
+      },
+      {
+       "path": "items/wall-concrete-foundation-10.json",
+       "bytes": 2966
+      },
+      {
+       "path": "items/wall-concrete-foundation-8.json",
+       "bytes": 2956
+      },
+      {
+       "path": "items/weather-resistive-barrier.json",
+       "bytes": 2186
+      },
+      {
+       "path": "items/window-awning-24x24.json",
+       "bytes": 2619
+      },
+      {
+       "path": "items/window-awning-36x24.json",
+       "bytes": 2623
+      },
+      {
+       "path": "items/window-awning-48x24.json",
+       "bytes": 2623
+      },
+      {
+       "path": "items/window-casement-24x36.json",
+       "bytes": 2643
+      },
+      {
+       "path": "items/window-casement-24x48.json",
+       "bytes": 2643
+      },
+      {
+       "path": "items/window-casement-30x48.json",
+       "bytes": 2645
+      },
+      {
+       "path": "items/window-casement-30x60.json",
+       "bytes": 2643
+      },
+      {
+       "path": "items/window-double-hung-24x36.json",
+       "bytes": 2669
+      },
+      {
+       "path": "items/window-double-hung-30x48.json",
+       "bytes": 2669
+      },
+      {
+       "path": "items/window-double-hung-36x48.json",
+       "bytes": 2673
+      },
+      {
+       "path": "items/window-double-hung-36x60.json",
+       "bytes": 2671
+      },
+      {
+       "path": "items/window-double-hung-36x72.json",
+       "bytes": 2675
+      },
+      {
+       "path": "items/window-fixed-24x48.json",
+       "bytes": 2396
+      },
+      {
+       "path": "items/window-fixed-36x36.json",
+       "bytes": 2398
+      },
+      {
+       "path": "items/window-fixed-48x48.json",
+       "bytes": 2398
+      },
+      {
+       "path": "items/window-fixed-72x48.json",
+       "bytes": 2398
+      },
+      {
+       "path": "items/window-single-hung-24x36.json",
+       "bytes": 2669
+      },
+      {
+       "path": "items/window-single-hung-30x48.json",
+       "bytes": 2669
+      },
+      {
+       "path": "items/window-single-hung-36x48.json",
+       "bytes": 2673
+      },
+      {
+       "path": "items/window-single-hung-36x60.json",
+       "bytes": 2671
+      },
+      {
+       "path": "items/window-slider-36x24.json",
+       "bytes": 2677
+      },
+      {
+       "path": "items/window-slider-48x36.json",
+       "bytes": 2681
+      },
+      {
+       "path": "items/window-slider-60x36.json",
+       "bytes": 2681
+      },
+      {
+       "path": "items/window-slider-60x48.json",
+       "bytes": 2683
+      },
+      {
+       "path": "items/window-slider-72x48.json",
+       "bytes": 2685
+      },
+      {
+       "path": "items/wood-stud-framing-insulated.json",
+       "bytes": 2257
+      },
+      {
+       "path": "items/wood-stud-framing.json",
+       "bytes": 2132
+      }
+     ],
+     "bytes": 328962,
+     "items": [
+      {
+       "id": "gypsum-board",
+       "kind": "material",
+       "name": "Gypsum board, painted",
+       "files": [
+        "items/gypsum-board.json"
+       ]
+      },
+      {
+       "id": "wood-stud-framing",
+       "kind": "material",
+       "name": "Wood stud framing",
+       "files": [
+        "items/wood-stud-framing.json"
+       ]
+      },
+      {
+       "id": "wood-stud-framing-insulated",
+       "kind": "material",
+       "name": "Wood stud framing, insulated cavities",
+       "files": [
+        "items/wood-stud-framing-insulated.json"
+       ]
+      },
+      {
+       "id": "osb-sheathing",
+       "kind": "material",
+       "name": "OSB sheathing",
+       "files": [
+        "items/osb-sheathing.json"
+       ]
+      },
+      {
+       "id": "weather-resistive-barrier",
+       "kind": "material",
+       "name": "Weather-resistive barrier",
+       "files": [
+        "items/weather-resistive-barrier.json"
+       ]
+      },
+      {
+       "id": "fibre-cement-siding",
+       "kind": "material",
+       "name": "Fibre-cement lap siding, painted",
+       "files": [
+        "items/fibre-cement-siding.json"
+       ]
+      },
+      {
+       "id": "rigid-foam-insulation",
+       "kind": "material",
+       "name": "Rigid foam insulation board",
+       "files": [
+        "items/rigid-foam-insulation.json"
+       ]
+      },
+      {
+       "id": "brick-veneer",
+       "kind": "material",
+       "name": "Brick veneer",
+       "files": [
+        "items/brick-veneer.json"
+       ]
+      },
+      {
+       "id": "concrete-masonry-unit",
+       "kind": "material",
+       "name": "Concrete masonry units",
+       "files": [
+        "items/concrete-masonry-unit.json"
+       ]
+      },
+      {
+       "id": "cast-in-place-concrete",
+       "kind": "material",
+       "name": "Cast-in-place concrete",
+       "files": [
+        "items/cast-in-place-concrete.json"
+       ]
+      },
+      {
+       "id": "wall-2x4-interior",
+       "kind": "wallType",
+       "name": "2x4 interior partition, gypsum both faces",
+       "files": [
+        "items/wall-2x4-interior.json"
+       ]
+      },
+      {
+       "id": "wall-2x6-interior",
+       "kind": "wallType",
+       "name": "2x6 interior partition, gypsum both faces",
+       "files": [
+        "items/wall-2x6-interior.json"
+       ]
+      },
+      {
+       "id": "wall-2x4-exterior-fibre-cement",
+       "kind": "wallType",
+       "name": "2x4 exterior wall, fibre-cement siding",
+       "files": [
+        "items/wall-2x4-exterior-fibre-cement.json"
+       ]
+      },
+      {
+       "id": "wall-2x6-exterior-fibre-cement",
+       "kind": "wallType",
+       "name": "2x6 exterior wall, fibre-cement siding",
+       "files": [
+        "items/wall-2x6-exterior-fibre-cement.json"
+       ]
+      },
+      {
+       "id": "wall-2x6-exterior-fibre-cement-ci",
+       "kind": "wallType",
+       "name": "2x6 exterior wall, fibre-cement siding over continuous insulation",
+       "files": [
+        "items/wall-2x6-exterior-fibre-cement-ci.json"
+       ]
+      },
+      {
+       "id": "wall-2x4-exterior-brick-veneer",
+       "kind": "wallType",
+       "name": "2x4 exterior wall, brick veneer",
+       "files": [
+        "items/wall-2x4-exterior-brick-veneer.json"
+       ]
+      },
+      {
+       "id": "wall-2x6-exterior-brick-veneer",
+       "kind": "wallType",
+       "name": "2x6 exterior wall, brick veneer",
+       "files": [
+        "items/wall-2x6-exterior-brick-veneer.json"
+       ]
+      },
+      {
+       "id": "wall-cmu-8",
+       "kind": "wallType",
+       "name": "8 in CMU wall, exposed both faces",
+       "files": [
+        "items/wall-cmu-8.json"
+       ]
+      },
+      {
+       "id": "wall-cmu-8-furred",
+       "kind": "wallType",
+       "name": "8 in CMU wall, furred and finished with gypsum inside",
+       "files": [
+        "items/wall-cmu-8-furred.json"
+       ]
+      },
+      {
+       "id": "wall-concrete-foundation-8",
+       "kind": "wallType",
+       "name": "8 in cast-in-place concrete foundation wall",
+       "files": [
+        "items/wall-concrete-foundation-8.json"
+       ]
+      },
+      {
+       "id": "wall-concrete-foundation-10",
+       "kind": "wallType",
+       "name": "10 in cast-in-place concrete foundation wall",
+       "files": [
+        "items/wall-concrete-foundation-10.json"
+       ]
+      },
+      {
+       "id": "door-interior-swing-24x80",
+       "kind": "doorType",
+       "name": "Interior swing door, 24 x 80 in",
+       "files": [
+        "items/door-interior-swing-24x80.json"
+       ]
+      },
+      {
+       "id": "door-interior-swing-28x80",
+       "kind": "doorType",
+       "name": "Interior swing door, 28 x 80 in",
+       "files": [
+        "items/door-interior-swing-28x80.json"
+       ]
+      },
+      {
+       "id": "door-interior-swing-30x80",
+       "kind": "doorType",
+       "name": "Interior swing door, 30 x 80 in",
+       "files": [
+        "items/door-interior-swing-30x80.json"
+       ]
+      },
+      {
+       "id": "door-interior-swing-32x80",
+       "kind": "doorType",
+       "name": "Interior swing door, 32 x 80 in",
+       "files": [
+        "items/door-interior-swing-32x80.json"
+       ]
+      },
+      {
+       "id": "door-interior-swing-36x80",
+       "kind": "doorType",
+       "name": "Interior swing door, 36 x 80 in",
+       "files": [
+        "items/door-interior-swing-36x80.json"
+       ]
+      },
+      {
+       "id": "door-exterior-swing-36x80",
+       "kind": "doorType",
+       "name": "Exterior swing door, 36 x 80 in",
+       "files": [
+        "items/door-exterior-swing-36x80.json"
+       ]
+      },
+      {
+       "id": "door-pocket-30x80",
+       "kind": "doorType",
+       "name": "Pocket door, 30 x 80 in",
+       "files": [
+        "items/door-pocket-30x80.json"
+       ]
+      },
+      {
+       "id": "door-bifold-30x80",
+       "kind": "doorType",
+       "name": "Bifold door, two panels, 30 x 80 in",
+       "files": [
+        "items/door-bifold-30x80.json"
+       ]
+      },
+      {
+       "id": "door-bifold-36x80",
+       "kind": "doorType",
+       "name": "Bifold door, two panels, 36 x 80 in",
+       "files": [
+        "items/door-bifold-36x80.json"
+       ]
+      },
+      {
+       "id": "door-bypass-48x80",
+       "kind": "doorType",
+       "name": "Bypass sliding doors, two leaves, 48 x 80 in",
+       "files": [
+        "items/door-bypass-48x80.json"
+       ]
+      },
+      {
+       "id": "door-bypass-60x80",
+       "kind": "doorType",
+       "name": "Bypass sliding doors, two leaves, 60 x 80 in",
+       "files": [
+        "items/door-bypass-60x80.json"
+       ]
+      },
+      {
+       "id": "door-double-swing-60x80",
+       "kind": "doorType",
+       "name": "Double swing doors, a pair, 60 x 80 in",
+       "files": [
+        "items/door-double-swing-60x80.json"
+       ]
+      },
+      {
+       "id": "door-double-swing-72x80",
+       "kind": "doorType",
+       "name": "Double swing doors, a pair, 72 x 80 in",
+       "files": [
+        "items/door-double-swing-72x80.json"
+       ]
+      },
+      {
+       "id": "door-garage-overhead-9x7",
+       "kind": "doorType",
+       "name": "Overhead garage door, 9 x 7 ft",
+       "files": [
+        "items/door-garage-overhead-9x7.json"
+       ]
+      },
+      {
+       "id": "door-garage-overhead-16x7",
+       "kind": "doorType",
+       "name": "Overhead garage door, 16 x 7 ft",
+       "files": [
+        "items/door-garage-overhead-16x7.json"
+       ]
+      },
+      {
+       "id": "window-single-hung-24x36",
+       "kind": "windowType",
+       "name": "Single-hung window, 24 x 36 in",
+       "files": [
+        "items/window-single-hung-24x36.json"
+       ]
+      },
+      {
+       "id": "window-single-hung-30x48",
+       "kind": "windowType",
+       "name": "Single-hung window, 30 x 48 in",
+       "files": [
+        "items/window-single-hung-30x48.json"
+       ]
+      },
+      {
+       "id": "window-single-hung-36x48",
+       "kind": "windowType",
+       "name": "Single-hung window, 36 x 48 in",
+       "files": [
+        "items/window-single-hung-36x48.json"
+       ]
+      },
+      {
+       "id": "window-single-hung-36x60",
+       "kind": "windowType",
+       "name": "Single-hung window, 36 x 60 in",
+       "files": [
+        "items/window-single-hung-36x60.json"
+       ]
+      },
+      {
+       "id": "window-double-hung-24x36",
+       "kind": "windowType",
+       "name": "Double-hung window, 24 x 36 in",
+       "files": [
+        "items/window-double-hung-24x36.json"
+       ]
+      },
+      {
+       "id": "window-double-hung-30x48",
+       "kind": "windowType",
+       "name": "Double-hung window, 30 x 48 in",
+       "files": [
+        "items/window-double-hung-30x48.json"
+       ]
+      },
+      {
+       "id": "window-double-hung-36x48",
+       "kind": "windowType",
+       "name": "Double-hung window, 36 x 48 in",
+       "files": [
+        "items/window-double-hung-36x48.json"
+       ]
+      },
+      {
+       "id": "window-double-hung-36x60",
+       "kind": "windowType",
+       "name": "Double-hung window, 36 x 60 in",
+       "files": [
+        "items/window-double-hung-36x60.json"
+       ]
+      },
+      {
+       "id": "window-double-hung-36x72",
+       "kind": "windowType",
+       "name": "Double-hung window, 36 x 72 in",
+       "files": [
+        "items/window-double-hung-36x72.json"
+       ]
+      },
+      {
+       "id": "window-casement-24x36",
+       "kind": "windowType",
+       "name": "Casement window, 24 x 36 in",
+       "files": [
+        "items/window-casement-24x36.json"
+       ]
+      },
+      {
+       "id": "window-casement-24x48",
+       "kind": "windowType",
+       "name": "Casement window, 24 x 48 in",
+       "files": [
+        "items/window-casement-24x48.json"
+       ]
+      },
+      {
+       "id": "window-casement-30x48",
+       "kind": "windowType",
+       "name": "Casement window, 30 x 48 in",
+       "files": [
+        "items/window-casement-30x48.json"
+       ]
+      },
+      {
+       "id": "window-casement-30x60",
+       "kind": "windowType",
+       "name": "Casement window, 30 x 60 in",
+       "files": [
+        "items/window-casement-30x60.json"
+       ]
+      },
+      {
+       "id": "window-slider-36x24",
+       "kind": "windowType",
+       "name": "Horizontal sliding window, 36 x 24 in",
+       "files": [
+        "items/window-slider-36x24.json"
+       ]
+      },
+      {
+       "id": "window-slider-48x36",
+       "kind": "windowType",
+       "name": "Horizontal sliding window, 48 x 36 in",
+       "files": [
+        "items/window-slider-48x36.json"
+       ]
+      },
+      {
+       "id": "window-slider-60x36",
+       "kind": "windowType",
+       "name": "Horizontal sliding window, 60 x 36 in",
+       "files": [
+        "items/window-slider-60x36.json"
+       ]
+      },
+      {
+       "id": "window-slider-60x48",
+       "kind": "windowType",
+       "name": "Horizontal sliding window, 60 x 48 in",
+       "files": [
+        "items/window-slider-60x48.json"
+       ]
+      },
+      {
+       "id": "window-slider-72x48",
+       "kind": "windowType",
+       "name": "Horizontal sliding window, 72 x 48 in",
+       "files": [
+        "items/window-slider-72x48.json"
+       ]
+      },
+      {
+       "id": "window-fixed-24x48",
+       "kind": "windowType",
+       "name": "Fixed window, 24 x 48 in",
+       "files": [
+        "items/window-fixed-24x48.json"
+       ]
+      },
+      {
+       "id": "window-fixed-36x36",
+       "kind": "windowType",
+       "name": "Fixed window, 36 x 36 in",
+       "files": [
+        "items/window-fixed-36x36.json"
+       ]
+      },
+      {
+       "id": "window-fixed-48x48",
+       "kind": "windowType",
+       "name": "Fixed window, 48 x 48 in",
+       "files": [
+        "items/window-fixed-48x48.json"
+       ]
+      },
+      {
+       "id": "window-fixed-72x48",
+       "kind": "windowType",
+       "name": "Fixed window, 72 x 48 in",
+       "files": [
+        "items/window-fixed-72x48.json"
+       ]
+      },
+      {
+       "id": "window-awning-24x24",
+       "kind": "windowType",
+       "name": "Awning window, 24 x 24 in",
+       "files": [
+        "items/window-awning-24x24.json"
+       ]
+      },
+      {
+       "id": "window-awning-36x24",
+       "kind": "windowType",
+       "name": "Awning window, 36 x 24 in",
+       "files": [
+        "items/window-awning-36x24.json"
+       ]
+      },
+      {
+       "id": "window-awning-48x24",
+       "kind": "windowType",
+       "name": "Awning window, 48 x 24 in",
+       "files": [
+        "items/window-awning-48x24.json"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "FS_furniture",
+   "title": "FS_furniture starter library",
+   "versions": [
+    {
+     "name": "FS_furniture",
+     "version": "0.1.0",
+     "title": "FS_furniture starter library",
+     "description": "Generic furniture, appliances and casework as FS_furniture 0.1.0 elements ready to place: lengths in base units (1/1280 mm), each item's box and default clearance envelopes in its frame (spec.md 3.1, 4.2), and a generated proxy model and plan symbol with their SHA-256 digests and lengths. Written by tools/furniture-library.ts.",
+     "license": "CC0-1.0",
+     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+     "extension": "FS_furniture",
+     "source": "registry/FS_furniture/library",
+     "commit": "c66ba3226ff5d80e501bd58ad957624db4d69d50",
+     "base": "/floorspec/library/FS_furniture/0.1.0",
+     "manifest": "library.json",
+     "canonical": false,
+     "files": [
+      {
+       "path": "library.json",
+       "bytes": 30156
+      },
+      {
+       "path": "models/armchair-850.glb",
+       "bytes": 3592
+      },
+      {
+       "path": "models/base-cabinet-600.glb",
+       "bytes": 2952
+      },
+      {
+       "path": "models/bed-queen-1600.glb",
+       "bytes": 3572
+      },
+      {
+       "path": "models/bookcase-900.glb",
+       "bytes": 1640
+      },
+      {
+       "path": "models/coffee-table-1200.glb",
+       "bytes": 4248
+      },
+      {
+       "path": "models/cooktop-760.glb",
+       "bytes": 1640
+      },
+      {
+       "path": "models/desk-1200.glb",
+       "bytes": 2916
+      },
+      {
+       "path": "models/dining-chair-450.glb",
+       "bytes": 4880
+      },
+      {
+       "path": "models/dining-table-1500.glb",
+       "bytes": 4208
+      },
+      {
+       "path": "models/dishwasher-600.glb",
+       "bytes": 1648
+      },
+      {
+       "path": "models/dresser-1200.glb",
+       "bytes": 1620
+      },
+      {
+       "path": "models/dryer-690.glb",
+       "bytes": 1636
+      },
+      {
+       "path": "models/freezer-600.glb",
+       "bytes": 2292
+      },
+      {
+       "path": "models/island-1800.glb",
+       "bytes": 2288
+      },
+      {
+       "path": "models/microwave-600.glb",
+       "bytes": 1644
+      },
+      {
+       "path": "models/nightstand-500.glb",
+       "bytes": 1616
+      },
+      {
+       "path": "models/range-760.glb",
+       "bytes": 2284
+      },
+      {
+       "path": "models/refrigerator-900.glb",
+       "bytes": 2300
+      },
+      {
+       "path": "models/sofa-2100.glb",
+       "bytes": 3584
+      },
+      {
+       "path": "models/tall-cabinet-600.glb",
+       "bytes": 2300
+      },
+      {
+       "path": "models/vanity-900.glb",
+       "bytes": 2936
+      },
+      {
+       "path": "models/wall-cabinet-600.glb",
+       "bytes": 1636
+      },
+      {
+       "path": "models/wall-oven-760.glb",
+       "bytes": 1644
+      },
+      {
+       "path": "models/wardrobe-1000.glb",
+       "bytes": 1608
+      },
+      {
+       "path": "models/washer-690.glb",
+       "bytes": 1636
+      },
+      {
+       "path": "symbols/armchair-850.svg",
+       "bytes": 530
+      },
+      {
+       "path": "symbols/base-cabinet-600.svg",
+       "bytes": 537
+      },
+      {
+       "path": "symbols/bed-queen-1600.svg",
+       "bytes": 626
+      },
+      {
+       "path": "symbols/bookcase-900.svg",
+       "bytes": 251
+      },
+      {
+       "path": "symbols/coffee-table-1200.svg",
+       "bytes": 627
+      },
+      {
+       "path": "symbols/cooktop-760.svg",
+       "bytes": 581
+      },
+      {
+       "path": "symbols/desk-1200.svg",
+       "bytes": 429
+      },
+      {
+       "path": "symbols/dining-chair-450.svg",
+       "bytes": 706
+      },
+      {
+       "path": "symbols/dining-table-1500.svg",
+       "bytes": 642
+      },
+      {
+       "path": "symbols/dishwasher-600.svg",
+       "bytes": 411
+      },
+      {
+       "path": "symbols/dresser-1200.svg",
+       "bytes": 329
+      },
+      {
+       "path": "symbols/dryer-690.svg",
+       "bytes": 417
+      },
+      {
+       "path": "symbols/freezer-600.svg",
+       "bytes": 525
+      },
+      {
+       "path": "symbols/island-1800.svg",
+       "bytes": 367
+      },
+      {
+       "path": "symbols/microwave-600.svg",
+       "bytes": 337
+      },
+      {
+       "path": "symbols/nightstand-500.svg",
+       "bytes": 331
+      },
+      {
+       "path": "symbols/range-760.svg",
+       "bytes": 667
+      },
+      {
+       "path": "symbols/refrigerator-900.svg",
+       "bytes": 527
+      },
+      {
+       "path": "symbols/sofa-2100.svg",
+       "bytes": 538
+      },
+      {
+       "path": "symbols/tall-cabinet-600.svg",
+       "bytes": 440
+      },
+      {
+       "path": "symbols/vanity-900.svg",
+       "bytes": 521
+      },
+      {
+       "path": "symbols/wall-cabinet-600.svg",
+       "bytes": 367
+      },
+      {
+       "path": "symbols/wall-oven-760.svg",
+       "bytes": 336
+      },
+      {
+       "path": "symbols/wardrobe-1000.svg",
+       "bytes": 408
+      },
+      {
+       "path": "symbols/washer-690.svg",
+       "bytes": 351
+      }
+     ],
+     "bytes": 104277,
+     "items": [
+      {
+       "id": "refrigerator-900",
+       "kind": "appliances",
+       "name": "Refrigerator, 900 mm",
+       "files": [
+        "models/refrigerator-900.glb",
+        "symbols/refrigerator-900.svg"
+       ]
+      },
+      {
+       "id": "freezer-600",
+       "kind": "appliances",
+       "name": "Upright freezer, 600 mm",
+       "files": [
+        "models/freezer-600.glb",
+        "symbols/freezer-600.svg"
+       ]
+      },
+      {
+       "id": "range-760",
+       "kind": "appliances",
+       "name": "Range, 760 mm",
+       "files": [
+        "models/range-760.glb",
+        "symbols/range-760.svg"
+       ]
+      },
+      {
+       "id": "wall-oven-760",
+       "kind": "appliances",
+       "name": "Wall oven, 760 mm",
+       "files": [
+        "models/wall-oven-760.glb",
+        "symbols/wall-oven-760.svg"
+       ]
+      },
+      {
+       "id": "cooktop-760",
+       "kind": "appliances",
+       "name": "Cooktop, 760 mm",
+       "files": [
+        "models/cooktop-760.glb",
+        "symbols/cooktop-760.svg"
+       ]
+      },
+      {
+       "id": "microwave-600",
+       "kind": "appliances",
+       "name": "Microwave, 600 mm",
+       "files": [
+        "models/microwave-600.glb",
+        "symbols/microwave-600.svg"
+       ]
+      },
+      {
+       "id": "dishwasher-600",
+       "kind": "appliances",
+       "name": "Dishwasher, 600 mm",
+       "files": [
+        "models/dishwasher-600.glb",
+        "symbols/dishwasher-600.svg"
+       ]
+      },
+      {
+       "id": "washer-690",
+       "kind": "appliances",
+       "name": "Front-loading washer, 690 mm",
+       "files": [
+        "models/washer-690.glb",
+        "symbols/washer-690.svg"
+       ]
+      },
+      {
+       "id": "dryer-690",
+       "kind": "appliances",
+       "name": "Dryer, 690 mm",
+       "files": [
+        "models/dryer-690.glb",
+        "symbols/dryer-690.svg"
+       ]
+      },
+      {
+       "id": "sofa-2100",
+       "kind": "pieces",
+       "name": "Three-seat sofa",
+       "files": [
+        "models/sofa-2100.glb",
+        "symbols/sofa-2100.svg"
+       ]
+      },
+      {
+       "id": "armchair-850",
+       "kind": "pieces",
+       "name": "Armchair",
+       "files": [
+        "models/armchair-850.glb",
+        "symbols/armchair-850.svg"
+       ]
+      },
+      {
+       "id": "dining-table-1500",
+       "kind": "pieces",
+       "name": "Dining table, 1500 x 900 mm",
+       "files": [
+        "models/dining-table-1500.glb",
+        "symbols/dining-table-1500.svg"
+       ]
+      },
+      {
+       "id": "dining-chair-450",
+       "kind": "pieces",
+       "name": "Dining chair",
+       "files": [
+        "models/dining-chair-450.glb",
+        "symbols/dining-chair-450.svg"
+       ]
+      },
+      {
+       "id": "coffee-table-1200",
+       "kind": "pieces",
+       "name": "Coffee table",
+       "files": [
+        "models/coffee-table-1200.glb",
+        "symbols/coffee-table-1200.svg"
+       ]
+      },
+      {
+       "id": "bed-queen-1600",
+       "kind": "pieces",
+       "name": "Queen bed, 1600 x 2050 mm",
+       "files": [
+        "models/bed-queen-1600.glb",
+        "symbols/bed-queen-1600.svg"
+       ]
+      },
+      {
+       "id": "nightstand-500",
+       "kind": "pieces",
+       "name": "Nightstand",
+       "files": [
+        "models/nightstand-500.glb",
+        "symbols/nightstand-500.svg"
+       ]
+      },
+      {
+       "id": "dresser-1200",
+       "kind": "pieces",
+       "name": "Dresser",
+       "files": [
+        "models/dresser-1200.glb",
+        "symbols/dresser-1200.svg"
+       ]
+      },
+      {
+       "id": "wardrobe-1000",
+       "kind": "pieces",
+       "name": "Wardrobe",
+       "files": [
+        "models/wardrobe-1000.glb",
+        "symbols/wardrobe-1000.svg"
+       ]
+      },
+      {
+       "id": "desk-1200",
+       "kind": "pieces",
+       "name": "Desk",
+       "files": [
+        "models/desk-1200.glb",
+        "symbols/desk-1200.svg"
+       ]
+      },
+      {
+       "id": "bookcase-900",
+       "kind": "pieces",
+       "name": "Bookcase",
+       "files": [
+        "models/bookcase-900.glb",
+        "symbols/bookcase-900.svg"
+       ]
+      },
+      {
+       "id": "base-cabinet-600",
+       "kind": "casework",
+       "name": "Base cabinet with counter, 600 mm",
+       "files": [
+        "models/base-cabinet-600.glb",
+        "symbols/base-cabinet-600.svg"
+       ]
+      },
+      {
+       "id": "wall-cabinet-600",
+       "kind": "casework",
+       "name": "Wall cabinet, 600 mm",
+       "files": [
+        "models/wall-cabinet-600.glb",
+        "symbols/wall-cabinet-600.svg"
+       ]
+      },
+      {
+       "id": "tall-cabinet-600",
+       "kind": "casework",
+       "name": "Tall pantry cabinet, 600 mm",
+       "files": [
+        "models/tall-cabinet-600.glb",
+        "symbols/tall-cabinet-600.svg"
+       ]
+      },
+      {
+       "id": "island-1800",
+       "kind": "casework",
+       "name": "Kitchen island, 1800 x 900 mm",
+       "files": [
+        "models/island-1800.glb",
+        "symbols/island-1800.svg"
+       ]
+      },
+      {
+       "id": "vanity-900",
+       "kind": "casework",
+       "name": "Vanity cabinet, 900 mm",
+       "files": [
+        "models/vanity-900.glb",
+        "symbols/vanity-900.svg"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

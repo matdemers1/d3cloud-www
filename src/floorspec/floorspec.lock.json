@@ -1,22 +1,31 @@
 {
  "repository": "matdemers1/floorspec",
- "commit": "6f9bc07b08dfc229719a9b93e344bd47f33b3ccd",
- "committedAt": "2026-10-04T22:09:02-04:00",
+ "commit": "c66ba3226ff5d80e501bd58ad957624db4d69d50",
+ "committedAt": "2026-10-05T05:11:45-04:00",
  "specifications": {
-  "core": "0.2",
-  "ops": "0.2"
+  "core": "0.3",
+  "ops": "0.3",
+  "rules": "0.1"
  },
  "earlier": {
   "core": {
    "0.1": {
     "commit": "3bf4f35cd4e22f7c982ba330e027280f368a5388",
     "committedAt": "2026-10-04T19:54:46-04:00"
+   },
+   "0.2": {
+    "commit": "6f9bc07b08dfc229719a9b93e344bd47f33b3ccd",
+    "committedAt": "2026-10-04T22:09:02-04:00"
    }
   },
   "ops": {
    "0.1": {
     "commit": "3bf4f35cd4e22f7c982ba330e027280f368a5388",
     "committedAt": "2026-10-04T19:54:46-04:00"
+   },
+   "0.2": {
+    "commit": "6f9bc07b08dfc229719a9b93e344bd47f33b3ccd",
+    "committedAt": "2026-10-04T22:09:02-04:00"
    }
   }
  }

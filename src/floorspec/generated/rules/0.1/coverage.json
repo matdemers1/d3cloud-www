@@ -1,0 +1,546 @@
+{
+ "spec": "rules",
+ "version": "0.1",
+ "source": "scan of conformance/rules/0.1",
+ "tests": 103,
+ "mandatory": 65,
+ "covered": 65,
+ "statements": [
+  {
+   "id": "FS-RULES-1.1.1",
+   "level": "MUST",
+   "section": "1.1",
+   "chapter": "evaluation",
+   "text": "An evaluator MUST evaluate a request only when it is a well-formed JSON text, as Core §9.1 defines one, whose value matches the request schema; for any other request it MUST report FS-RULES-001 and evaluate nothing else.",
+   "tests": 11
+  },
+  {
+   "id": "FS-RULES-1.2.1",
+   "level": "MUST",
+   "section": "1.2",
+   "chapter": "evaluation",
+   "text": "An evaluator MUST evaluate rules only for a valid document — one that a Core 0.3 validator implementing the same extensions, configured with the same known extensions, reports valid (Core §10.1) — and for any other document MUST report FS-RULES-003 and no finding.",
+   "tests": 5
+  },
+  {
+   "id": "FS-RULES-1.2.2",
+   "level": "MUST",
+   "section": "1.2",
+   "chapter": "evaluation",
+   "text": "An evaluator MUST evaluate rules on the design the request's design gives, or on the primary design when it has none, exactly as on that design's view; and when Core derives nothing for that design (Core §19.6.2), it MUST report FS-RULES-003 and no finding.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-1.3.1",
+   "level": "MUST",
+   "section": "1.3",
+   "chapter": "evaluation",
+   "text": "An evaluator MUST take these steps in this order, and MUST NOT take any later step when step 1, 2 or 3 reports a diagnostic.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-1.4.1",
+   "level": "MUST",
+   "section": "1.4",
+   "chapter": "evaluation",
+   "text": "The report MUST be a function of the document, the extensions the evaluator implements, its known extensions and the request alone: an evaluator MUST NOT let the order in which the request lists packs, the order in which a pack lists rules, the time at which it runs, or anything outside these inputs change it.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-1.5.1",
+   "level": "MUST NOT",
+   "section": "1.5",
+   "chapter": "evaluation",
+   "text": "Evaluating rules MUST NOT change the document, and a finding MUST NOT change whether the document is valid, its diagnostics, its content hash or anything it derives.",
+   "tests": 1
+  },
+  {
+   "id": "FS-RULES-1.5.2",
+   "level": "MUST",
+   "section": "1.5",
+   "chapter": "evaluation",
+   "text": "Findings and diagnostics are separate streams: a finding MUST NOT be reported as a Core or extension diagnostic, and its severity MUST be one of the finding severities of 3.11, never a diagnostic's error, warning or info.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-2.1.1",
+   "level": "MUST",
+   "section": "2.1",
+   "chapter": "packs",
+   "text": "A pack MUST match the pack schema; an evaluator MUST report FS-RULES-004 for each pack of a request that does not, and MUST NOT evaluate it.",
+   "tests": 7
+  },
+  {
+   "id": "FS-RULES-2.2.1",
+   "level": "MUST",
+   "section": "2.2",
+   "chapter": "packs",
+   "text": "The packs of one request MUST have distinct names: an evaluator MUST report FS-RULES-005 for every pack that matches the pack schema and whose name another such pack of the request shares, and MUST NOT evaluate any of them.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-2.5.1",
+   "level": "MUST NOT",
+   "section": "2.5",
+   "chapter": "packs",
+   "text": "The text of a pack MUST NOT contain a match of the assurance pattern; an evaluator MUST report FS-RULES-006 for each pack that matches the pack schema and does, and MUST NOT evaluate it.",
+   "tests": 7
+  },
+  {
+   "id": "FS-RULES-3.2.1",
+   "level": "SHOULD",
+   "section": "3.2",
+   "chapter": "rules",
+   "text": "A rule's citation SHOULD carry a link to the cited section in the publisher's free public viewer, so that a reader can check the requirement at its source.",
+   "tests": 0
+  },
+  {
+   "id": "FS-RULES-3.4.1",
+   "level": "MUST",
+   "section": "3.4",
+   "chapter": "rules",
+   "text": "An evaluator MUST find the subjects of every evaluated rule exactly as this section defines them.",
+   "tests": 4
+  },
+  {
+   "id": "FS-RULES-3.5.1",
+   "level": "MUST",
+   "section": "3.5",
+   "chapter": "rules",
+   "text": "An evaluator MUST find each subject's candidates, and decide whether the subject passes, exactly as this section defines.",
+   "tests": 4
+  },
+  {
+   "id": "FS-RULES-3.6.1",
+   "level": "MUST",
+   "section": "3.6",
+   "chapter": "rules",
+   "text": "An evaluator MUST report exactly one finding for each subject of an evaluated rule that is not exempt and does not pass, and no other finding.",
+   "tests": 5
+  },
+  {
+   "id": "FS-RULES-3.7.1",
+   "level": "MUST",
+   "section": "3.7",
+   "chapter": "rules",
+   "text": "An evaluator MUST evaluate every exception's when on the subject, and MUST treat a subject as exempt exactly when one of them holds.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-3.8.1",
+   "level": "MUST",
+   "section": "3.8",
+   "chapter": "rules",
+   "text": "An evaluator MUST evaluate tests exactly as this section defines them.",
+   "tests": 6
+  },
+  {
+   "id": "FS-RULES-3.9.1",
+   "level": "MUST",
+   "section": "3.9",
+   "chapter": "rules",
+   "text": "An evaluator MUST report FS-RULES-007 for a rule of a usable pack that is not well typed, and MUST NOT evaluate it.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-3.9.2",
+   "level": "MUST",
+   "section": "3.9",
+   "chapter": "rules",
+   "text": "An evaluator MUST report FS-RULES-008 for a well-typed rule that uses a deferred measure (4.8), and MUST NOT evaluate it.",
+   "tests": 1
+  },
+  {
+   "id": "FS-RULES-3.10.1",
+   "level": "MUST",
+   "section": "3.10",
+   "chapter": "rules",
+   "text": "An evaluator MUST report FS-RULES-009 for a rule that is in force and reads an extension that is not evaluated for the document, and MUST NOT evaluate it.",
+   "tests": 4
+  },
+  {
+   "id": "FS-RULES-4.3.1",
+   "level": "MUST",
+   "section": "4.3",
+   "chapter": "measures",
+   "text": "An evaluator MUST compute every measure exactly as its definition states, rounding only where and as the definition says.",
+   "tests": 5
+  },
+  {
+   "id": "FS-RULES-4.4.1",
+   "level": "MUST",
+   "section": "4.4",
+   "chapter": "measures",
+   "text": "An evaluator MUST decide the room of every extension element exactly as this section defines it.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-4.7.1",
+   "level": "MUST",
+   "section": "4.7",
+   "chapter": "measures",
+   "text": "An evaluator MUST give, for every measure it computes, the measure result this section defines.",
+   "tests": 10
+  },
+  {
+   "id": "FS-RULES-4.8.1",
+   "level": "MUST",
+   "section": "4.8",
+   "chapter": "measures",
+   "text": "An evaluator MUST treat every measure of this table as deferred.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-5.1.1",
+   "level": "MUST",
+   "section": "5.1",
+   "chapter": "rooms",
+   "text": "An evaluator MUST compute roomFunction as this section defines it.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-5.2.1",
+   "level": "MUST",
+   "section": "5.2",
+   "chapter": "rooms",
+   "text": "An evaluator MUST compute roomNetArea as this section defines it.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-5.3.1",
+   "level": "MUST",
+   "section": "5.3",
+   "chapter": "rooms",
+   "text": "An evaluator MUST compute roomLeastWidth as this section defines it.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-5.4.1",
+   "level": "MUST",
+   "section": "5.4",
+   "chapter": "rooms",
+   "text": "An evaluator MUST compute the measures of this section as Core derives the values they read.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-5.5.1",
+   "level": "MUST",
+   "section": "5.5",
+   "chapter": "rooms",
+   "text": "An evaluator MUST compute the measures of this section as this section defines them.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-5.6.1",
+   "level": "MUST",
+   "section": "5.6",
+   "chapter": "rooms",
+   "text": "An evaluator MUST compute elementCount of a room as this section defines it.",
+   "tests": 1
+  },
+  {
+   "id": "FS-RULES-5.7.1",
+   "level": "MUST",
+   "section": "5.7",
+   "chapter": "rooms",
+   "text": "An evaluator MUST compute ceilingHeight as this section defines it.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-6.1.1",
+   "level": "MUST",
+   "section": "6.1",
+   "chapter": "openings",
+   "text": "An evaluator MUST compute openingKind as this section defines it.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-6.2.1",
+   "level": "MUST",
+   "section": "6.2",
+   "chapter": "openings",
+   "text": "An evaluator MUST compute the measures of this section as this section defines them.",
+   "tests": 1
+  },
+  {
+   "id": "FS-RULES-6.3.1",
+   "level": "MUST",
+   "section": "6.3",
+   "chapter": "openings",
+   "text": "An evaluator MUST compute the measures of this section as this section defines them.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-6.4.1",
+   "level": "MUST",
+   "section": "6.4",
+   "chapter": "openings",
+   "text": "An evaluator MUST compute openingToOutside as this section defines it.",
+   "tests": 1
+  },
+  {
+   "id": "FS-RULES-6.5.1",
+   "level": "MUST",
+   "section": "6.5",
+   "chapter": "openings",
+   "text": "An evaluator MUST compute the measures of this section as this section defines them, giving no value where it says so and never computing a clear width, height or area from the opening's own size.",
+   "tests": 5
+  },
+  {
+   "id": "FS-RULES-7.1.1",
+   "level": "MUST",
+   "section": "7.1",
+   "chapter": "elements",
+   "text": "An evaluator MUST compute elementMember as this section defines it.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-7.2.1",
+   "level": "MUST",
+   "section": "7.2",
+   "chapter": "elements",
+   "text": "An evaluator MUST compute elementRoomFunction as this section defines it.",
+   "tests": 1
+  },
+  {
+   "id": "FS-RULES-7.3.1",
+   "level": "MUST",
+   "section": "7.3",
+   "chapter": "elements",
+   "text": "An evaluator MUST compute the measures of this section as this section defines them.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-7.4.1",
+   "level": "MUST",
+   "section": "7.4",
+   "chapter": "elements",
+   "text": "An evaluator MUST compute elementProtectedBy as this section defines it.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-7.5.1",
+   "level": "MUST",
+   "section": "7.5",
+   "chapter": "elements",
+   "text": "An evaluator MUST compute the measures of this section as this section defines them.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-7.6.1",
+   "level": "MUST",
+   "section": "7.6",
+   "chapter": "elements",
+   "text": "An evaluator MUST compute envelopeObstructions as this section defines it.",
+   "tests": 7
+  },
+  {
+   "id": "FS-RULES-7.7.1",
+   "level": "MUST",
+   "section": "7.7",
+   "chapter": "elements",
+   "text": "An evaluator MUST compute clearDepthInFront as this section defines it.",
+   "tests": 7
+  },
+  {
+   "id": "FS-RULES-7.8.1",
+   "level": "MUST",
+   "section": "7.8",
+   "chapter": "elements",
+   "text": "An evaluator MUST compute envelopeOverlaps as this section defines it.",
+   "tests": 4
+  },
+  {
+   "id": "FS-RULES-8.1.1",
+   "level": "MUST",
+   "section": "8.1",
+   "chapter": "wall-lines",
+   "text": "An evaluator MUST build the wall line of a room, its stretches and the receptacles on it, exactly as this section defines them.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-8.2.1",
+   "level": "MUST",
+   "section": "8.2",
+   "chapter": "wall-lines",
+   "text": "An evaluator MUST compute receptacleReach and wallRunBetweenReceptacles as this section defines them.",
+   "tests": 5
+  },
+  {
+   "id": "FS-RULES-8.3.1",
+   "level": "MUST",
+   "section": "8.3",
+   "chapter": "wall-lines",
+   "text": "An evaluator MUST compute circuitCount as this section defines it.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-8.4.1",
+   "level": "MUST",
+   "section": "8.4",
+   "chapter": "wall-lines",
+   "text": "An evaluator MUST compute the measures of this section as this section defines them.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-8.5.1",
+   "level": "MUST",
+   "section": "8.5",
+   "chapter": "wall-lines",
+   "text": "An evaluator MUST compute the measures of this section as this section defines them.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-9.1.1",
+   "level": "MUST",
+   "section": "9.1",
+   "chapter": "findings",
+   "text": "An evaluator MUST return a report with exactly the members of this section, and MUST list every rule of every usable pack in exactly one of evaluated and notEvaluated, with the counts and the reason this section gives.",
+   "tests": 6
+  },
+  {
+   "id": "FS-RULES-9.1.2",
+   "level": "MUST",
+   "section": "9.1",
+   "chapter": "findings",
+   "text": "An evaluator MUST list in coverage exactly the coverage entries this section gives.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-9.2.1",
+   "level": "MUST",
+   "section": "9.2",
+   "chapter": "findings",
+   "text": "An evaluator MUST give every finding exactly the members of this section.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-9.3.1",
+   "level": "MUST",
+   "section": "9.3",
+   "chapter": "findings",
+   "text": "An evaluator MUST list the measured conditions of a finding exactly as this section defines them.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-9.4.1",
+   "level": "MUST",
+   "section": "9.4",
+   "chapter": "findings",
+   "text": "An evaluator MUST give every finding the elements and the location this section defines.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-9.5.1",
+   "level": "MUST",
+   "section": "9.5",
+   "chapter": "findings",
+   "text": "An evaluator MUST write every finding's message exactly as this table gives it.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-9.5.2",
+   "level": "MUST NOT",
+   "section": "9.5",
+   "chapter": "findings",
+   "text": "A report MUST NOT contain a match of the assurance pattern (2.5) anywhere outside the IDs it copies from the document: no finding, message, display or entry says that a design complies with, meets or passes a code.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-9.6.1",
+   "level": "MUST",
+   "section": "9.6",
+   "chapter": "findings",
+   "text": "An evaluator MUST write every display and thresholdDisplay exactly as this section defines them.",
+   "tests": 9
+  },
+  {
+   "id": "FS-RULES-9.7.1",
+   "level": "MUST",
+   "section": "9.7",
+   "chapter": "findings",
+   "text": "An evaluator MUST order every array of a report as this section defines.",
+   "tests": 3
+  },
+  {
+   "id": "FS-RULES-9.8.1",
+   "level": "MUST",
+   "section": "9.8",
+   "chapter": "findings",
+   "text": "An evaluator MUST write a report exactly as Core §9.2, step 2, writes a value.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-9.9.1",
+   "level": "MUST",
+   "section": "9.9",
+   "chapter": "findings",
+   "text": "An evaluator MUST give the notice, exactly as this section gives it, as the report's notice, in every report it returns.",
+   "tests": 1
+  },
+  {
+   "id": "FS-RULES-9.9.2",
+   "level": "SHOULD",
+   "section": "9.9",
+   "chapter": "findings",
+   "text": "Software that shows findings to a person SHOULD show the notice wherever it shows a finding, with the coverage of the packs evaluated, and SHOULD NOT shorten or reword a finding's message.",
+   "tests": 0
+  },
+  {
+   "id": "FS-RULES-10.1.1",
+   "level": "MUST",
+   "section": "10.1",
+   "chapter": "profiles",
+   "text": "A profile MUST match the profile schema; two of its adoptions MUST NOT have the same code and the same effective (or both none); two of its packs MUST NOT have the same name; and its text MUST NOT contain a match of the assurance pattern (2.5). For a request whose profile breaks any of these, an evaluator MUST report FS-RULES-002.",
+   "tests": 8
+  },
+  {
+   "id": "FS-RULES-10.2.1",
+   "level": "MUST",
+   "section": "10.2",
+   "chapter": "profiles",
+   "text": "An evaluator MUST decide the edition of each code in force exactly as this section defines it.",
+   "tests": 5
+  },
+  {
+   "id": "FS-RULES-10.3.1",
+   "level": "MUST",
+   "section": "10.3",
+   "chapter": "profiles",
+   "text": "An evaluator MUST evaluate a rule only when it is in force, and MUST list every other rule of a selected, usable pack that is well typed and uses no deferred measure in notEvaluated with the reason \"edition\".",
+   "tests": 7
+  },
+  {
+   "id": "FS-RULES-10.4.1",
+   "level": "MUST",
+   "section": "10.4",
+   "chapter": "profiles",
+   "text": "An evaluator MUST evaluate only the packs a profile selects, and MUST report FS-RULES-010 for each entry of the profile's packs that no usable pack of the request satisfies — a pack of that name at a version in that range.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-10.5.1",
+   "level": "MUST",
+   "section": "10.5",
+   "chapter": "profiles",
+   "text": "An evaluator MUST NOT evaluate a rule that an applying amendment withdraws, and MUST report FS-RULES-011 for each entry of an applying amendment's withdraws that names no rule of a usable pack.",
+   "tests": 2
+  },
+  {
+   "id": "FS-RULES-10.6.1",
+   "level": "MUST",
+   "section": "10.6",
+   "chapter": "profiles",
+   "text": "An evaluator MUST evaluate a request that has no profile under exactly this default profile.",
+   "tests": 1
+  },
+  {
+   "id": "FS-RULES-11.1.1",
+   "level": "MUST",
+   "section": "11.1",
+   "chapter": "diagnostics",
+   "text": "An evaluator MUST report each condition of this catalogue, once for each occurrence, as a diagnostic with exactly the code, severity and members it gives, and no other diagnostic.",
+   "tests": 24
+  }
+ ]
+}
