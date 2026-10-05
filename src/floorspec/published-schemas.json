@@ -14,5 +14,8 @@
  "floorspec/schema/core/0.1/site.schema.json": "7748812879053a9f50a88d39cf2500b6ba68101dbd77af3abdc348f47262bf10",
  "floorspec/schema/core/0.1/slab.schema.json": "75acafd31a99d0511fc558dabc89693b942db687f6ac1174238f0c166775f172",
  "floorspec/schema/core/0.1/type.schema.json": "e50ae6d714491da8b1dc2b29e9ffeca5a6c7e681de0be398b8dc92bec9f269eb",
- "floorspec/schema/core/0.1/wall.schema.json": "ca373bff58d0d48ddf3188150a1a5aebdcc971847803d4f4116744277ba596c8"
+ "floorspec/schema/core/0.1/wall.schema.json": "ca373bff58d0d48ddf3188150a1a5aebdcc971847803d4f4116744277ba596c8",
+ "floorspec/schema/ops/0.1/operation.schema.json": "105a4a12a296cf680db4669450478a5eb2ad897d01f62b3c84dc0629789cc7ce",
+ "floorspec/schema/ops/0.1/reference.schema.json": "2b0e5c53c28d81b59aeec2d8a120f3d9abd8583200b1690b18c5abd3af02d062",
+ "floorspec/schema/ops/0.1/request.schema.json": "7e3fa5806ae18a99e0b43edf3a049d7cd735027a101995c000264806fe82af27"
 }

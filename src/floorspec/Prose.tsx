@@ -197,7 +197,9 @@ function BlockNode({ block }: { block: Block }): ReactNode {
       );
     case 'list': {
       const items = block.items.map((item, index) => (
-        <li key={index} className="flex flex-col gap-2 pl-1 text-16 leading-relaxed text-fg">
+        // A list item stays display: list-item — as a flex box it would lose its marker, and Ops
+        // refers to its numbered steps ("steps 2 to 4", "step 6").
+        <li key={index} className="space-y-2 pl-1 text-16 leading-relaxed text-fg">
           <Blocks blocks={item} />
         </li>
       ));

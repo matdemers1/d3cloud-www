@@ -1,7 +1,7 @@
 import { LEGAL_DOCS } from './content/legal';
 import { BRAND, PROJECTS, projectBySlug } from './content/projects';
 import { WORKSHOP, workshopPath, type WorkshopItem } from './content/ecosystem';
-import { SPEC, SPEC_NAME, chapterBySlug, chapterLabel } from './floorspec/spec';
+import { SPECS, chapterBySlug, chapterLabel, chapterPath, specByCode, specName } from './floorspec/spec';
 
 /**
  * Every page the site has, in one place.
@@ -46,6 +46,8 @@ export interface RouteMeta {
   slug?: string;
   /** For `legal`: the key into LEGAL_DOCS[slug]. For `floorspec-chapter`: the chapter's slug. */
   doc?: string;
+  /** For `floorspec-chapter`: the specification the chapter belongs to — `core`, `ops`. */
+  spec?: string;
 }
 
 function projectRoute(slug: string): RouteMeta | null {
@@ -77,12 +79,16 @@ function workshopRoute(item: WorkshopItem | undefined): RouteMeta | null {
 }
 
 /**
- * The Floorspec standard, published here by FLR-ADR-018: `/floorspec`, a page per chapter of the
- * current draft at `/floorspec/core/<chapter>`, and `/floorspec/coverage`. Its schemas are files
- * under /floorspec/schema/, served by the assets binding, not pages.
+ * The Floorspec standard, published here by FLR-ADR-018: `/floorspec`, a page per chapter of each
+ * drafted specification at `/floorspec/<spec>/<chapter>` (Core and Ops today), and
+ * `/floorspec/coverage`. Its schemas are files under /floorspec/schema/, served by the assets
+ * binding, not pages.
  */
 const FLOORSPEC_DESCRIPTION =
-  'An open standard for describing houses as code: exact integer geometry, walls on a junction graph, rooms derived from them, and a conformance test for every MUST.';
+  'An open standard for describing houses as code: exact integer geometry, walls on a junction graph, rooms derived from them, the edits that change them, and a conformance test for every MUST.';
+
+const list = (items: string[]) =>
+  items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
 
 function floorspecRoute(segments: string[]): RouteMeta | null {
   if (segments.length === 1) {
@@ -90,26 +96,30 @@ function floorspecRoute(segments: string[]): RouteMeta | null {
       path: '/floorspec',
       kind: 'floorspec',
       title: `Floorspec — ${BRAND}`,
-      description: `${FLOORSPEC_DESCRIPTION} ${SPEC_NAME} is a draft.`,
+      description: `${FLOORSPEC_DESCRIPTION} ${list(SPECS.map(specName))} ${SPECS.length === 1 ? 'is a draft' : 'are drafts'}.`,
     };
   }
   if (segments.length === 2 && segments[1] === 'coverage') {
     return {
       path: '/floorspec/coverage',
       kind: 'floorspec-coverage',
-      title: `Conformance coverage — ${SPEC_NAME} — ${BRAND}`,
-      description: `${SPEC.covered} of ${SPEC.mandatory} mandatory statements in ${SPEC_NAME} (Draft) have a conformance test, from ${SPEC.tests} ${SPEC.tests === 1 ? 'test' : 'tests'}.`,
+      title: `Conformance coverage — Floorspec — ${BRAND}`,
+      description: `Every mandatory statement of the Floorspec drafts and its conformance tests: ${list(
+        SPECS.map((spec) => `${spec.covered} of ${spec.mandatory} in ${specName(spec)}, from ${spec.tests} ${spec.tests === 1 ? 'test' : 'tests'}`),
+      )}.`,
     };
   }
-  if (segments.length === 3 && segments[1] === 'core') {
-    const chapter = chapterBySlug(segments[2]);
+  const spec = segments.length === 3 ? specByCode(segments[1]) : undefined;
+  if (spec) {
+    const chapter = chapterBySlug(spec, segments[2]);
     if (!chapter) return null;
     return {
-      path: `/floorspec/core/${chapter.slug}`,
+      path: chapterPath(spec, chapter.slug),
       kind: 'floorspec-chapter',
-      title: `${chapterLabel(chapter)} — ${SPEC_NAME} — ${BRAND}`,
-      description: `${SPEC_NAME} (Draft), ${/^\d+$/.test(chapter.number) ? `chapter ${chapter.number}` : `Annex ${chapter.number}`}: ${chapter.summary}.`,
+      title: `${chapterLabel(chapter)} — ${specName(spec)} — ${BRAND}`,
+      description: `${specName(spec)} (Draft), ${/^\d+$/.test(chapter.number) ? `chapter ${chapter.number}` : `Annex ${chapter.number}`}: ${chapter.summary}.`,
       doc: chapter.slug,
+      spec: spec.spec,
     };
   }
   return null;
@@ -198,7 +208,9 @@ export function allRoutes(): RouteMeta[] {
   }
   for (const item of WORKSHOP) routes.push(workshopRoute(item)!);
   routes.push(floorspecRoute(['floorspec'])!);
-  for (const chapter of SPEC.chapters) routes.push(floorspecRoute(['floorspec', 'core', chapter.slug])!);
+  for (const spec of SPECS) {
+    for (const chapter of spec.chapters) routes.push(floorspecRoute(['floorspec', spec.spec, chapter.slug])!);
+  }
   routes.push(floorspecRoute(['floorspec', 'coverage'])!);
   return routes;
 }

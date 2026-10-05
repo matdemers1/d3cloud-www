@@ -19,7 +19,8 @@ export type Inline =
   | { t: 'br' }
   /**
    * A normative statement: the sentence (`c`) and the tag that ended it. Rendered with
-   * `id` = the statement ID, so `/floorspec/core/walls#FS-CORE-5.3.1` lands on it.
+   * `id` = the statement ID, so `/floorspec/core/walls#FS-CORE-5.3.1` (or
+   * `/floorspec/ops/references#FS-OPS-3.4.1`) lands on it.
    */
   | { t: 'stmt'; id: string; level: Level; c: Inline[] };
 
@@ -54,17 +55,24 @@ export interface Chapter {
 /** What the routes, the landing page and the chapter navigation need — no chapter content. */
 export interface ChapterSummary {
   slug: string;
-  /** Its source, relative to the floorspec repo: spec/core/05-walls.md. */
+  /** Its source, relative to the floorspec repo: spec/core/05-walls.md, spec/ops/03-references.md. */
   file: string;
   number: string;
   title: string;
-  /** From the chapter table in spec/core/README.md. */
+  /** From the chapter table in its specification's README.md. */
   summary: string;
   statements: number;
 }
 
+/** One specification — Core, Ops — as the routes, the landing page and the navigation see it. */
 export interface SpecIndex {
-  spec: 'core';
+  /** Its directory under spec/, and its path segment here: `core` → /floorspec/core/<chapter>. */
+  spec: string;
+  /** "Floorspec Ops". */
+  name: string;
+  /** "Ops" — what another specification calls it ("Core §5.3"). */
+  short: string;
+  /** Its draft version, from its README: "0.1". */
   version: string;
   chapters: ChapterSummary[];
   statements: number;
@@ -73,6 +81,11 @@ export interface SpecIndex {
   /** How many of those have at least one conformance test, and how many tests there are. */
   covered: number;
   tests: number;
+}
+
+/** Every specification the pinned commit has chapters for, in the order the site shows them. */
+export interface FloorspecIndex {
+  specifications: SpecIndex[];
 }
 
 export interface CoverageRow {
@@ -86,8 +99,10 @@ export interface CoverageRow {
 }
 
 export interface Coverage {
+  spec: string;
+  version: string;
   /** Where the numbers came from: the floorspec repo's own gate, or this site's scan of the suite. */
-  source: 'floorspec coverage gate' | 'scan of conformance/core/0.1';
+  source: string;
   tests: number;
   mandatory: number;
   covered: number;

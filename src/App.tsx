@@ -58,7 +58,7 @@ function resolve(path: string): {
       meta.kind === 'floorspec' ? (
         <StandardPage />
       ) : meta.kind === 'floorspec-chapter' ? (
-        <ChapterPage key={meta.doc} slug={meta.doc!} />
+        <ChapterPage key={meta.path} spec={meta.spec!} slug={meta.doc!} />
       ) : (
         <CoveragePage />
       );

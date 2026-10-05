@@ -1,4 +1,6 @@
 {
+ "spec": "core",
+ "version": "0.1",
  "source": "floorspec coverage gate",
  "tests": 281,
  "mandatory": 90,

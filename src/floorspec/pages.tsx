@@ -4,7 +4,7 @@ import { Link } from '../router';
 import { Band, Kicker, PrimaryButton, SecondaryButton, WRAP } from '../components/Marketing';
 import { ProductMark } from '../components/ProductMark';
 import { workshopBySlug, workshopPath } from '../content/ecosystem';
-import type { ChapterSummary, Coverage, CoverageRow } from './ast';
+import type { ChapterSummary, Coverage, CoverageRow, SpecIndex } from './ast';
 import { loadChapter, loadCoverage } from './load';
 // Every published schema file, by its path under the site root (and its SHA-256, which only the
 // tests read). Imported here, in the lazy chunk, rather than beside the routes.
@@ -12,21 +12,25 @@ import PUBLISHED_SCHEMAS from './published-schemas.json';
 import { Blocks, LevelBadge } from './Prose';
 import { CopyContext } from './copy';
 import {
+  CORE,
   FLOORSPEC,
   FLOORSPEC_LOCK,
   FLOORSPEC_REPO,
   SHORT_SHA,
-  SPEC,
-  SPEC_NAME,
+  SPECS,
   chapterBySlug,
   chapterLabel,
+  chapterPath,
   pinnedTree,
+  specByCode,
+  specName,
 } from './spec';
 
 /**
- * The Floorspec standard's pages (DI-T-10.2, FLR-ADR-018): the landing page, a page per chapter
- * of the current draft, and the conformance coverage. All of it is one lazily loaded chunk, and
- * each chapter's text is another, so none of it weighs on the rest of the site.
+ * The Floorspec standard's pages (DI-T-10.2, DI-T-10.4, FLR-ADR-018): the landing page, a page
+ * per chapter of each drafted specification (Core and Ops), and the conformance coverage of both.
+ * All of it is one lazily loaded chunk, and each chapter's text is another, so none of it weighs
+ * on the rest of the site.
  */
 
 const APP_PATH = (() => {
@@ -34,10 +38,25 @@ const APP_PATH = (() => {
   return app ? workshopPath(app) : '/floorspec/app';
 })();
 
-const FIRST_CHAPTER = SPEC.chapters[0]!;
+const firstChapter = (spec: SpecIndex) => chapterPath(spec, spec.chapters[0]!.slug);
+
+/** Every published schema of one draft of one specification, by its path under the site root. */
+const schemasOf = (spec: SpecIndex) =>
+  Object.keys(PUBLISHED_SCHEMAS)
+    .filter((path) => path.startsWith(`floorspec/schema/${spec.spec}/${spec.version}/`))
+    .sort();
+
+/**
+ * A chapter's summary from its README table, as a sentence: "Merging junctions, …". One that
+ * opens with an operation's name keeps it as written — "addElement and its shorthands, …".
+ */
+const asSentence = (summary: string) =>
+  `${/^[a-z]+\b/.test(summary) ? summary.charAt(0).toUpperCase() + summary.slice(1) : summary}.`;
+
+const percent = (spec: SpecIndex) => (spec.mandatory ? Math.floor((100 * spec.covered) / spec.mandatory) : 0);
 
 /** The banner every Floorspec page carries until 1.0 (FLR-ADR-017). */
-function DraftBanner({ compact = false }: { compact?: boolean }) {
+function DraftBanner({ compact = false, version = CORE.version }: { compact?: boolean; version?: string }) {
   return (
     <div
       role="note"
@@ -45,7 +64,7 @@ function DraftBanner({ compact = false }: { compact?: boolean }) {
       className={`flex flex-col gap-1.5 rounded-lg border border-warning bg-warning-muted ${compact ? 'px-4 py-3' : 'p-5 sm:p-6'}`}
     >
       <p className="font-mono text-12 font-semibold tracking-label text-warning uppercase">
-        Draft {SPEC.version} — no compatibility promise
+        Draft {version} — no compatibility promise
       </p>
       <p className={`${compact ? 'text-14' : 'text-16'} text-fg`}>
         This is a working draft. Any later 0.x draft may change any part of it, and Floorspec stays
@@ -145,31 +164,111 @@ const IDEAS: { title: string; text: ReactNode }[] = [
   },
 ];
 
-const SPECIFICATIONS: { name: string; status: string; text: string; href?: string }[] = [
+/**
+ * The three specifications, as the landing page introduces them. Core and Ops are drafted, so they
+ * link to their chapters; Rules is not yet.
+ */
+const SPECIFICATIONS: { code: string; name: string; text: string; title: string; intro: ReactNode }[] = [
   {
+    code: 'core',
     name: 'Floorspec Core',
-    status: `Draft ${SPEC.version}`,
     text: 'The document: levels, walls on a junction graph, rooms, openings, types and materials — what makes it valid, the exact geometry derived from it, and its canonical form.',
-    href: `/floorspec/core/${FIRST_CHAPTER.slug}`,
+    title: 'The document.',
+    intro: (
+      <>
+        What a house <em>is</em>: the document, its units and identity, walls and the rooms they
+        enclose, openings, types and materials — what makes a document valid, the exact geometry
+        every reader derives from it, its one canonical form, and a mapping to IFC.
+      </>
+    ),
   },
   {
+    code: 'ops',
     name: 'Floorspec Ops',
-    status: 'Not yet drafted',
     text: 'The normative edit operations: a relative reference grammar, atomic batches and locks — how a person or an agent changes a document.',
+    title: 'The edits.',
+    intro: (
+      <>
+        How a house <em>changes</em>: a batch of operations applied as one transaction that either
+        commits or changes nothing, five primitives and the composites people actually ask for, a
+        reference grammar that turns “two foot six” and “the north wall of the kitchen” into exact
+        values, normalization, and locks. It operates on Core documents and is versioned on its own.
+      </>
+    ),
   },
   {
+    code: 'rules',
     name: 'Floorspec Rules',
-    status: 'Not yet drafted',
     text: 'Advisory building-code rules with citations, as data, with jurisdiction profiles. Findings are advice: they never say “compliant”.',
+    title: '',
+    intro: null,
   },
 ];
 
-export function StandardPage() {
-  const schemas = Object.keys(PUBLISHED_SCHEMAS)
-    .filter((path) => path.startsWith(`floorspec/schema/core/${SPEC.version}/`))
-    .sort();
-  const pct = SPEC.mandatory ? Math.floor((100 * SPEC.covered) / SPEC.mandatory) : 0;
+/** A drafted specification on the landing page: its chapters, then its schemas. */
+function SpecBand({ spec, sunken }: { spec: SpecIndex; sunken: boolean }) {
+  const copy = SPECIFICATIONS.find((s) => s.code === spec.spec);
+  const schemas = schemasOf(spec);
+  const base = `https://d3cloud.io/floorspec/schema/${spec.spec}/${spec.version}/`;
+  return (
+    <Band label={specName(spec)} title={copy?.title || 'The chapters.'} sunken={sunken}>
+      <div className="flex flex-col gap-8">
+        {copy?.intro && <p className="max-w-3xl text-16 text-fg sm:text-20">{copy.intro}</p>}
+        <ol
+          aria-label={`${specName(spec)} chapters`}
+          className="flex flex-col divide-y divide-border rounded-lg border border-border bg-surface"
+        >
+          {spec.chapters.map((chapter) => (
+            <li key={chapter.slug}>
+              <Link
+                to={chapterPath(spec, chapter.slug)}
+                variant="muted"
+                className="flex gap-4 px-5 py-4 no-underline hover:bg-surface-hover"
+              >
+                <span className="w-6 shrink-0 font-mono text-14 leading-6 text-fg-faint">{chapter.number}</span>
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className="flex flex-wrap items-baseline justify-between gap-x-4">
+                    <span className="text-16 font-semibold text-fg">{chapter.title}</span>
+                    {chapter.statements > 0 && (
+                      <span className="font-mono text-12 whitespace-nowrap text-fg-faint">
+                        {chapter.statements} {chapter.statements === 1 ? 'statement' : 'statements'}
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-14 text-fg-muted">
+                    {asSentence(chapter.summary)}
+                  </span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ol>
+        <div className="flex max-w-3xl flex-col gap-3">
+          <h3 className="text-16 font-semibold text-fg">Schemas</h3>
+          {schemas.length > 0 ? (
+            <>
+              <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                {schemas.map((path) => (
+                  <li key={path} className="truncate font-mono text-13">
+                    <UiLink href={`/${path}`}>{path.split('/').pop()}</UiLink>
+                  </li>
+                ))}
+              </ul>
+              <p className="font-mono text-12 break-all text-fg-muted">{base}</p>
+            </>
+          ) : (
+            <p className="rounded-lg border border-dashed border-border-field p-4 text-14 text-fg-muted">
+              The schemas for {specName(spec)} are being written; they will appear at {base}.
+            </p>
+          )}
+        </div>
+        <Pinned path={`spec/${spec.spec}`} />
+      </div>
+    </Band>
+  );
+}
 
+export function StandardPage() {
   return (
     <>
       <section aria-labelledby="floorspec-title" className="relative overflow-hidden">
@@ -183,7 +282,7 @@ export function StandardPage() {
           />
           <p className="flex animate-rise items-start gap-2.5 font-mono text-12 tracking-label text-fg-muted uppercase">
             <span aria-hidden="true" className="mt-1 size-2.5 shrink-0 rounded-full" style={{ backgroundColor: FLOORSPEC.accent }} />
-            <span>An open standard · Houses as code · Draft {SPEC.version}</span>
+            <span>An open standard · Houses as code · Draft {CORE.version}</span>
           </p>
           <h1 id="floorspec-title" className="stagger-1 animate-rise font-display text-display-xl tracking-display text-fg">
             Floorspec
@@ -197,7 +296,12 @@ export function StandardPage() {
             render, and that two tools always read the same way.
           </p>
           <div className="stagger-3 flex animate-rise flex-wrap items-center gap-3 pt-2">
-            <PrimaryButton href={`/floorspec/core/${FIRST_CHAPTER.slug}`}>Read {SPEC_NAME}</PrimaryButton>
+            <PrimaryButton href={firstChapter(CORE)}>Read {specName(CORE)}</PrimaryButton>
+            {SPECS.filter((spec) => spec !== CORE).map((spec) => (
+              <SecondaryButton key={spec.spec} href={firstChapter(spec)}>
+                Read {specName(spec)}
+              </SecondaryButton>
+            ))}
             <SecondaryButton href={FLOORSPEC_REPO}>The repository ↗</SecondaryButton>
           </div>
         </div>
@@ -230,26 +334,34 @@ export function StandardPage() {
 
       <Band label="The specifications" title="Three of them.">
         <ul className="flex flex-col gap-4">
-          {SPECIFICATIONS.map((spec) => {
+          {SPECIFICATIONS.map((copy) => {
+            const spec = specByCode(copy.code);
+            const schemas = spec ? schemasOf(spec).length : 0;
             const body = (
               <>
                 <span className="flex flex-wrap items-center gap-3">
-                  <span className="text-16 font-semibold text-fg">{spec.name}</span>
+                  <span className="text-16 font-semibold text-fg">{copy.name}</span>
                   <span
-                    className={`rounded-full px-2.5 py-0.5 font-mono text-11 tracking-label uppercase ${spec.href ? 'bg-warning-muted text-warning' : 'border border-dashed border-border-field text-fg-muted'}`}
+                    className={`rounded-full px-2.5 py-0.5 font-mono text-11 tracking-label uppercase ${spec ? 'bg-warning-muted text-warning' : 'border border-dashed border-border-field text-fg-muted'}`}
                   >
-                    {spec.status}
+                    {spec ? `Draft ${spec.version}` : 'Not yet drafted'}
                   </span>
                 </span>
-                <span className="max-w-2xl text-14 text-fg-muted">{spec.text}</span>
-                {spec.href && <span className="text-14 font-semibold text-fg">Read it →</span>}
+                <span className="max-w-2xl text-14 text-fg-muted">{copy.text}</span>
+                {spec && (
+                  <span className="font-mono text-12 text-fg-faint">
+                    {spec.chapters.length} chapters · {spec.statements} statements · {schemas}{' '}
+                    {schemas === 1 ? 'schema' : 'schemas'}
+                  </span>
+                )}
+                {spec && <span className="text-14 font-semibold text-fg">Read it →</span>}
               </>
             );
             const frame = 'flex h-full flex-col gap-2 rounded-lg border p-5 sm:p-6';
             return (
-              <li key={spec.name}>
-                {spec.href ? (
-                  <Link to={spec.href} variant="muted" className={`${frame} border-border bg-surface no-underline hover:bg-surface-hover`}>
+              <li key={copy.code}>
+                {spec ? (
+                  <Link to={firstChapter(spec)} variant="muted" className={`${frame} border-border bg-surface no-underline hover:bg-surface-hover`}>
                     {body}
                   </Link>
                 ) : (
@@ -261,85 +373,36 @@ export function StandardPage() {
         </ul>
       </Band>
 
-      <Band label={SPEC_NAME} title="The chapters." sunken>
-        <div className="flex flex-col gap-6">
-          <ol className="flex flex-col divide-y divide-border rounded-lg border border-border bg-surface">
-            {SPEC.chapters.map((chapter) => (
-              <li key={chapter.slug}>
-                <Link
-                  to={`/floorspec/core/${chapter.slug}`}
-                  variant="muted"
-                  className="flex gap-4 px-5 py-4 no-underline hover:bg-surface-hover"
-                >
-                  <span className="w-6 shrink-0 font-mono text-14 leading-6 text-fg-faint">{chapter.number}</span>
-                  <span className="flex min-w-0 flex-1 flex-col gap-1">
-                    <span className="flex flex-wrap items-baseline justify-between gap-x-4">
-                      <span className="text-16 font-semibold text-fg">{chapter.title}</span>
-                      {chapter.statements > 0 && (
-                        <span className="font-mono text-12 whitespace-nowrap text-fg-faint">
-                          {chapter.statements} {chapter.statements === 1 ? 'statement' : 'statements'}
-                        </span>
-                      )}
-                    </span>
-                    <span className="text-14 text-fg-muted">
-                      {chapter.summary.charAt(0).toUpperCase() + chapter.summary.slice(1)}.
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ol>
-          <Pinned path={`spec/${SPEC.spec}`} />
-        </div>
-      </Band>
+      {SPECS.map((spec, i) => (
+        <SpecBand key={spec.spec} spec={spec} sunken={i % 2 === 0} />
+      ))}
 
-      <Band label="Schemas" title="URLs that never change.">
+      <Band label="Conformance" title="Every MUST, tested." sunken={SPECS.length % 2 === 0}>
         <div className="flex max-w-3xl flex-col gap-6">
           <p className="text-16 text-fg-muted">
-            JSON Schema 2020-12, published at versioned addresses. Once a file is published here it is
-            never changed or removed — a new draft gets a new directory — so a validator can pin it
-            forever. They are served to any origin.
+            Every MUST and MUST NOT needs at least one test in its specification’s conformance suite,
+            and the standard’s coverage gate fails until each one has it.
           </p>
-          {schemas.length > 0 ? (
-            <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
-              {schemas.map((path) => (
-                <li key={path} className="truncate font-mono text-13">
-                  <UiLink href={`/${path}`}>{path.split('/').pop()}</UiLink>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="rounded-lg border border-dashed border-border-field p-4 text-14 text-fg-muted">
-              The schemas for Core {SPEC.version} are being written; they will appear at
-              /floorspec/schema/core/{SPEC.version}/.
-            </p>
-          )}
-          {schemas.length > 0 && (
-            <p className="font-mono text-12 break-all text-fg-muted">
-              https://d3cloud.io/floorspec/schema/core/{SPEC.version}/
-            </p>
-          )}
-        </div>
-      </Band>
-
-      <Band label="Conformance" title="Every MUST, tested." sunken>
-        <div className="flex max-w-3xl flex-col gap-6">
-          <p className="text-16 text-fg">
-            <span className="font-display text-display-md">
-              {SPEC.covered} of {SPEC.mandatory}
-            </span>{' '}
-            <span className="text-fg-muted">
-              mandatory statements in {SPEC_NAME} have a conformance test ({pct}%)
-              {SPEC.tests === 0 ? ' — the suite is being written.' : `, from ${SPEC.tests} tests.`}
-            </span>
-          </p>
+          <ul className="grid gap-6 sm:grid-cols-2">
+            {SPECS.map((spec) => (
+              <li key={spec.spec} className="flex flex-col gap-1">
+                <span className="font-display text-display-md text-fg">
+                  {spec.covered} of {spec.mandatory}
+                </span>
+                <span className="text-14 text-fg-muted">
+                  mandatory statements in {specName(spec)} have a test ({percent(spec)}%)
+                  {spec.tests === 0 ? ' — the suite is being written.' : `, from ${spec.tests} tests.`}
+                </span>
+              </li>
+            ))}
+          </ul>
           <div>
             <SecondaryButton href="/floorspec/coverage">See every statement</SecondaryButton>
           </div>
         </div>
       </Band>
 
-      <Band label="Reference implementation" title="D3 Floorspec.">
+      <Band label="Reference implementation" title="D3 Floorspec." sunken={SPECS.length % 2 === 1}>
         <div className="flex max-w-3xl flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
           <ProductMark slug="floorspec-app" accent={FLOORSPEC.accent} size={72} className="text-fg" />
           <div className="flex flex-col gap-4">
@@ -356,7 +419,7 @@ export function StandardPage() {
         </div>
       </Band>
 
-      <Band label="Licence" title="Yours to use." sunken>
+      <Band label="Licence" title="Yours to use." sunken={SPECS.length % 2 === 0}>
         <div className="flex max-w-3xl flex-col gap-3 text-16 text-fg">
           <p>
             The specification text is{' '}
@@ -376,7 +439,7 @@ export function StandardPage() {
 }
 
 // ---------------------------------------------------------------------------------------------
-// /floorspec/core/<chapter>
+// /floorspec/<spec>/<chapter>
 
 /** Says, briefly, that a statement's link was copied. */
 function useCopiedNote(): [string, (id: string) => void] {
@@ -397,16 +460,21 @@ function useCopiedNote(): [string, (id: string) => void] {
   return [note, copy];
 }
 
-function ChapterBody({ summary }: { summary: ChapterSummary }) {
-  const chapter = use(loadChapter(summary.slug));
-
-  // A deep link — /floorspec/core/walls#FS-CORE-5.3.1 — arrives before the text does, so the
-  // browser had nothing to scroll to or to mark as the :target. Now there is: navigating to the
-  // same fragment again (replacing, not adding, a history entry) does both.
+/**
+ * A deep link — /floorspec/core/walls#FS-CORE-5.3.1 — arrives before the text does, so the
+ * browser had nothing to scroll to or to mark as the :target. Once the text is there, navigating
+ * to the same fragment again (replacing, not adding, a history entry) does both.
+ */
+function useLateFragment(loaded: unknown) {
   useEffect(() => {
     const { hash } = window.location;
     if (hash && document.getElementById(decodeURIComponent(hash.slice(1)))) window.location.replace(hash);
-  }, [chapter]);
+  }, [loaded]);
+}
+
+function ChapterBody({ spec, summary }: { spec: SpecIndex; summary: ChapterSummary }) {
+  const chapter = use(loadChapter(spec.spec, summary.slug));
+  useLateFragment(chapter);
 
   const index = (
     <ol className="flex flex-col gap-0.5 text-14">
@@ -451,15 +519,15 @@ function ChapterBody({ summary }: { summary: ChapterSummary }) {
   );
 }
 
-function ChapterNav({ summary }: { summary: ChapterSummary }) {
-  const at = SPEC.chapters.indexOf(summary);
-  const prev = SPEC.chapters[at - 1];
-  const next = SPEC.chapters[at + 1];
+function ChapterNav({ spec, summary }: { spec: SpecIndex; summary: ChapterSummary }) {
+  const at = spec.chapters.indexOf(summary);
+  const prev = spec.chapters[at - 1];
+  const next = spec.chapters[at + 1];
   const card = 'flex flex-col gap-1 rounded-lg border border-border p-5 no-underline hover:bg-surface-hover';
   return (
     <nav aria-label="Chapters" className="grid gap-4 border-t border-border pt-10 sm:grid-cols-2">
       {prev ? (
-        <Link to={`/floorspec/core/${prev.slug}`} variant="muted" className={card}>
+        <Link to={chapterPath(spec, prev.slug)} variant="muted" className={card}>
           <span className="text-13 text-fg-muted">← Previous</span>
           <span className="text-16 font-semibold text-fg">{chapterLabel(prev)}</span>
         </Link>
@@ -470,14 +538,14 @@ function ChapterNav({ summary }: { summary: ChapterSummary }) {
         </Link>
       )}
       {next ? (
-        <Link to={`/floorspec/core/${next.slug}`} variant="muted" className={`${card} sm:text-right`}>
+        <Link to={chapterPath(spec, next.slug)} variant="muted" className={`${card} sm:text-right`}>
           <span className="text-13 text-fg-muted">Next →</span>
           <span className="text-16 font-semibold text-fg">{chapterLabel(next)}</span>
         </Link>
       ) : (
-        <Link to="/floorspec/coverage" variant="muted" className={`${card} sm:text-right`}>
+        <Link to={`/floorspec/coverage#${spec.spec}`} variant="muted" className={`${card} sm:text-right`}>
           <span className="text-13 text-fg-muted">Next →</span>
-          <span className="text-16 font-semibold text-fg">Conformance coverage</span>
+          <span className="text-16 font-semibold text-fg">Conformance coverage of {spec.short}</span>
         </Link>
       )}
     </nav>
@@ -492,8 +560,9 @@ function Loading({ what }: { what: string }) {
   );
 }
 
-export function ChapterPage({ slug }: { slug: string }) {
-  const summary = chapterBySlug(slug)!;
+export function ChapterPage({ spec: code, slug }: { spec: string; slug: string }) {
+  const spec = specByCode(code)!;
+  const summary = chapterBySlug(spec, slug)!;
   const [note, copy] = useCopiedNote();
   const numbered = /^\d+$/.test(summary.number);
 
@@ -502,7 +571,9 @@ export function ChapterPage({ slug }: { slug: string }) {
       <div className={`${WRAP} flex flex-col gap-10 pt-12 pb-20 lg:pt-16`}>
         <header className="flex flex-col gap-5">
           <Crumb>
-            <span>Core {SPEC.version}</span>
+            <span>
+              {spec.short} {spec.version}
+            </span>
             <span aria-hidden="true">/</span>
             <span>{numbered ? `Chapter ${summary.number}` : `Annex ${summary.number}`}</span>
           </Crumb>
@@ -511,18 +582,18 @@ export function ChapterPage({ slug }: { slug: string }) {
           </h1>
           {summary.summary && (
             <p className="max-w-3xl text-16 text-fg-muted sm:text-20">
-              {summary.summary.charAt(0).toUpperCase() + summary.summary.slice(1)}.
+              {asSentence(summary.summary)}
             </p>
           )}
           <Pinned path={summary.file} />
-          <DraftBanner compact />
+          <DraftBanner compact version={spec.version} />
         </header>
 
         <Suspense fallback={<Loading what="the chapter" />}>
-          <ChapterBody key={slug} summary={summary} />
+          <ChapterBody key={`${spec.spec}/${slug}`} spec={spec} summary={summary} />
         </Suspense>
 
-        <ChapterNav summary={summary} />
+        <ChapterNav spec={spec} summary={summary} />
       </div>
       <p
         aria-live="polite"
@@ -537,7 +608,7 @@ export function ChapterPage({ slug }: { slug: string }) {
 // ---------------------------------------------------------------------------------------------
 // /floorspec/coverage
 
-function CoverageTable({ rows }: { rows: CoverageRow[] }) {
+function CoverageTable({ spec, rows }: { spec: SpecIndex; rows: CoverageRow[] }) {
   return (
     <div
       className="overflow-x-auto rounded-md border border-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
@@ -565,7 +636,7 @@ function CoverageTable({ rows }: { rows: CoverageRow[] }) {
             return (
               <tr key={row.id} className="border-b border-border last:border-b-0">
                 <td className="px-3 py-2.5 align-top">
-                  <Link to={`/floorspec/core/${row.chapter}#${row.id}`} className="font-mono text-13 whitespace-nowrap">
+                  <Link to={chapterPath(spec, row.chapter, row.id)} className="font-mono text-13 whitespace-nowrap">
                     {row.id}
                   </Link>
                   <p className="mt-1 max-w-2xl text-13 text-fg-muted">{row.text}</p>
@@ -591,12 +662,18 @@ function CoverageTable({ rows }: { rows: CoverageRow[] }) {
   );
 }
 
-function CoverageBody() {
-  const coverage: Coverage = use(loadCoverage());
+/** Both specifications' coverage, fetched together and cached, so `use` sees one promise. */
+let allCoverage: Promise<Coverage[]> | undefined;
+const loadAllCoverage = () => (allCoverage ??= Promise.all(SPECS.map((spec) => loadCoverage(spec.spec))));
+
+function SpecCoverage({ spec, coverage }: { spec: SpecIndex; coverage: Coverage }) {
   const fraction = coverage.mandatory ? coverage.covered / coverage.mandatory : 0;
   return (
-    <div className="flex flex-col gap-14">
-      <section aria-label="Summary" className="flex flex-col gap-5">
+    <section aria-labelledby={spec.spec} className="flex scroll-mt-24 flex-col gap-10">
+      <div className="flex flex-col gap-5">
+        <h2 id={spec.spec} className="scroll-mt-24 font-display text-display-md text-fg">
+          {specName(spec)}
+        </h2>
         <p className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
           <span className="font-display text-stat text-fg">
             {coverage.covered} <span className="text-fg-faint">of</span> {coverage.mandatory}
@@ -615,32 +692,61 @@ function CoverageBody() {
           />
         </span>
         <p className="max-w-3xl text-14 text-fg-muted">
-          Counted by the {coverage.source} at {FLOORSPEC_LOCK.repository}@{SHORT_SHA}. SHOULD and MAY
-          statements are listed too; the suite is not required to test them.
+          Counted by the {coverage.source} at {FLOORSPEC_LOCK.repository}@{SHORT_SHA}, over
+          conformance/{spec.spec}/{spec.version}. SHOULD and MAY statements are listed too; the suite
+          is not required to test them.
         </p>
-      </section>
+      </div>
 
-      {SPEC.chapters
+      {spec.chapters
         .filter((chapter) => chapter.statements > 0)
         .map((chapter) => {
           const rows = coverage.statements.filter((row) => row.chapter === chapter.slug);
           const must = rows.filter((row) => row.level === 'MUST' || row.level === 'MUST NOT');
           return (
-            <section key={chapter.slug} aria-labelledby={`cov-${chapter.slug}`} className="flex flex-col gap-4">
+            <section key={chapter.slug} aria-labelledby={`cov-${spec.spec}-${chapter.slug}`} className="flex flex-col gap-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 id={`cov-${chapter.slug}`} className="text-20 font-semibold text-fg">
-                  <Link to={`/floorspec/core/${chapter.slug}`} variant="muted" className="no-underline hover:underline">
+                <h3 id={`cov-${spec.spec}-${chapter.slug}`} className="text-20 font-semibold text-fg">
+                  <Link to={chapterPath(spec, chapter.slug)} variant="muted" className="no-underline hover:underline">
                     {chapterLabel(chapter)}
                   </Link>
-                </h2>
+                </h3>
                 <span className="font-mono text-12 text-fg-muted">
                   {must.filter((row) => row.tests > 0).length} of {must.length} covered
                 </span>
               </div>
-              <CoverageTable rows={rows} />
+              <CoverageTable spec={spec} rows={rows} />
             </section>
           );
         })}
+    </section>
+  );
+}
+
+function CoverageBody() {
+  const coverages = use(loadAllCoverage());
+  useLateFragment(coverages);
+  return (
+    <div className="flex flex-col gap-20">
+      {SPECS.length > 1 && (
+        <nav aria-label="Specifications" className="flex flex-wrap gap-3">
+          {SPECS.map((spec) => (
+            <a
+              key={spec.spec}
+              href={`#${spec.spec}`}
+              className="flex min-h-11 items-center gap-3 rounded-lg border border-border bg-surface px-4 text-14 text-fg no-underline hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-focus"
+            >
+              <span className="font-semibold">{specName(spec)}</span>
+              <span className="font-mono text-12 text-fg-muted">
+                {spec.covered} of {spec.mandatory}
+              </span>
+            </a>
+          ))}
+        </nav>
+      )}
+      {SPECS.map((spec, i) => (
+        <SpecCoverage key={spec.spec} spec={spec} coverage={coverages[i]!} />
+      ))}
     </div>
   );
 }
@@ -650,15 +756,14 @@ export function CoveragePage() {
     <div className={`${WRAP} flex flex-col gap-10 pt-12 pb-20 lg:pt-16`}>
       <header className="flex flex-col gap-5">
         <Crumb>
-          <span>Core {SPEC.version}</span>
-          <span aria-hidden="true">/</span>
           <span>Coverage</span>
         </Crumb>
         <h1 className="font-display text-display-lg tracking-display text-fg">Conformance coverage</h1>
         <p className="max-w-3xl text-16 text-fg-muted sm:text-20">
-          Every MUST and MUST NOT in {SPEC_NAME} needs at least one test in the conformance suite,
-          and the standard’s coverage gate fails until each one has it. This is where that stands,
-          statement by statement, at the commit this site publishes.
+          Every MUST and MUST NOT in {SPECS.map((spec) => specName(spec)).join(' and ')} needs at
+          least one test in its conformance suite, and the standard’s coverage gate fails until each
+          one has it. This is where that stands, statement by statement, at the commit this site
+          publishes.
         </p>
         <DraftBanner compact />
       </header>
