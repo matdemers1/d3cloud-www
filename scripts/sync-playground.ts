@@ -65,7 +65,7 @@ const ENGINE_EXPORTS: Record<string, string[]> = {
     'IMPLEMENTED_VERSIONS',
     'Package',
   ],
-  '@floorspec/render2d': ['renderPlan', 'defaultLevel'],
+  '@floorspec/render2d': ['renderPlan', 'renderEvaluation', 'defaultLevel'],
   '@floorspec/package': ['readPackage', 'isZip', 'PackageError', 'DOCUMENT_NAME'],
 };
 /** What mesh.js exports. */
@@ -349,7 +349,7 @@ for (const t of templates) {
   const ev = engine.evaluate(bytes, engine.OFFICIAL_READER);
   if (!ev.valid || !ev.document) fail(`the bundled engine finds ${t} invalid: ${ev.diagnostics.map((d) => d.code).join(', ')}`);
   const levels = Object.keys((ev.document.levels ?? {}) as Record<string, unknown>);
-  for (const level of levels) if (!engine.renderPlan(ev.document, { level }).startsWith('<svg')) fail(`the bundled renderer draws no plan of ${t} ${level}`);
+  for (const level of levels) if (!engine.renderEvaluation(ev, { level }).startsWith('<svg')) fail(`the bundled renderer draws no plan of ${t} ${level}`);
   report.push(`template ${t}: valid, ${ev.diagnostics.length} diagnostics, ${levels.length} levels drawn`);
 }
 

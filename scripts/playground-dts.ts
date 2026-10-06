@@ -70,7 +70,7 @@ export declare class Package {
 export interface ValidateOptions {
   readonly extensions?: readonly string[];
   readonly knownExtensions?: string | Uint8Array | readonly unknown[];
-  readonly core?: '0.1' | '0.2' | '0.3';
+  readonly core?: '0.1' | '0.2' | '0.3' | '0.4';
   readonly design?: unknown;
   readonly package?: Package;
 }
@@ -108,9 +108,13 @@ export declare const IMPLEMENTED_VERSIONS: readonly string[];
 
 // @floorspec/render2d
 
-export interface RenderOptions {
+/** The reader a document is validated with: a ValidateOptions without a design. */
+export type ReaderOptions = Omit<ValidateOptions, 'design'>;
+
+export interface EvaluationRenderOptions {
   readonly level?: string;
-  readonly design?: Readonly<Record<string, string>>;
+  /** Validates only a ghost's before side; never the evaluation drawn. Default OFFICIAL_READER. */
+  readonly reader?: ReaderOptions;
   readonly theme?: 'light' | 'dark';
   /** SVG pixels per foot. Default 24. */
   readonly scale?: number;
@@ -122,8 +126,21 @@ export interface RenderOptions {
   readonly roof?: boolean;
 }
 
-/** One level of a valid document as a standalone SVG. Throws for a document a core reader finds invalid. */
+export interface RenderOptions extends EvaluationRenderOptions {
+  readonly design?: Readonly<Record<string, string>>;
+}
+
+/**
+ * One level of a document as a standalone SVG, validated once with \`reader\` (default
+ * OFFICIAL_READER, so a document that requires an official extension draws). Throws for a document
+ * that reader finds invalid.
+ */
 export declare function renderPlan(document: string | Uint8Array | object, options?: RenderOptions): string;
+/**
+ * One level of a document the caller has already evaluated, as a standalone SVG — without
+ * validating it again. Throws for an evaluation that is not valid, or a level it does not have.
+ */
+export declare function renderEvaluation(evaluation: Evaluation, options?: EvaluationRenderOptions): string;
 /** The level a plan shows when none is named: the lowest by elevation, then by ID. */
 export declare function defaultLevel(doc: FloorspecDocument): string | undefined;
 
