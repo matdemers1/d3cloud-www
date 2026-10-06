@@ -6,6 +6,8 @@ import { ProductMark } from '../components/ProductMark';
 import { workshopBySlug, workshopPath } from '../content/ecosystem';
 import type { Block, ChapterSection, ChapterSummary, Coverage, CoverageRow, Packs, RetiredStatement, SpecIndex } from './ast';
 import { loadChapter, loadCoverage } from './load';
+// The earlier drafts' chapter summaries, filled in here, in the lazy chunk, rather than in the entry (DI-T-10.8).
+import './earlier';
 // Every published schema file, by its path under the site root (and its SHA-256, which only the
 // tests read). Imported here, in the lazy chunk, rather than beside the routes.
 import PUBLISHED_SCHEMAS from './published-schemas.json';
@@ -301,9 +303,7 @@ function SpecBand({ spec, sunken }: { spec: SpecIndex; sunken: boolean }) {
                       </span>
                     )}
                   </span>
-                  <span className="text-14 text-fg-muted">
-                    {asSentence(chapter.summary)}
-                  </span>
+                  {chapter.summary && <span className="text-14 text-fg-muted">{asSentence(chapter.summary)}</span>}
                 </span>
               </Link>
             </li>
@@ -473,7 +473,7 @@ function WhatsNew({ sunken }: { sunken: boolean }) {
                 <span className="text-14 text-fg-muted">
                   {first
                     ? `${spec.chapters.length} chapters and ${spec.statements} statements. ${SPECIFICATIONS.find((s) => s.code === spec.spec)?.text ?? ''}`
-                    : (note?.text ?? asSentence(chapter.summary))}
+                    : (note?.text ?? (chapter.summary && asSentence(chapter.summary)))}
                 </span>
               </Link>
             </li>

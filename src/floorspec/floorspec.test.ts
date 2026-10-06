@@ -642,6 +642,37 @@ describe('the Floorspec pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6, DI-T-
   });
 });
 
+describe('the earlier drafts leave the entry chunk (DI-T-10.8)', () => {
+  const INDEX = generated<{ specifications: SpecIndex[]; earlier: SpecIndex[] }>('index.json');
+  const SUMMARIES = generated<Record<string, Record<string, string>>>('earlier-summaries.json');
+  const src = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+
+  it('keeps an earlier draft’s chapter summaries out of index.json, and every one of them in earlier-summaries.json', () => {
+    expect(INDEX.earlier.length).toBe(EARLIER.length);
+    for (const spec of INDEX.earlier) for (const ch of spec.chapters) expect(ch, `${spec.spec}@${spec.version}/${ch.slug}`).not.toHaveProperty('summary');
+    for (const spec of INDEX.specifications) for (const ch of spec.chapters) expect(ch.summary, `${spec.spec}/${ch.slug}`).toBeTruthy();
+    expect(Object.keys(SUMMARIES).sort()).toEqual(INDEX.earlier.map((spec) => `${spec.spec}@${spec.version}`).sort());
+    for (const spec of INDEX.earlier) expect(Object.keys(SUMMARIES[`${spec.spec}@${spec.version}`]!)).toEqual(spec.chapters.map((ch) => ch.slug));
+  });
+
+  it('reads them only where they are needed: the Worker and the lazy pages chunk, never the routes', () => {
+    const importers = ['worker.ts', 'floorspec/pages.tsx', 'routes.ts', 'floorspec/spec.ts', 'App.tsx', 'router.tsx', 'main.tsx', 'head.ts'].filter((f) =>
+      /from '\.\/(?:floorspec\/)?earlier'|import '\.\/(?:floorspec\/)?earlier'/.test(src(f)),
+    );
+    expect(importers).toEqual(['worker.ts', 'floorspec/pages.tsx']);
+  });
+
+  it('quotes an earlier chapter’s summary in its head description, as before', () => {
+    const walls = SUMMARIES['core@0.3']!.walls!;
+    expect(walls).toMatch(/junctions, walls/);
+    expect(CORE_03.chapters.find((ch) => ch.slug === 'walls')!.summary).toBe(walls);
+    expect(resolveRoute('/floorspec/core/0.3/walls')!.meta.description).toBe(
+      `Floorspec Core 0.3 (an earlier Draft, kept as published), chapter 5: ${walls}.`,
+    );
+    expect(renderHead(resolveRoute('/floorspec/core/0.3/walls')!.meta)).toContain(`chapter 5: ${walls}.`);
+  });
+});
+
 describe('the Worker and the schemas', () => {
   const env: Env = {
     ASSETS: {

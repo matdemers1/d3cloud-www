@@ -64,8 +64,12 @@ export interface ChapterSummary {
   slug: string;
   number: string;
   title: string;
-  /** From the chapter table in its specification's README.md. */
-  summary: string;
+  /**
+   * From the chapter table in its specification's README.md. An earlier draft's is not in
+   * index.json, which is in the entry chunk: it is in earlier-summaries.json, which
+   * src/floorspec/earlier.ts fills in for the Worker and the Floorspec pages (DI-T-10.8).
+   */
+  summary?: string;
   statements: number;
 }
 

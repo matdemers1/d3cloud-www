@@ -1,5 +1,7 @@
 import { renderHead, withHead } from './head';
 import { hasOwnPolicy, resolveRoute } from './routes';
+// An earlier draft's chapter summaries, which its pages' head descriptions quote: kept out of the browser's entry chunk.
+import './floorspec/earlier';
 
 export interface Env {
   ASSETS: Fetcher;
