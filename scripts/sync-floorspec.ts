@@ -1034,9 +1034,11 @@ function coverageOf(spec: Spec): Coverage {
 // ---------------------------------------------------------------------------------------------
 // 4b. Retired statement IDs: the "Changes from" tables of a draft's chapter 0 — `| \`FS-CORE-1.2.1\` |
 // \`FS-CORE-1.2.3\` | why |`. A link to a retired ID still lands somewhere: the page it was on says
-// what replaced it, and where the earlier draft that had it is published.
+// what replaced it, and where the earlier draft that had it is published. A statement retired with
+// nothing in its place has a dash in the middle column (Core 0.4: `| \`FS-CORE-17.7.2\` | — | why |`),
+// and still gets its note.
 
-const RETIRED_ROW = /^\|\s*`(FS-[A-Z]+-\d+\.\d+\.\d+)`\s*\|\s*(?:`(FS-[A-Z]+-\d+\.\d+\.\d+)`)?\s*\|\s*(.*?)\s*\|\s*$/;
+const RETIRED_ROW = /^\|\s*`(FS-[A-Z]+-\d+\.\d+\.\d+)`\s*\|\s*(?:`(FS-[A-Z]+-\d+\.\d+\.\d+)`|[—–-])?\s*\|\s*(.*?)\s*\|\s*$/;
 const sectionOfId = (id: string) => id.replace(/^FS-[A-Z]+-/, '').replace(/\.\d+$/, '');
 
 function retiredOf(spec: Spec): RetiredStatement[] {
