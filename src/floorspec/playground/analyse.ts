@@ -23,7 +23,7 @@ import {
   evaluate,
   isZip,
   readPackage,
-  renderPlan,
+  renderEvaluation,
   sha256,
   toHex,
   type Derived,
@@ -237,16 +237,19 @@ export type Plan = { svg: string } | { reason: string };
 
 /**
  * One level's plan, drawn by the reference renderer from what the engine derives — so only for a
- * document a Core reader finds valid. `highlight` draws those elements in the accent.
+ * document the page's reader (OFFICIAL_READER, every official extension) finds valid. It draws from
+ * the evaluation `analyse` already made (renderEvaluation), so a file is validated once, however
+ * many times its plan is drawn. `highlight` draws those elements in the accent.
  */
 export function drawPlan(a: Analysis, level: string | undefined, theme: 'light' | 'dark', highlight: readonly string[] = []): Plan {
-  const document = a.evaluation?.document;
-  if (!document) return { reason: a.notFloorspec ? 'Nothing to draw.' : 'The document did not pass the schema tier, so the engine derives no geometry to draw.' };
+  const evaluation = a.evaluation;
+  const document = evaluation?.document;
+  if (!evaluation || !document) return { reason: a.notFloorspec ? 'Nothing to draw.' : 'The document did not pass the schema tier, so the engine derives no geometry to draw.' };
   if (!a.levels.length) return { reason: 'The document has no levels to draw.' };
+  if (!evaluation.valid) return { reason: 'The document has errors, so the engine derives no rooms or wall outlines from it: below is each wall’s line as written.' };
   try {
-    return { svg: renderPlan(document, { level: level ?? defaultLevel(document), theme, highlight }) };
+    return { svg: renderEvaluation(evaluation, { level: level ?? defaultLevel(evaluation.view ?? document), theme, highlight }) };
   } catch (error) {
-    if (!a.evaluation?.valid) return { reason: 'The document has errors, so the engine derives no rooms or wall outlines from it: below is each wall’s line as written.' };
     return { reason: `The plan renderer could not draw this level: ${error instanceof Error ? error.message : String(error)}` };
   }
 }

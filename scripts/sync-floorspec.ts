@@ -1131,7 +1131,18 @@ function publish(spec: Spec): SpecIndex {
 }
 
 const specifications = current.specs.map(publish);
-const earlierIndex = earlier.map(publish);
+/**
+ * The earlier drafts, without their chapters' summaries: index.json is in the entry chunk, and only
+ * the Worker's head descriptions and the Floorspec pages (a lazy chunk) read an earlier draft's
+ * summaries — so they go to earlier-summaries.json, keyed `<spec>@<version>` and then by chapter
+ * slug (DI-T-10.8), which src/floorspec/earlier.ts merges back in where they are read.
+ */
+const earlierPublished = earlier.map(publish);
+const earlierIndex: SpecIndex[] = earlierPublished.map((spec) => ({ ...spec, chapters: spec.chapters.map(({ summary: _summary, ...chapter }) => chapter) }));
+const earlierSummaries: Record<string, Record<string, string>> = Object.fromEntries(
+  earlierPublished.map((spec) => [`${spec.spec}@${spec.version}`, Object.fromEntries(spec.chapters.map((chapter) => [chapter.slug, chapter.summary ?? '']))]),
+);
+files.set('earlier-summaries.json', json(earlierSummaries));
 for (const [key, count] of schemaCounts) if (!current.specs.some((s) => `${s.code}/${s.version}` === key)) report.push(`schema/${key}: ${count} schemas`);
 
 // The registry: its README, every entry, and each extension's specification.

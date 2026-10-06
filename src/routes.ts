@@ -235,7 +235,7 @@ function chapterRoute(spec: SpecIndex, chapter: ChapterSummary): RouteMeta {
     path: chapterPath(spec, chapter.slug),
     kind: 'floorspec-chapter',
     title: `${chapterLabel(chapter)} — ${specName(spec)} — ${BRAND}`,
-    description: `${specName(spec)} (${isCurrent(spec) ? 'Draft' : 'an earlier Draft, kept as published'}), ${where}: ${chapter.summary}.`,
+    description: `${specName(spec)} (${isCurrent(spec) ? 'Draft' : 'an earlier Draft, kept as published'}), ${where}: ${chapter.summary ?? chapter.title}.`,
     doc: chapter.slug,
     spec: spec.spec,
     version: spec.version,
