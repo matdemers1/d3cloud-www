@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { ChapterPage, CoveragePage, StandardPage } from './pages';
 import { ExtensionPage, LibraryPage, RegistryPage } from './registry';
-import { CORE, EXTENSIONS, LIBRARIES, SPECS } from './spec';
+import { CORE, EXTENSIONS, LIBRARIES, SPECS, specByCode } from './spec';
 import { PlaygroundPage } from './playground/Playground';
 
 /**
@@ -28,21 +28,45 @@ describe('the Floorspec pages render', () => {
     expect(out).toContain('Rule packs');
   });
 
-  it('a Rules chapter, with its statements anchored and the Draft banner', async () => {
-    const out = await html(<ChapterPage spec="rules" version="0.1" slug="rules" />);
+  it('a Rules chapter, with its statements anchored and the Draft banner, and Rules 0.1 as an earlier draft', async () => {
+    const rules = specByCode('rules')!;
+    const out = await html(<ChapterPage spec="rules" version={rules.version} slug="rules" />);
     expect(out).toContain('id="FS-RULES-3.9.1"');
-    expect(out).toContain('Draft 0.1 — no compatibility promise');
+    expect(out).toContain(`Draft ${rules.version} — no compatibility promise`);
     expect(out).toContain('href="/floorspec/core/');
+    const old = await html(<ChapterPage spec="rules" version="0.1" slug="rules" />);
+    expect(old).toContain(`Draft 0.1 — superseded by Draft ${rules.version}`);
+    // Rules 0.1 was written against Core 0.3, and links there.
+    expect(old).toContain('href="/floorspec/core/0.3/');
   });
 
-  it('a Core 0.2 chapter as an earlier draft, and a 0.3 chapter with its retired-statement note', async () => {
-    const old = await html(<ChapterPage spec="core" version="0.2" slug="walls" />);
-    expect(old).toContain('Draft 0.2 — superseded by Draft 0.3');
-    expect(old).toContain('href="/floorspec/core/0.2/');
-    const now = await html(<ChapterPage spec="core" version="0.3" slug="model" />);
-    expect(now).toContain('id="FS-CORE-1.2.3"');
-    expect(now).toContain('retired in Core 0.3');
-    expect(now).toContain('/floorspec/core/0.2/model');
+  it('earlier Core drafts as earlier drafts, and the current one with its retired-statement notes', async () => {
+    for (const version of ['0.2', '0.3']) {
+      const old = await html(<ChapterPage spec="core" version={version} slug="walls" />);
+      expect(old).toContain(`Draft ${version} — superseded by Draft ${CORE.version}`);
+      expect(old).toContain(`href="/floorspec/core/${version}/`);
+    }
+    const model = await html(<ChapterPage spec="core" version={CORE.version} slug="model" />);
+    // Each note names the draft that retired its ID, and the earlier draft that has it.
+    expect(model).toContain('id="FS-CORE-1.2.3"');
+    expect(model).toContain('FS-CORE-1.2.3 · retired in Core 0.3');
+    expect(model).toContain('href="/floorspec/core/0.2/model#FS-CORE-1.2.3"');
+    expect(model).toContain('id="FS-CORE-1.2.5"');
+    expect(model).toContain('FS-CORE-1.2.5 · retired in Core 0.4');
+    expect(model).toContain('href="/floorspec/core/0.3/model#FS-CORE-1.2.5"');
+    expect(model).toContain('FS-CORE-1.2.1 · retired in Core 0.2');
+    // A statement retired with nothing in its place says so without a "Replaced by".
+    const stairs = await html(<ChapterPage spec="core" version={CORE.version} slug="stairs" />);
+    expect(stairs).toMatch(/id="FS-CORE-17\.7\.2"[^>]*>(?:(?!<\/aside>).)*retired in Core 0\.4(?:(?!<\/aside>).)*FS-LINT-016/s);
+    expect(stairs).not.toMatch(/id="FS-CORE-17\.7\.2"[^>]*>(?:(?!<\/aside>).)*Replaced by/s);
+    expect(stairs).toContain('id="FS-CORE-17.7.1"');
+  });
+
+  it('chapter 21, arc edges, with its statements anchored (DI-T-10.7)', async () => {
+    const out = await html(<ChapterPage spec="core" version={CORE.version} slug="arcs" />);
+    expect(out).toContain('Arc edges');
+    expect(out).toMatch(/id="FS-CORE-21\.\d+\.\d+"/);
+    expect(out).toContain('id="21.2"');
   });
 
   it('the coverage page has Rules beside Core and Ops', async () => {

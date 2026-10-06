@@ -1,5 +1,5 @@
 {
- "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
+ "commit": "244d8b3989d25da6224b48a028d8c519eb506093",
  "readme": [
   {
    "t": "p",
@@ -311,7 +311,7 @@
     ", and every move is a pull request to this repository (FLR-REQ-138) made with the extension template (",
     {
      "t": "a",
-     "href": "https://github.com/matdemers1/floorspec/tree/8a99d02b3a2111aacd9ed81c3e415af47f73505e/.github/PULL_REQUEST_TEMPLATE/extension.md",
+     "href": "https://github.com/matdemers1/floorspec/tree/244d8b3989d25da6224b48a028d8c519eb506093/.github/PULL_REQUEST_TEMPLATE/extension.md",
      "c": [
       {
        "t": "code",
@@ -332,7 +332,7 @@
     ") runs ",
     {
      "t": "a",
-     "href": "https://github.com/matdemers1/floorspec/tree/8a99d02b3a2111aacd9ed81c3e415af47f73505e/tools/registry-gates.ts",
+     "href": "https://github.com/matdemers1/floorspec/tree/244d8b3989d25da6224b48a028d8c519eb506093/tools/registry-gates.ts",
      "c": [
       {
        "t": "code",
@@ -593,6 +593,54 @@
   {
    "t": "p",
    "c": [
+    {
+     "t": "strong",
+     "c": [
+      "A new Core draft, while Floorspec is 0.x (FLR-ADR-034)."
+     ]
+    },
+    " When a Core draft is published that changes nothing an official extension reads, that extension's Release Candidate may take it in place, without a new version. The change is limited to three things:"
+   ]
+  },
+  {
+   "t": "list",
+   "ordered": false,
+   "items": [
+    [
+     {
+      "t": "p",
+      "c": [
+       "adding the draft to its 1.1 table and its 1.2.1 statement;"
+      ]
+     }
+    ],
+    [
+     {
+      "t": "p",
+      "c": [
+       "one activation test showing a document of the new draft evaluated exactly as one of an earlier draft;"
+      ]
+     }
+    ],
+    [
+     {
+      "t": "p",
+      "c": [
+       "its implementations' evidence, run again."
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    "Nothing it validates or derives for an existing draft changes, and its schema is untouched. Anything more is a new version. From 1.0 on, and for a Ratified version at any time, a new Core version is always a new version of the extension."
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
     "A maintainer may allow anything else — two steps at once, a withdrawn proposal — by adding the ",
     {
      "t": "code",
@@ -719,7 +767,7 @@
     "An owner may waive one gate for one version of one extension, by an entry in ",
     {
      "t": "a",
-     "href": "https://github.com/matdemers1/floorspec/tree/8a99d02b3a2111aacd9ed81c3e415af47f73505e/registry/exceptions.json",
+     "href": "https://github.com/matdemers1/floorspec/tree/244d8b3989d25da6224b48a028d8c519eb506093/registry/exceptions.json",
      "c": [
       {
        "t": "code",
@@ -754,7 +802,7 @@
     " in ",
     {
      "t": "a",
-     "href": "https://github.com/matdemers1/floorspec/tree/8a99d02b3a2111aacd9ed81c3e415af47f73505e/.github/CODEOWNERS",
+     "href": "https://github.com/matdemers1/floorspec/tree/244d8b3989d25da6224b48a028d8c519eb506093/.github/CODEOWNERS",
      "c": [
       {
        "t": "code",
@@ -1014,7 +1062,7 @@
   {
    "t": "p",
    "c": [
-    "All six list one implementation, D3 Floorspec's engine, with evidence of its passing their suites at 3b8d35a in a public CI run (",
+    "All six list one implementation, D3 Floorspec's engine, with evidence of its passing their suites at e5fd4ca in a public CI run (",
     {
      "t": "code",
      "v": "<NAME>/evidence/"
@@ -1030,12 +1078,20 @@
   {
    "t": "p",
    "c": [
-    "Every official extension follows the same conventions, each stated in its own specification's chapter 1: its rules apply to a document of a Core draft it lists — all six list Core 0.2 and ",
+    "Every official extension follows the same conventions, each stated in its own specification's chapter 1: its rules apply to a document of a Core draft it lists — all six list Core 0.2, ",
     {
      "t": "a",
      "href": "/floorspec/core/conventions#0.3",
      "c": [
       "0.3"
+     ]
+    },
+    " and ",
+    {
+     "t": "a",
+     "href": "/floorspec/core/conventions#0.4",
+     "c": [
+      "0.4"
      ]
     },
     " — that uses it at a version a validator both implements and knows; its diagnostics are ",
@@ -1133,21 +1189,21 @@
      "implementation": {
       "name": "D3 Floorspec (@floorspec/engine)",
       "url": "https://github.com/matdemers1/d3-floorspec",
-      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
+      "version": "579291914a2e1c40d311faac0b2ebb5522f930f2"
      },
      "maintainer": "matdemers1",
      "sharesCodeWith": [],
      "extensionVersion": "0.1.0",
      "suite": {
-      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
-      "tests": 60
+      "commit": "e5fd4ca68144497917f5ded138ffebbf05e73c99",
+      "tests": 61
      },
      "result": {
-      "passed": 60,
+      "passed": 61,
       "failed": 0
      },
      "ran": "2026-10-05",
-     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37331888892"
     }
    ],
    "exceptions": [],
@@ -1162,7 +1218,7 @@
    "statements": 22,
    "mandatory": 20,
    "covered": 20,
-   "tests": 60,
+   "tests": 61,
    "suite": "conformance/ext/FS_electrical/0.1.0"
   },
   {
@@ -1213,21 +1269,21 @@
      "implementation": {
       "name": "D3 Floorspec (@floorspec/engine)",
       "url": "https://github.com/matdemers1/d3-floorspec",
-      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
+      "version": "579291914a2e1c40d311faac0b2ebb5522f930f2"
      },
      "maintainer": "matdemers1",
      "sharesCodeWith": [],
      "extensionVersion": "0.1.0",
      "suite": {
-      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
-      "tests": 40
+      "commit": "e5fd4ca68144497917f5ded138ffebbf05e73c99",
+      "tests": 41
      },
      "result": {
-      "passed": 40,
+      "passed": 41,
       "failed": 0
      },
      "ran": "2026-10-05",
-     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37331888892"
     }
    ],
    "exceptions": [],
@@ -1242,7 +1298,7 @@
    "statements": 18,
    "mandatory": 16,
    "covered": 16,
-   "tests": 40,
+   "tests": 41,
    "suite": "conformance/ext/FS_plumbing/0.1.0"
   },
   {
@@ -1293,21 +1349,21 @@
      "implementation": {
       "name": "D3 Floorspec (@floorspec/engine)",
       "url": "https://github.com/matdemers1/d3-floorspec",
-      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
+      "version": "579291914a2e1c40d311faac0b2ebb5522f930f2"
      },
      "maintainer": "matdemers1",
      "sharesCodeWith": [],
      "extensionVersion": "0.1.0",
      "suite": {
-      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
-      "tests": 36
+      "commit": "e5fd4ca68144497917f5ded138ffebbf05e73c99",
+      "tests": 37
      },
      "result": {
-      "passed": 36,
+      "passed": 37,
       "failed": 0
      },
      "ran": "2026-10-05",
-     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37331888892"
     }
    ],
    "exceptions": [],
@@ -1322,7 +1378,7 @@
    "statements": 14,
    "mandatory": 12,
    "covered": 12,
-   "tests": 36,
+   "tests": 37,
    "suite": "conformance/ext/FS_mechanical/0.1.0"
   },
   {
@@ -1379,21 +1435,21 @@
      "implementation": {
       "name": "D3 Floorspec (@floorspec/engine)",
       "url": "https://github.com/matdemers1/d3-floorspec",
-      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
+      "version": "579291914a2e1c40d311faac0b2ebb5522f930f2"
      },
      "maintainer": "matdemers1",
      "sharesCodeWith": [],
      "extensionVersion": "0.1.0",
      "suite": {
-      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
-      "tests": 32
+      "commit": "e5fd4ca68144497917f5ded138ffebbf05e73c99",
+      "tests": 33
      },
      "result": {
-      "passed": 32,
+      "passed": 33,
       "failed": 0
      },
      "ran": "2026-10-05",
-     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37331888892"
     }
    ],
    "exceptions": [],
@@ -1408,7 +1464,7 @@
    "statements": 12,
    "mandatory": 10,
    "covered": 10,
-   "tests": 32,
+   "tests": 33,
    "suite": "conformance/ext/FS_lowvoltage/0.1.0"
   },
   {
@@ -1453,21 +1509,21 @@
      "implementation": {
       "name": "D3 Floorspec (@floorspec/engine)",
       "url": "https://github.com/matdemers1/d3-floorspec",
-      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
+      "version": "579291914a2e1c40d311faac0b2ebb5522f930f2"
      },
      "maintainer": "matdemers1",
      "sharesCodeWith": [],
      "extensionVersion": "0.1.0",
      "suite": {
-      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
-      "tests": 56
+      "commit": "e5fd4ca68144497917f5ded138ffebbf05e73c99",
+      "tests": 57
      },
      "result": {
-      "passed": 56,
+      "passed": 57,
       "failed": 0
      },
      "ran": "2026-10-05",
-     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37331888892"
     }
    ],
    "exceptions": [],
@@ -1482,7 +1538,7 @@
    "statements": 14,
    "mandatory": 9,
    "covered": 9,
-   "tests": 56,
+   "tests": 57,
    "suite": "conformance/ext/FS_furniture/0.1.0",
    "library": {
     "name": "FS_furniture",
@@ -1512,21 +1568,21 @@
      "implementation": {
       "name": "D3 Floorspec (@floorspec/engine)",
       "url": "https://github.com/matdemers1/d3-floorspec",
-      "version": "bafeefa33519ccff0fb5dd54478e496fc5b76a58"
+      "version": "579291914a2e1c40d311faac0b2ebb5522f930f2"
      },
      "maintainer": "matdemers1",
      "sharesCodeWith": [],
      "extensionVersion": "0.1.0",
      "suite": {
-      "commit": "3b8d35a0287a4f8ad3f934abaf494bc42fd9646a",
-      "tests": 72
+      "commit": "e5fd4ca68144497917f5ded138ffebbf05e73c99",
+      "tests": 73
      },
      "result": {
-      "passed": 72,
+      "passed": 73,
       "failed": 0
      },
      "ran": "2026-10-05",
-     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37302079499"
+     "run": "https://github.com/matdemers1/d3-floorspec/actions/runs/37331888892"
     }
    ],
    "exceptions": [],
@@ -1541,7 +1597,7 @@
    "statements": 19,
    "mandatory": 16,
    "covered": 16,
-   "tests": 72,
+   "tests": 73,
    "suite": "conformance/ext/FS_structural/0.1.0"
   }
  ]

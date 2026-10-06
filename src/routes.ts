@@ -77,8 +77,8 @@ export interface RouteMeta {
   /** For `floorspec-chapter`: the specification the chapter belongs to — `core`, `ops`, `rules`. */
   spec?: string;
   /**
-   * For `floorspec-chapter`: the draft — `0.3`, or `0.2` for an earlier draft at
-   * /floorspec/<spec>/0.2/<chapter>. For `floorspec-library`: one version of the library, or absent
+   * For `floorspec-chapter`: the draft — `0.4`, or `0.3` for an earlier draft at
+   * /floorspec/<spec>/0.3/<chapter>. For `floorspec-library`: one version of the library, or absent
    * for the library itself.
    */
   version?: string;

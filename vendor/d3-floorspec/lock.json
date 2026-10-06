@@ -1,7 +1,7 @@
 {
  "repository": "matdemers1/d3-floorspec",
- "commit": "53fa78d7941bb87725ccf0dbd359318f851c4565",
- "committedAt": "2026-10-05T08:10:43-04:00",
+ "commit": "f8337041fec4047225e74f901649839a46f2795d",
+ "committedAt": "2026-10-05T23:47:58-04:00",
  "packages": {
   "@floorspec/engine": "0.1.0",
   "@floorspec/render2d": "0.1.0",
@@ -9,12 +9,13 @@
   "@floorspec/mesh": "0.1.0"
  },
  "engine": {
-  "version": "0.3.0-draft",
-  "core": "0.3",
+  "version": "0.4.0-draft",
+  "core": "0.4",
   "reads": [
    "0.1",
    "0.2",
-   "0.3"
+   "0.3",
+   "0.4"
   ]
  },
  "dependencies": {
@@ -24,7 +25,7 @@
  "bundledWith": "esbuild 0.27.7",
  "standard": {
   "repository": "matdemers1/floorspec",
-  "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
+  "commit": "244d8b3989d25da6224b48a028d8c519eb506093",
   "templates": [
    "templates/cabin.floorspec.json",
    "templates/ranch.floorspec.json",
@@ -33,16 +34,16 @@
  },
  "files": {
   "engine.d.ts": "ec482fa4dff982988652edb728723b29d375b96e484e9d0eac01f6a7769165b4",
-  "engine.js": "17d5f4a3ceaf9bf1a1e0678232dc7f18cc1f6dac4add78986ae5d72a97c86d86",
+  "engine.js": "2de74f5ae7449a27319cc8ff6b75125afbd5d91b381f47244c42d4ee3a3557bb",
   "licenses/d3-floorspec.LICENSE": "46f7cdd6121bf294b5a81acf934a628a3ce2d822faa5b91b0539fc619486e291",
   "licenses/fflate.LICENSE": "0a1df3a083d0c010560aa342e87959c8c1070e6fd54545741f083f22d0c8b551",
   "licenses/floorspec.LICENSE": "46f7cdd6121bf294b5a81acf934a628a3ce2d822faa5b91b0539fc619486e291",
   "licenses/manifold-3d.LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
   "manifold.wasm": "6579d59e4fa4a57b72431c5d35583ef0c6ee0e610ec110d237debb4e85457bce",
   "mesh.d.ts": "c232f971548294c5c46ce7515520d191f77f441450d89312c0b4ca0b08e57bae",
-  "mesh.js": "cf4030bb311daf3271eed027d2ad429651067f1d2a9607a4328e476b9e6694d8",
-  "shared-RYKABVVA.js": "9d73e089bf08098d60fd38cf66bb53a530d1b9b211230d4f52485aadd02b89af",
+  "mesh.js": "d1f48a6b93b3ebaabc1b5b59ae9358cf04e146d99bca0c9eca343296486174f0",
   "shared-VFO2MJEU.js": "e9bd15100f920782d6920235e2778840225ae41ef0ad68d42384ea5010d83410",
+  "shared-X3WTYOJQ.js": "825dee2acce36f596db6600d68da414d04058483dae3ce7fb6a75d1141abf5fc",
   "templates/cabin.floorspec.json": "a5849e3559c57626992b7d84e0beefb81cb7aa3a41c5d9bd232818c80ae57277",
   "templates/ranch.floorspec.json": "df42762cde84dcfff829195dcfb299a7b37771cbf2bf5b36e333fb0b418abddc",
   "templates/two-storey.floorspec.json": "37555f0c9b9440cd98db78d60955f557bd7e941521a24271d49ee4dec7fd4ab5"

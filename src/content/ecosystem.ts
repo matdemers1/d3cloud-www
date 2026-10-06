@@ -76,6 +76,7 @@ export interface LogEntry {
 }
 
 export const BUILD_LOG: LogEntry[] = [
+  { date: '2026-10-06', slug: 'floorspec-app', text: 'Floorspec Core and Ops Drafts 0.4 — arc walls, winder and spiral stairs, and mixed-pitch roofs from a weighted straight skeleton — and Rules Draft 0.2 published; every earlier draft stays as it was, and the playground reads 0.4' },
   { date: '2026-10-05', slug: 'floorspec-app', text: 'D3 Floorspec’s engine listed in the extension registry for all six official extensions, with evidence from its public CI run' },
   { date: '2026-10-05', slug: 'floorspec-app', text: 'Floorspec Core and Ops Drafts 0.3 — floors and ceilings, roofs, stairs, materials and finishes, design options — and Rules Draft 0.1 published, with the extension registry and two libraries; 0.2 and 0.1 stay as they were' },
   { date: '2026-10-05', slug: 'floorspec-app', text: 'Floorspec Core and Ops Drafts 0.2 — the program, extensions, hosting and clearances, circulation — published beside 0.1, which stays as it was' },
@@ -152,9 +153,9 @@ export const WORKSHOP: WorkshopItem[] = [
     path: '/floorspec/app',
     name: 'D3 Floorspec',
     role: 'House design',
-    stage: 'Being built — Phases 0 to 9',
+    stage: 'Being built — Phases 0 to 11',
     stageNote:
-      'Floorspec Core and Ops are published as 0.3 drafts, with Rules 0.1, the extension registry and two libraries, beside 0.2 and 0.1, which stay as they were. The reference engine passes every conformance test of Core and Ops 0.3 and of all six official extensions, in its public CI. The editor is built — 2D and 3D, Claude’s changesets, the program and its layouts, building systems, materials and furniture, and exports — and runs privately, by invitation. Its engine runs in your browser in the Floorspec playground, at d3cloud.io/floorspec/playground.',
+      'Floorspec Core and Ops are published as 0.4 drafts, with Rules 0.2, the extension registry and two libraries, beside every earlier draft, which stays as it was. Core 0.4 adds arc walls, winder and spiral stairs, and roofs at mixed pitches from a weighted straight skeleton. The reference engine passes the conformance suites of all six official extensions in its public CI. The editor is built — 2D and 3D, Claude’s changesets, the program and its layouts, building systems, materials and furniture, an advisory energy estimate, path-traced stills, and exports — and runs privately, by invitation. Its engine, reading Core 0.4, runs in your browser in the Floorspec playground, at d3cloud.io/floorspec/playground.',
     line: 'Design a house with Claude — every edit validated, attributed and yours to accept.',
     tagline: 'Design a house with Claude. Every edit checked, and yours to accept.',
     quote:
@@ -163,7 +164,7 @@ export const WORKSHOP: WorkshopItem[] = [
     audience:
       'For people who are not architects and want to design their own home, with the tools they already use — Claude Code first.',
     features: [
-      { text: 'Floorspec Core and Ops Draft 0.3, and Rules Draft 0.1, published at d3cloud.io/floorspec', built: true },
+      { text: 'Floorspec Core and Ops Draft 0.4, and Rules Draft 0.2, published at d3cloud.io/floorspec', built: true },
       { text: 'A reference engine with exact geometry, a validator and a CLI, passing every conformance test', built: true },
       { text: 'Draw walls and rooms in 2D, by pointer or keyboard alone', built: true },
       { text: 'Claude edits over MCP, as reviewable changesets you accept or reject', built: true },
@@ -171,7 +172,9 @@ export const WORKSHOP: WorkshopItem[] = [
       { text: 'From a program of rooms to a bubble diagram to layout candidates', built: true },
       { text: 'Building systems — electrical, plumbing, mechanical — as devices on walls', built: true },
       { text: 'Advisory code findings with citations, which never say “compliant”', built: false },
+      { text: 'Arc walls, winder and spiral stairs, and mixed-pitch roofs, all derived exactly', built: true },
       { text: 'A 3D walkthrough with materials, textures and furniture', built: true },
+      { text: 'An advisory energy estimate and path-traced stills, clearly labelled', built: true },
       { text: 'Export to IFC, glTF, PDF and DXF', built: true },
       { text: 'Its own login and Sign in with D3 Auth, side by side', built: true },
       { text: 'Self-hosted with Docker Compose, with no telemetry', built: true },

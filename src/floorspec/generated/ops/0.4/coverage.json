@@ -1,0 +1,442 @@
+{
+ "spec": "ops",
+ "version": "0.4",
+ "source": "scan of conformance/ops/0.4",
+ "tests": 483,
+ "mandatory": 53,
+ "covered": 53,
+ "statements": [
+  {
+   "id": "FS-OPS-1.1.3",
+   "level": "MUST",
+   "section": "1.1",
+   "chapter": "transactions",
+   "text": "An apply request's batch MUST contain at least one operation and only operations this specification defines, each with exactly the members its definition lists, each of the JSON type schema/ops/0.3 gives it; otherwise the applier MUST reject the request with FS-OPS-001.",
+   "tests": 26
+  },
+  {
+   "id": "FS-OPS-1.2.1",
+   "level": "MUST",
+   "section": "1.2",
+   "chapter": "transactions",
+   "text": "If A is not a valid document, the applier MUST reject the request with FS-OPS-002.",
+   "tests": 8
+  },
+  {
+   "id": "FS-OPS-1.2.2",
+   "level": "MUST",
+   "section": "1.2",
+   "chapter": "transactions",
+   "text": "If any step fails, the applier MUST reject the whole batch and MUST NOT return or retain any part of its effect: the document is exactly A.",
+   "tests": 8
+  },
+  {
+   "id": "FS-OPS-1.2.3",
+   "level": "MUST",
+   "section": "1.2",
+   "chapter": "transactions",
+   "text": "When the result is invalid, the rejection MUST carry the Core diagnostics with severity error that the result has.",
+   "tests": 43
+  },
+  {
+   "id": "FS-OPS-1.3.1",
+   "level": "MUST",
+   "section": "1.3",
+   "chapter": "transactions",
+   "text": "A committed result's document MUST be exactly the canonical form of B.",
+   "tests": 12
+  },
+  {
+   "id": "FS-OPS-1.3.2",
+   "level": "MUST",
+   "section": "1.3",
+   "chapter": "transactions",
+   "text": "Applying the same batch, with the same context, to the same document MUST produce the same result, byte for byte, on every platform and in every run.",
+   "tests": 3
+  },
+  {
+   "id": "FS-OPS-1.4.1",
+   "level": "MUST",
+   "section": "1.4",
+   "chapter": "transactions",
+   "text": "A committed result's resolved MUST be a batch of primitives that, applied to A in place of the original batch, commits the same document B.",
+   "tests": 4
+  },
+  {
+   "id": "FS-OPS-1.5.1",
+   "level": "MUST",
+   "section": "1.5",
+   "chapter": "transactions",
+   "text": "An applier MUST mint IDs exactly as this section defines.",
+   "tests": 26
+  },
+  {
+   "id": "FS-OPS-1.5.2",
+   "level": "MUST",
+   "section": "1.5",
+   "chapter": "transactions",
+   "text": "An operation that names an ID already used anywhere in the working copy, or listed in context.retired, MUST be rejected with FS-OPS-005.",
+   "tests": 6
+  },
+  {
+   "id": "FS-OPS-1.6.1",
+   "level": "MUST",
+   "section": "1.6",
+   "chapter": "transactions",
+   "text": "An inverse is applied with no context.retired and no locks. Applying a committed result's inverse, when it is not empty, to B MUST commit a document whose canonical form is exactly A's.",
+   "tests": 31
+  },
+  {
+   "id": "FS-OPS-2.1.1",
+   "level": "MUST",
+   "section": "2.1",
+   "chapter": "primitives",
+   "text": "addElement MUST fail with FS-OPS-005 when its id is already used (1.5.2), and MUST NOT otherwise check the element's content.",
+   "tests": 23
+  },
+  {
+   "id": "FS-OPS-2.1.3",
+   "level": "MUST",
+   "section": "2.1",
+   "chapter": "primitives",
+   "text": "An addElement into items MUST add the element to the program's items, and one with extension to the collection collection in that extension's top-level collections, creating program and its items, or extensions, the extension's data, its collections and the collection, as empty objects where they are missing; it MUST fail with FS-OPS-003 when one of them is present and is not an object.",
+   "tests": 10
+  },
+  {
+   "id": "FS-OPS-2.1.2",
+   "level": "MUST",
+   "section": "2.1",
+   "chapter": "primitives",
+   "text": "A shorthand's references — level, start, end and position — are resolved first (2.5); the shorthand is then exactly the addElement of the resolved values, and an applier MUST treat it so.",
+   "tests": 10
+  },
+  {
+   "id": "FS-OPS-2.2.1",
+   "level": "MUST",
+   "section": "2.2",
+   "chapter": "primitives",
+   "text": "removeElement MUST fail with FS-OPS-003 when id does not exist, and with FS-OPS-006 when the table says the removal is blocked.",
+   "tests": 34
+  },
+  {
+   "id": "FS-OPS-2.2.2",
+   "level": "MUST",
+   "section": "2.2",
+   "chapter": "primitives",
+   "text": "When cascade is true, removeElement MUST remove exactly the elements the table lists, transitively, and nothing else.",
+   "tests": 24
+  },
+  {
+   "id": "FS-OPS-2.2.3",
+   "level": "MUST",
+   "section": "2.2",
+   "chapter": "primitives",
+   "text": "Whether cascade is true or not, removing a program item MUST also remove every adjacency whose a or b names it, and removing a level MUST also remove the level member of every program item that names it.",
+   "tests": 4
+  },
+  {
+   "id": "FS-OPS-2.3.1",
+   "level": "MUST",
+   "section": "2.3",
+   "chapter": "primitives",
+   "text": "setProperty and unsetProperty MUST fail with FS-OPS-003 when id does not exist, when path is empty or is not a JSON Pointer, when it leads through a value that is neither an object nor an array or to an array index that does not exist, or when it names a member of $document that the list above does not, and unsetProperty MUST also fail with FS-OPS-003 when the member does not exist.",
+   "tests": 75
+  },
+  {
+   "id": "FS-OPS-2.4.1",
+   "level": "MUST",
+   "section": "2.4",
+   "chapter": "primitives",
+   "text": "An applier MUST treat moveJunction exactly as setProperty of the junction's /position.",
+   "tests": 9
+  },
+  {
+   "id": "FS-OPS-2.6.1",
+   "level": "MUST",
+   "section": "2.6",
+   "chapter": "primitives",
+   "text": "An applier MUST apply setAdjacency and removeAdjacency exactly as this section defines, and MUST reject with FS-OPS-003 a removeAdjacency that matches no adjacency, and either of them when program is present and is not an object or its adjacency is present and is not an array.",
+   "tests": 13
+  },
+  {
+   "id": "FS-OPS-2.7.1",
+   "level": "MUST NOT",
+   "section": "2.7",
+   "chapter": "primitives",
+   "text": "An applier MUST NOT change an extension element's host or fallback except where a definition says so: a setProperty or unsetProperty whose path leads into it, moveElement (4.10), moveRoom (4.3), removeWall (4.7) and planarization (5.2).",
+   "tests": 5
+  },
+  {
+   "id": "FS-OPS-2.8.1",
+   "level": "MUST",
+   "section": "2.8",
+   "chapter": "primitives",
+   "text": "With context.option, an applier MUST add every element a primitive of the batch adds to one of those collections, or to an extension's collection, and that has no option member, with its option set to context.option; it MUST NOT add an option member to any other element.",
+   "tests": 9
+  },
+  {
+   "id": "FS-OPS-2.8.2",
+   "level": "MUST",
+   "section": "2.8",
+   "chapter": "primitives",
+   "text": "An applier MUST read the junctions at a point and the faces and rooms of a level, wherever this specification reads them, in the working copy as seen in the edit design.",
+   "tests": 3
+  },
+  {
+   "id": "FS-OPS-3.1.1",
+   "level": "MUST",
+   "section": "3.1",
+   "chapter": "references",
+   "text": "An applier MUST resolve every length exactly as this section defines, and MUST reject a string that does not match the grammar, or a fraction with a zero denominator, with FS-OPS-012.",
+   "tests": 15
+  },
+  {
+   "id": "FS-OPS-3.2.1",
+   "level": "MUST",
+   "section": "3.2",
+   "chapter": "references",
+   "text": "An applier MUST resolve points and vectors exactly as this section defines, and MUST reject a point \"<length> from <junction> toward <junction>\" whose two junctions have the same position with FS-OPS-003.",
+   "tests": 20
+  },
+  {
+   "id": "FS-OPS-3.3.1",
+   "level": "MUST",
+   "section": "3.3",
+   "chapter": "references",
+   "text": "A selector that matches no element MUST be rejected with FS-OPS-003, and one that matches more than one MUST be rejected with FS-OPS-004, listing every match as the diagnostic's elements.",
+   "tests": 45
+  },
+  {
+   "id": "FS-OPS-3.4.1",
+   "level": "MUST",
+   "section": "3.4",
+   "chapter": "references",
+   "text": "A selector or a composite that reads faces (moveWall with toward, moveRoom, resizeRoom, removeWall) MUST be rejected with FS-OPS-007 when the level it reads, in the working copy at that point of the batch, breaks any of Core §5.1–5.3 or contains the room's anchor in no bounded face.",
+   "tests": 14
+  },
+  {
+   "id": "FS-OPS-3.5.1",
+   "level": "MUST",
+   "section": "3.5",
+   "chapter": "references",
+   "text": "An applier MUST resolve positions exactly as this section defines.",
+   "tests": 12
+  },
+  {
+   "id": "FS-OPS-3.6.1",
+   "level": "MUST",
+   "section": "3.6",
+   "chapter": "references",
+   "text": "An applier MUST resolve every area exactly as this section defines, and MUST reject a string that does not match the grammar with FS-OPS-012.",
+   "tests": 5
+  },
+  {
+   "id": "FS-OPS-4.1.1",
+   "level": "MUST",
+   "section": "4.1",
+   "chapter": "composites",
+   "text": "An applier MUST expand drawWall and drawSeparator as this section defines.",
+   "tests": 10
+  },
+  {
+   "id": "FS-OPS-4.2.1",
+   "level": "MUST",
+   "section": "4.2",
+   "chapter": "composites",
+   "text": "An applier MUST expand moveWall as this section defines, and MUST reject it with FS-OPS-008, naming the wall, when toward names a room whose face is not on exactly one side of the wall.",
+   "tests": 12
+  },
+  {
+   "id": "FS-OPS-4.3.1",
+   "level": "MUST",
+   "section": "4.3",
+   "chapter": "composites",
+   "text": "An applier MUST expand moveRoom as this section defines.",
+   "tests": 8
+  },
+  {
+   "id": "FS-OPS-4.3.2",
+   "level": "MUST",
+   "section": "4.3",
+   "chapter": "composites",
+   "text": "An applier MUST move a vaulted ceiling's ridge with its room, as step 3 defines, and MUST NOT change any other member of the room's ceiling or floor.",
+   "tests": 3
+  },
+  {
+   "id": "FS-OPS-4.4.1",
+   "level": "MUST",
+   "section": "4.4",
+   "chapter": "composites",
+   "text": "An applier MUST expand resizeRoom as this section defines, and MUST reject it with FS-OPS-008 when the side is missing, oblique or jogged, or when the edge that leaves a continuing end in the direction of v is not longer than |v|.",
+   "tests": 16
+  },
+  {
+   "id": "FS-OPS-4.5.3",
+   "level": "MUST",
+   "section": "4.5",
+   "chapter": "composites",
+   "text": "An applier MUST expand addOpening and moveOpening with at as this section defines, and MUST reject an addOpening, or a moveOpening with at, whose width resolves from neither member nor fill with FS-OPS-003.",
+   "tests": 14
+  },
+  {
+   "id": "FS-OPS-4.5.2",
+   "level": "MUST",
+   "section": "4.5",
+   "chapter": "composites",
+   "text": "An applier MUST expand a moveOpening with by as this section defines, MUST reject it with FS-OPS-003, naming the opening, when the opening has no integer offset in the working copy, and MUST reject it with FS-OPS-008, naming the wall, when toward is a direction perpendicular to the opening's wall.",
+   "tests": 13
+  },
+  {
+   "id": "FS-OPS-4.6.1",
+   "level": "MUST",
+   "section": "4.6",
+   "chapter": "composites",
+   "text": "An applier MUST expand addRoom and setRoomFinish as this section defines.",
+   "tests": 8
+  },
+  {
+   "id": "FS-OPS-4.6.2",
+   "level": "MUST",
+   "section": "4.6",
+   "chapter": "composites",
+   "text": "An applier MUST expand setRoomBrief as this section defines.",
+   "tests": 5
+  },
+  {
+   "id": "FS-OPS-4.7.1",
+   "level": "MUST",
+   "section": "4.7",
+   "chapter": "composites",
+   "text": "An applier MUST expand removeWall as this section defines, and MUST reject it with FS-OPS-008 when the wall has rooms on both sides and keep does not name one of them.",
+   "tests": 6
+  },
+  {
+   "id": "FS-OPS-4.8.1",
+   "level": "MUST",
+   "section": "4.8",
+   "chapter": "composites",
+   "text": "An applier MUST expand addLevel as this section defines, and MUST reject it with FS-OPS-003 when building names no building, when above or below names no level, or when the level it names lacks an integer elevation or an integer height.",
+   "tests": 9
+  },
+  {
+   "id": "FS-OPS-4.9.1",
+   "level": "MUST",
+   "section": "4.9",
+   "chapter": "composites",
+   "text": "An applier MUST expand addProgramItem as this section defines.",
+   "tests": 5
+  },
+  {
+   "id": "FS-OPS-4.10.1",
+   "level": "MUST",
+   "section": "4.10",
+   "chapter": "composites",
+   "text": "An applier MUST expand placeElement and moveElement as this section defines, MUST reject either with FS-OPS-008, naming the wall, when a wall-face host's toward names a room whose face is not on exactly one side of the wall, and MUST reject either with FS-OPS-003, naming the wall or the room, when the host's wall or room has no level in the working copy.",
+   "tests": 17
+  },
+  {
+   "id": "FS-OPS-5.1.1",
+   "level": "MUST",
+   "section": "5.1",
+   "chapter": "normalization",
+   "text": "An applier MUST merge coincident junctions as this section defines, before 5.2.",
+   "tests": 7
+  },
+  {
+   "id": "FS-OPS-5.2.1",
+   "level": "MUST",
+   "section": "5.2",
+   "chapter": "normalization",
+   "text": "An applier MUST planarize exactly the levels this section names, as this section defines, and MUST reject the batch with FS-OPS-009 when an opening straddles a junction it inserts.",
+   "tests": 26
+  },
+  {
+   "id": "FS-OPS-5.2.2",
+   "level": "MUST",
+   "section": "5.2",
+   "chapter": "normalization",
+   "text": "An applier MUST move every extension element hosted on the face of a split wall exactly as step 6 defines.",
+   "tests": 4
+  },
+  {
+   "id": "FS-OPS-5.2.3",
+   "level": "MUST",
+   "section": "5.2",
+   "chapter": "normalization",
+   "text": "An applier MUST cut the regions of a split wall's finishes to its pieces exactly as step 7 defines.",
+   "tests": 1
+  },
+  {
+   "id": "FS-OPS-5.2.4",
+   "level": "MUST",
+   "section": "5.2",
+   "chapter": "normalization",
+   "text": "An applier MUST NOT route or split an arc edge, and MUST reject with FS-OPS-013, naming every such arc edge on the level, a batch that leaves a level to be planarized on which an arc edge breaks Core §21.3.1; it MUST otherwise planarize the level's straight edges alone, as steps 1 to 7 define.",
+   "tests": 4
+  },
+  {
+   "id": "FS-OPS-5.3.1",
+   "level": "MUST",
+   "section": "5.3",
+   "chapter": "normalization",
+   "text": "An applier MUST remove such joins.",
+   "tests": 3
+  },
+  {
+   "id": "FS-OPS-5.4.1",
+   "level": "MUST",
+   "section": "5.4",
+   "chapter": "normalization",
+   "text": "An applier MUST normalize exactly as this chapter defines — 5.1, then 5.2, then 5.3 — once, after the last primitive of the batch and before validation.",
+   "tests": 8
+  },
+  {
+   "id": "FS-OPS-5.5.1",
+   "level": "MUST",
+   "section": "5.5",
+   "chapter": "normalization",
+   "text": "An applier MUST merge and planarize a level that has junctions or edges in options exactly as this section defines.",
+   "tests": 3
+  },
+  {
+   "id": "FS-OPS-6.1.1",
+   "level": "MUST",
+   "section": "6.1",
+   "chapter": "locks",
+   "text": "A lock whose elements do not exist in A, a length or distance lock that names an element that is not a wall in A, or a distance lock between walls not parallel in A, MUST be rejected with FS-OPS-010.",
+   "tests": 5
+  },
+  {
+   "id": "FS-OPS-6.1.2",
+   "level": "MUST",
+   "section": "6.1",
+   "chapter": "locks",
+   "text": "When the result breaks a lock in force, the applier MUST reject the batch with FS-OPS-011, naming the lock's elements.",
+   "tests": 19
+  },
+  {
+   "id": "FS-OPS-7.1.1",
+   "level": "MUST",
+   "section": "7.1",
+   "chapter": "diagnostics",
+   "text": "An applier MUST report a rejection with the code this table gives for the first failure, and with exactly the elements it lists.",
+   "tests": 41
+  },
+  {
+   "id": "FS-OPS-7.1.2",
+   "level": "MUST",
+   "section": "7.1",
+   "chapter": "diagnostics",
+   "text": "A step that checks several openings or locks — normalization's straddling openings, the locks against A, the locks against the result — MUST report one diagnostic for each failure it finds; any other step MUST report its first failure only.",
+   "tests": 6
+  },
+  {
+   "id": "FS-OPS-7.1.3",
+   "level": "SHOULD",
+   "section": "7.1",
+   "chapter": "diagnostics",
+   "text": "Each FS-OPS- diagnostic of a failure in the request SHOULD carry a location.pointer into the request — /batch/3/wall — so the person or agent who sent it can see which operation, and which member of it, failed.",
+   "tests": 0
+  }
+ ]
+}

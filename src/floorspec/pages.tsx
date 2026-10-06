@@ -225,16 +225,17 @@ const SPECIFICATIONS: { code: string; name: string; text: string; title: string;
   {
     code: 'core',
     name: 'Floorspec Core',
-    text: 'The document: levels, walls on a junction graph, rooms, openings, types and materials, the program, extensions, hosted elements, circulation, floors and ceilings, roofs, stairs, finishes and design options — what makes it valid, the exact geometry derived from it, and its canonical form.',
+    text: 'The document: levels, straight and arc walls on a junction graph, rooms, openings, types and materials, the program, extensions, hosted elements, circulation, floors and ceilings, roofs at any pitches, straight, winder and spiral stairs, finishes and design options — what makes it valid, the exact geometry derived from it, and its canonical form.',
     title: 'The document.',
     intro: (
       <>
-        What a house <em>is</em>: the document, its units and identity, walls and the rooms they
-        enclose, openings and how their doors and windows operate, types, materials and finishes, the
-        program it is designed against, extensions, the elements hosted on walls and floors with the
-        clearances they need, how you get from room to room, floors, ceilings and slabs, roofs,
-        stairs, and design options side by side — what makes a document valid, the exact geometry
-        every reader derives from it, its one canonical form, and a mapping to IFC.
+        What a house <em>is</em>: the document, its units and identity, walls — straight or along an
+        arc — and the rooms they enclose, openings and how their doors and windows operate, types,
+        materials and finishes, the program it is designed against, extensions, the elements hosted on
+        walls and floors with the clearances they need, how you get from room to room, floors,
+        ceilings and slabs, roofs at one pitch or several, straight, winder and spiral stairs, and
+        design options side by side — what makes a document valid, the exact geometry every reader
+        derives from it, its one canonical form, and a mapping to IFC.
       </>
     ),
   },
@@ -395,14 +396,60 @@ function RulePacks({ packs }: { packs: Packs }) {
 }
 
 /**
- * What the current drafts add, read from the index rather than written by hand: each chapter that
- * no earlier draft of its specification had, and a specification published for the first time.
+ * What a draft changed inside chapters an earlier draft already had, which the index cannot see:
+ * written by hand from the draft's own "Changes from" section, and keyed by `<spec>@<version>` so a
+ * note shows only while its draft is current — the next draft drops it rather than misstating it.
  */
-function whatsNew() {
+const CHANGED: Record<string, { slug: string; hash?: string; title: string; text: string }[]> = {
+  'core@0.4': [
+    {
+      slug: 'stairs',
+      hash: '17.7',
+      title: 'Winder and spiral stairs',
+      text: 'Tapered treads derived exactly, on rays from the pivot of a turn or a spiral’s centre — with the walkline, the goings at the walkline and at the narrow end, a winder’s newel, and the headroom and floor opening a stair needs.',
+    },
+    {
+      slug: 'roofs',
+      hash: '16.4',
+      title: 'Mixed-pitch roofs',
+      text: 'Saltboxes, hips and wings at mixed pitches, gables side by side and oblique edges, derived exactly from a weighted straight skeleton — with a break line where a roof changes pitch.',
+    },
+  ],
+  'ops@0.4': [
+    {
+      slug: 'conventions',
+      hash: '0.4',
+      title: 'Arc walls and Core 0.4 documents',
+      text: 'Arc walls and separators are added, bent, flipped and straightened with the operations Ops already has, and planarization never routes or splits one; a stair’s headroom and a winder’s newel are members like any other. No new operation: requests keep the Ops 0.3 schema.',
+    },
+  ],
+  'rules@0.2': [
+    {
+      slug: 'wall-lines',
+      hash: '8.5',
+      title: 'Winder and spiral stair measures',
+      text: 'Documents are read as Core 0.4 reads them, so a winder or spiral stair has a headroom; three new measures — its form, its going at the walkline and its going at the narrow end — are what a code’s rules for tapered treads compare.',
+    },
+  ],
+};
+
+/**
+ * What the current drafts add: each chapter that no earlier draft of its specification had and a
+ * specification published for the first time, read from the index — then what CHANGED says the
+ * draft changed in chapters it kept.
+ */
+type ChangeNote = (typeof CHANGED)[string][number];
+
+function whatsNew(): { spec: SpecIndex; chapter: ChapterSummary; first: boolean; note?: ChangeNote }[] {
   return SPECS.flatMap((spec) => {
     const older = earlierOf(spec.spec)[0];
     if (!older) return [{ spec, chapter: spec.chapters[0]!, first: true }];
-    return spec.chapters.filter((chapter) => !chapterBySlug(older, chapter.slug)).map((chapter) => ({ spec, chapter, first: false }));
+    const added = spec.chapters.filter((chapter) => !chapterBySlug(older, chapter.slug)).map((chapter) => ({ spec, chapter, first: false }));
+    const changed = (CHANGED[`${spec.spec}@${spec.version}`] ?? []).flatMap((note) => {
+      const chapter = chapterBySlug(spec, note.slug);
+      return chapter ? [{ spec, chapter, first: false, note }] : [];
+    });
+    return [...added, ...changed];
   });
 }
 
@@ -412,21 +459,21 @@ function WhatsNew({ sunken }: { sunken: boolean }) {
     <Band label={`Draft ${CORE.version}`} title={`What ${CORE.version} adds.`} sunken={sunken}>
       <div className="flex flex-col gap-8">
         <ul className="grid gap-4 md:grid-cols-2">
-          {items.map(({ spec, chapter, first }) => (
+          {items.map(({ spec, chapter, first, note }) => (
             <li key={`${spec.spec}/${chapter.slug}`}>
               <Link
-                to={chapterPath(spec, chapter.slug)}
+                to={chapterPath(spec, chapter.slug, note?.hash)}
                 variant="muted"
                 className="flex h-full flex-col gap-1.5 rounded-lg border border-border bg-surface p-5 no-underline hover:bg-surface-hover"
               >
                 <span className="font-mono text-12 text-fg-faint">
                   {first ? `${specName(spec)} · its first draft` : `${spec.short} ${spec.version} · ${chapterLabel(chapter)}`}
                 </span>
-                <span className="text-16 font-semibold text-fg">{first ? spec.name : chapter.title}</span>
+                <span className="text-16 font-semibold text-fg">{first ? spec.name : (note?.title ?? chapter.title)}</span>
                 <span className="text-14 text-fg-muted">
                   {first
                     ? `${spec.chapters.length} chapters and ${spec.statements} statements. ${SPECIFICATIONS.find((s) => s.code === spec.spec)?.text ?? ''}`
-                    : asSentence(chapter.summary)}
+                    : (note?.text ?? asSentence(chapter.summary))}
                 </span>
               </Link>
             </li>
@@ -701,6 +748,13 @@ export function StandardPage() {
  * the statement as it was is still published.
  */
 function RetiredNote({ spec, item }: { spec: SpecIndex; item: RetiredStatement }) {
+  // The draft that retired it is the first one published after the newest that had it — 0.2 for
+  // FS-CORE-1.2.1, though its note now sits in a later draft's chapter.
+  const retiredIn =
+    [spec, ...earlierOf(spec.spec)]
+      .map((s) => s.version)
+      .filter((v) => v.localeCompare(item.was.version, 'en', { numeric: true }) > 0)
+      .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))[0] ?? spec.version;
   return (
     <aside
       id={item.id}
@@ -708,7 +762,7 @@ function RetiredNote({ spec, item }: { spec: SpecIndex; item: RetiredStatement }
       className="flex scroll-mt-28 flex-col gap-1.5 rounded-md border border-dashed border-border-field px-4 py-3 text-14 text-fg-muted target:border-warning target:bg-warning-muted"
     >
       <p className="font-mono text-11 font-semibold tracking-label text-fg-faint uppercase">
-        {item.id} · retired in {spec.short} {spec.version}
+        {item.id} · retired in {spec.short} {retiredIn}
       </p>
       <p>
         {item.replacedBy && (

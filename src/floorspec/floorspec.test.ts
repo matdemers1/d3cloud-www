@@ -22,12 +22,21 @@ const CORE_01 = specAt('core', '0.1')!;
 const CORE_02 = specAt('core', '0.2')!;
 const OPS_01 = specAt('ops', '0.1')!;
 const OPS_02 = specAt('ops', '0.2')!;
+const CORE_03 = specAt('core', '0.3')!;
 /** Every published draft, current and earlier. */
 const ALL = [...SPECS, ...EARLIER];
 /** The commit Core 0.1 and Ops 0.1 were published from (DI-T-10.2, DI-T-10.4). */
 const PINNED_01 = '3bf4f35cd4e22f7c982ba330e027280f368a5388';
 /** The commit Core 0.2 and Ops 0.2 were published from (DI-T-10.5). */
 const PINNED_02 = '6f9bc07b08dfc229719a9b93e344bd47f33b3ccd';
+/** The commit Core 0.3, Ops 0.3 and Rules 0.1 were published from (DI-T-10.6). */
+const PINNED_03 = '8a99d02b3a2111aacd9ed81c3e415af47f73505e';
+/**
+ * Which draft of each specification is current comes from the lock the sync writes, never from a
+ * test: the next draft moves it, and every test below still holds. What a draft *is* — its chapters,
+ * its retired IDs, the commit it was published from — is a fact about that draft, and is asserted.
+ */
+const NOW = FLOORSPEC_LOCK.specifications as { core: string; ops: string; rules: string };
 const REGISTRY = generated<Registry>('registry/index.json');
 const LIBS = generated<Libraries>('libraries.json');
 /** A file under public/, if it is there. */
@@ -165,6 +174,35 @@ describe('published schemas never change (DI-REQ-042, FLR-ADR-018)', () => {
     }
   });
 
+  it('kept every Core 0.3, Ops 0.3 and Rules 0.1 schema as published when Core 0.4 arrived (DI-T-10.7)', () => {
+    // As recorded by DI-T-10.6.
+    const at03: Record<string, string> = {
+      'core/0.3/floorspec.schema.json': 'eee357b421e9d2011a2733e3e7fa6f1136e1605771bd558cde154738cdbd84db',
+      'core/0.3/roof.schema.json': 'ff423e185d3e0f75e7d342104f42f1f76ca10de4d037b2c715de232e708c4594',
+      'core/0.3/stair.schema.json': '04bbbe45c1e676e177ebb236b5aaac66def1716930d8fbb1503b4137bea5cfde',
+      'core/0.3/wall.schema.json': 'c636fdc797337beeb747802fd1299743ee7341c433aaf258ac7be29cee96d7f7',
+      'ops/0.3/request.schema.json': '1ddbe476073a358ad3be4fd87fec4485dbaebbc2b1e967d7d63e0fa5ce08ef72',
+      'rules/0.1/rule.schema.json': '2ada91070edc320cb72bb1d862f2a073a3d3c0d38d59eb76cdae2b617edfb2ea',
+    };
+    for (const [file, hash] of Object.entries(at03)) expect((PUBLISHED_SCHEMAS as Record<string, string>)[`floorspec/schema/${file}`], file).toBe(hash);
+    expect(Object.keys(PUBLISHED_SCHEMAS).filter((path) => path.startsWith('floorspec/schema/core/0.3/'))).toHaveLength(25);
+  });
+
+  it('publishes Core 0.4 and Rules 0.2 at the URLs their $id names, and Ops 0.4 keeps the Ops 0.3 schemas (DI-T-10.7)', () => {
+    const under = (dir: string) => Object.keys(PUBLISHED_SCHEMAS).filter((path) => path.startsWith(`floorspec/schema/${dir}/`));
+    expect(under('core/0.4')).toHaveLength(25);
+    for (const file of ['floorspec', 'wall', 'separator', 'roof', 'stair']) expect(under('core/0.4')).toContain(`floorspec/schema/core/0.4/${file}.schema.json`);
+    for (const file of ['request', 'rule', 'pack', 'profile', 'report', 'finding']) expect(under('rules/0.2')).toContain(`floorspec/schema/rules/0.2/${file}.schema.json`);
+    for (const path of [...under('core/0.4'), ...under('rules/0.2')]) {
+      const schema = JSON.parse(readFileSync(new URL(path, PUBLIC), 'utf8')) as { $id?: string };
+      expect(schema.$id, path).toBe(`https://d3cloud.io/${path}`);
+    }
+    // Ops 0.4 changed no schema (spec/ops/01-transactions.md): a 0.4 request is an Ops 0.3 request.
+    expect(under('ops/0.4')).toEqual([]);
+    // Core 0.4 adds an edge's arc (chapter 21), on walls and on separators alike.
+    for (const file of ['wall', 'separator']) expect(readFileSync(new URL(`floorspec/schema/core/0.4/${file}.schema.json`, PUBLIC), 'utf8'), file).toContain('"arc"');
+  });
+
   it('publishes each extension schema at the path its own $id names, as its registry entry says (DI-T-10.6)', () => {
     expect(REGISTRY.extensions.length).toBeGreaterThan(0);
     for (const ext of REGISTRY.extensions) {
@@ -271,7 +309,7 @@ describe('published libraries never change (DI-T-10.6)', () => {
   });
 });
 
-describe('the Floorspec pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6)', () => {
+describe('the Floorspec pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6, DI-T-10.7)', () => {
   it('has the landing page, a page per chapter of each specification and the coverage page, each in the sitemap with its own head', () => {
     const paths = [
       '/floorspec',
@@ -282,6 +320,10 @@ describe('the Floorspec pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6)', () 
     expect(paths).toContain('/floorspec/ops/references');
     expect(paths).toContain('/floorspec/core/stairs');
     expect(paths).toContain('/floorspec/rules/measures');
+    expect(paths).toContain('/floorspec/core/arcs');
+    expect(paths).toContain('/floorspec/core/0.3/walls');
+    expect(paths).toContain('/floorspec/ops/0.3/references');
+    expect(paths).toContain('/floorspec/rules/0.1/measures');
     expect(paths).toContain('/floorspec/core/0.2/circulation');
     expect(paths).toContain('/floorspec/core/0.1/walls');
     expect(paths).toContain('/floorspec/ops/0.2/references');
@@ -304,17 +346,22 @@ describe('the Floorspec pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6)', () 
     }
     const titles = paths.map((p) => resolveRoute(p)!.meta.title);
     expect(new Set(titles).size).toBe(titles.length);
-    expect(resolveRoute('/floorspec/core/walls')!.meta.title).toBe('5. Walls — Floorspec Core 0.3 — D3 Cloud');
-    expect(resolveRoute('/floorspec/core/stairs')!.meta.title).toBe('17. Stairs — Floorspec Core 0.3 — D3 Cloud');
+    expect(resolveRoute('/floorspec/core/walls')!.meta.title).toBe(`5. Walls — Floorspec Core ${NOW.core} — D3 Cloud`);
+    expect(resolveRoute('/floorspec/core/stairs')!.meta.title).toBe(`17. Stairs — Floorspec Core ${NOW.core} — D3 Cloud`);
+    expect(resolveRoute('/floorspec/core/arcs')!.meta.title).toBe(`21. Arc edges — Floorspec Core ${NOW.core} — D3 Cloud`);
+    expect(resolveRoute('/floorspec/core/0.3/walls')!.meta.title).toBe('5. Walls — Floorspec Core 0.3 — D3 Cloud');
     expect(resolveRoute('/floorspec/core/0.2/walls')!.meta.title).toBe('5. Walls — Floorspec Core 0.2 — D3 Cloud');
     expect(resolveRoute('/floorspec/core/0.1/walls')!.meta.title).toBe('5. Walls — Floorspec Core 0.1 — D3 Cloud');
-    expect(resolveRoute('/floorspec/ops/references')!.meta.title).toBe('3. References — Floorspec Ops 0.3 — D3 Cloud');
+    expect(resolveRoute('/floorspec/ops/references')!.meta.title).toBe(`3. References — Floorspec Ops ${NOW.ops} — D3 Cloud`);
+    expect(resolveRoute('/floorspec/ops/0.3/references')!.meta.title).toBe('3. References — Floorspec Ops 0.3 — D3 Cloud');
     expect(resolveRoute('/floorspec/ops/0.2/references')!.meta.title).toBe('3. References — Floorspec Ops 0.2 — D3 Cloud');
     expect(resolveRoute('/floorspec/ops/0.1/references')!.meta.title).toBe('3. References — Floorspec Ops 0.1 — D3 Cloud');
-    expect(resolveRoute('/floorspec/rules/measures')!.meta.title).toBe('4. Measures — Floorspec Rules 0.1 — D3 Cloud');
-    expect(resolveRoute('/floorspec/ops/references')!.meta).toMatchObject({ kind: 'floorspec-chapter', spec: 'ops', doc: 'references', version: '0.3' });
+    expect(resolveRoute('/floorspec/rules/measures')!.meta.title).toBe(`4. Measures — Floorspec Rules ${NOW.rules} — D3 Cloud`);
+    expect(resolveRoute('/floorspec/rules/0.1/measures')!.meta.title).toBe('4. Measures — Floorspec Rules 0.1 — D3 Cloud');
+    expect(resolveRoute('/floorspec/ops/references')!.meta).toMatchObject({ kind: 'floorspec-chapter', spec: 'ops', doc: 'references', version: NOW.ops });
     expect(resolveRoute('/floorspec/ops/0.1/references')!.meta).toMatchObject({ kind: 'floorspec-chapter', spec: 'ops', doc: 'references', version: '0.1' });
-    expect(resolveRoute('/floorspec/rules/findings')!.meta).toMatchObject({ kind: 'floorspec-chapter', spec: 'rules', doc: 'findings', version: '0.1' });
+    expect(resolveRoute('/floorspec/rules/findings')!.meta).toMatchObject({ kind: 'floorspec-chapter', spec: 'rules', doc: 'findings', version: NOW.rules });
+    expect(resolveRoute('/floorspec/rules/0.1/findings')!.meta).toMatchObject({ kind: 'floorspec-chapter', spec: 'rules', doc: 'findings', version: '0.1' });
     expect(resolveRoute('/floorspec/core/0.2/walls')!.meta.description).toMatch(/^Floorspec Core 0\.2 \(an earlier Draft, kept as published\), chapter 5: /);
     expect(resolveRoute('/floorspec/registry')!.meta).toMatchObject({ kind: 'floorspec-registry', title: 'Extension registry — Floorspec — D3 Cloud' });
     expect(resolveRoute('/floorspec/registry/FS_electrical')!.meta).toMatchObject({
@@ -326,25 +373,31 @@ describe('the Floorspec pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6)', () 
     expect(resolveRoute('/floorspec/library/us-starter/0.1.0')!.meta).toMatchObject({ kind: 'floorspec-library', doc: 'us-starter', version: '0.1.0' });
   });
 
-  it('publishes Core 0.3, Ops 0.3 and Rules 0.1, in that order, with 0.2 and 0.1 kept from the commits that published them', () => {
+  it('publishes the drafts the lock names current, Core, Ops then Rules, with every earlier one kept from the commit that published it', () => {
     expect(SPECS.map((spec) => [spec.spec, spec.name, spec.version, spec.base])).toEqual([
-      ['core', 'Floorspec Core', '0.3', '/floorspec/core'],
-      ['ops', 'Floorspec Ops', '0.3', '/floorspec/ops'],
-      ['rules', 'Floorspec Rules', '0.1', '/floorspec/rules'],
+      ['core', 'Floorspec Core', NOW.core, '/floorspec/core'],
+      ['ops', 'Floorspec Ops', NOW.ops, '/floorspec/ops'],
+      ['rules', 'Floorspec Rules', NOW.rules, '/floorspec/rules'],
     ]);
-    expect(EARLIER.map((spec) => [spec.spec, spec.version, spec.base, spec.commit])).toEqual([
-      ['core', '0.2', '/floorspec/core/0.2', PINNED_02],
-      ['core', '0.1', '/floorspec/core/0.1', PINNED_01],
-      ['ops', '0.2', '/floorspec/ops/0.2', PINNED_02],
-      ['ops', '0.1', '/floorspec/ops/0.1', PINNED_01],
-    ]);
-    expect(FLOORSPEC_LOCK.specifications).toEqual({ core: '0.3', ops: '0.3', rules: '0.1' });
-    expect(FLOORSPEC_LOCK.earlier).toEqual({
-      core: { '0.1': expect.objectContaining({ commit: PINNED_01 }), '0.2': expect.objectContaining({ commit: PINNED_02 }) },
-      ops: { '0.1': expect.objectContaining({ commit: PINNED_01 }), '0.2': expect.objectContaining({ commit: PINNED_02 }) },
-    });
     for (const spec of SPECS) expect(spec.commit).toBe(FLOORSPEC_LOCK.commit);
-    expect([PINNED_01, PINNED_02]).not.toContain(FLOORSPEC_LOCK.commit);
+    // The earlier drafts are exactly the lock's earlier pins, each spec's newest first, each built from its own commit.
+    const newestFirst = (a: string, b: string) => b.localeCompare(a, 'en', { numeric: true });
+    expect(EARLIER.map((spec) => [spec.spec, spec.version, spec.base, spec.commit])).toEqual(
+      SPECS.flatMap(({ spec }) =>
+        Object.keys(FLOORSPEC_LOCK.earlier[spec] ?? {})
+          .sort(newestFirst)
+          .map((version) => [spec, version, `/floorspec/${spec}/${version}`, FLOORSPEC_LOCK.earlier[spec]![version]!.commit]),
+      ),
+    );
+    // No pin the site has published is ever dropped or moved: each draft stays where it was published from.
+    expect(FLOORSPEC_LOCK.earlier).toMatchObject({
+      core: { '0.1': { commit: PINNED_01 }, '0.2': { commit: PINNED_02 }, '0.3': { commit: PINNED_03 } },
+      ops: { '0.1': { commit: PINNED_01 }, '0.2': { commit: PINNED_02 }, '0.3': { commit: PINNED_03 } },
+      rules: { '0.1': { commit: PINNED_03 } },
+    });
+    // A current draft is never also an earlier one, and the current pin is none of the earlier ones.
+    for (const spec of SPECS) expect(Object.keys(FLOORSPEC_LOCK.earlier[spec.spec] ?? {})).not.toContain(spec.version);
+    expect([PINNED_01, PINNED_02, PINNED_03]).not.toContain(FLOORSPEC_LOCK.commit);
   });
 
   it('uses the chapter slugs from the file names', () => {
@@ -357,11 +410,19 @@ describe('the Floorspec pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6)', () 
     expect(CORE_01.chapters.map((c) => c.slug)).toEqual(core01);
     expect(CORE_02.chapters.map((c) => c.slug)).toEqual(core02);
     // Core 0.3 keeps every 0.2 chapter, in order, adds its own before the annex, and the annex stays last.
-    const core03 = CORE.chapters.map((c) => c.slug);
+    const core03 = CORE_03.chapters.map((c) => c.slug);
     expect(core03.slice(0, core02.length - 1)).toEqual(core02.slice(0, -1));
     expect(core03).toEqual(expect.arrayContaining(['floors-ceilings-slabs', 'roofs', 'stairs', 'materials', 'options']));
     expect(core03[core03.length - 1]).toBe('ifc');
-    expect(CORE.chapters.find((c) => c.slug === 'stairs')!.number).toBe('17');
+    expect(CORE_03.chapters.find((c) => c.slug === 'stairs')!.number).toBe('17');
+    // Core 0.4 keeps every 0.3 chapter, in order, adds chapter 21 on arc edges, and the annex stays last;
+    // a later draft keeps them all in turn.
+    const core04 = specAt('core', '0.4')!.chapters;
+    expect(core04.map((c) => c.slug).slice(0, core03.length - 1)).toEqual(core03.slice(0, -1));
+    expect(core04.map((c) => [c.number, c.slug]).slice(core03.length - 1)).toEqual([['21', 'arcs'], ['A', 'ifc']]);
+    const now = CORE.chapters.map((c) => c.slug);
+    expect(now.slice(0, core04.length - 1)).toEqual(core04.slice(0, -1).map((c) => c.slug));
+    expect(now[now.length - 1]).toBe('ifc');
     expect(OPS_01.chapters.map((c) => c.slug)).toEqual(ops);
     expect(OPS_02.chapters.map((c) => c.slug)).toEqual(ops);
     expect(OPS.chapters.map((c) => c.slug)).toEqual(expect.arrayContaining(ops));
@@ -393,13 +454,19 @@ describe('the Floorspec pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6)', () 
 
   it('keeps every retired statement ID on the draft that had it, and lands a link to one on a note in the current chapter', () => {
     const retiredIn = (spec: SpecIndex) => spec.chapters.flatMap((c) => chapter(spec.spec, c.slug).retired ?? []);
+    // An ID once retired stays retired in every later draft, so these lists only grow.
     const expected = {
-      core: ['FS-CORE-1.2.1', 'FS-CORE-1.6.5', 'FS-CORE-1.2.3', 'FS-CORE-1.2.4'],
+      // 0.2 retired 1.2.1 and 1.6.5; 0.3 retired 1.2.3 and 1.2.4; 0.4 retired the rest (DI-T-10.7).
+      core: [
+        'FS-CORE-1.2.1', 'FS-CORE-1.6.5', 'FS-CORE-1.2.3', 'FS-CORE-1.2.4',
+        'FS-CORE-1.2.5', 'FS-CORE-1.2.6', 'FS-CORE-16.4.1', 'FS-CORE-16.5.1', 'FS-CORE-17.7.1', 'FS-CORE-17.7.2',
+      ],
       ops: ['FS-OPS-1.1.1', 'FS-OPS-4.5.1', 'FS-OPS-1.1.2'],
+      rules: ['FS-RULES-1.2.1', 'FS-RULES-8.5.1'],
     };
-    for (const spec of [CORE, OPS]) {
+    for (const spec of [CORE, OPS, RULES]) {
       const retired = retiredIn(spec);
-      expect(retired.map((r) => r.id)).toEqual(expect.arrayContaining(expected[spec.spec as 'core' | 'ops']));
+      expect(retired.map((r) => r.id)).toEqual(expect.arrayContaining(expected[spec.spec as 'core' | 'ops' | 'rules']));
       expect(spec.retired).toBe(retired.length);
       for (const r of retired) {
         const page = (s: SpecIndex) => s.chapters.flatMap((c) => anchors(chapter(s.spec, c.slug, s.version).blocks));
@@ -410,20 +477,35 @@ describe('the Floorspec pages (DI-T-10.2, DI-T-10.4, DI-T-10.5, DI-T-10.6)', () 
         expect(resolveRoute(path!)?.meta).toMatchObject({ version: r.was.version, spec: spec.spec, path });
         expect(anchors(chapter(spec.spec, resolveRoute(path!)!.meta.doc!, r.was.version).blocks)).toContain(hash);
         expect(page(specAt(spec.spec, r.was.version)!)).toContain(r.id);
-        // And names what replaced it, which is a statement of the current draft.
-        const replacedBy = r.replacedBy!;
+        // And names what replaced it, which is a statement of the current draft — unless its draft
+        // retired it with nothing in its place.
+        const replacedBy = r.replacedBy;
+        if (!replacedBy) continue;
         const [to, id] = replacedBy.href.startsWith('#') ? [`/floorspec/${spec.spec}/${r.chapter}`, replacedBy.href.slice(1)] : replacedBy.href.split('#');
         expect(id).toBe(replacedBy.id);
         expect(anchors(chapter(spec.spec, resolveRoute(to!)!.meta.doc!).blocks)).toContain(replacedBy.id);
       }
     }
-    // Ops 0.2 replaced FS-OPS-1.1.1 with FS-OPS-1.1.2, which Ops 0.3 retired in turn; 0.3's table names 1.1.3.
-    expect(retiredIn(OPS).find((r) => r.id === 'FS-OPS-1.1.1')).toMatchObject({
-      replacedBy: { id: 'FS-OPS-1.1.3' },
-      was: { version: '0.1' },
-    });
-    expect(retiredIn(OPS).find((r) => r.id === 'FS-OPS-1.1.2')).toMatchObject({ replacedBy: { id: 'FS-OPS-1.1.3' }, was: { version: '0.2' } });
-    expect(retiredIn(RULES)).toEqual([]);
+    const find = (spec: SpecIndex, id: string) => retiredIn(spec).find((r) => r.id === id)!;
+    // Each names the statement that replaces it in the current draft. The standard keeps its earlier
+    // "Changes from" tables pointing at the newest replacement (Core 0.4's table for 0.1 → 0.2 gives
+    // FS-CORE-1.2.1 → 1.2.7, by way of 1.2.3 and 1.2.5), and the sync follows a table that does not.
+    expect(find(OPS, 'FS-OPS-1.1.1')).toMatchObject({ was: { version: '0.1' }, chapter: 'transactions' });
+    expect(find(OPS, 'FS-OPS-1.1.2')).toMatchObject({ was: { version: '0.2' }, chapter: 'transactions' });
+    expect(find(OPS, 'FS-OPS-1.1.1').replacedBy!.id).toBe(find(OPS, 'FS-OPS-1.1.2').replacedBy!.id);
+    expect(find(CORE, 'FS-CORE-1.2.1')).toMatchObject({ was: { version: '0.1' } });
+    for (const id of ['FS-CORE-1.2.1', 'FS-CORE-1.2.3']) expect(find(CORE, id).replacedBy!.id, id).toBe(find(CORE, 'FS-CORE-1.2.5').replacedBy!.id);
+    expect(find(CORE, 'FS-CORE-1.2.5')).toMatchObject({ was: { version: '0.3' }, chapter: 'model' });
+    // Core 0.4: the stair and roof statements it retired, noted in their chapters and pointing at 0.3.
+    expect(find(CORE, 'FS-CORE-17.7.1')).toMatchObject({ chapter: 'stairs', section: '17.7', was: { version: '0.3', href: '/floorspec/core/0.3/stairs#FS-CORE-17.7.1' } });
+    expect(find(CORE, 'FS-CORE-16.4.1')).toMatchObject({ chapter: 'roofs', section: '16.4', was: { version: '0.3', href: '/floorspec/core/0.3/roofs#FS-CORE-16.4.1' } });
+    expect(find(CORE, 'FS-CORE-16.5.1')).toMatchObject({ chapter: 'roofs', was: { version: '0.3' } });
+    // FS-CORE-17.7.2 (FS-LINT-016 for a stair whose steps 0.3 did not derive) was retired with nothing in its place.
+    expect(find(CORE, 'FS-CORE-17.7.2')).toMatchObject({ chapter: 'stairs', section: '17.7', was: { version: '0.3' } });
+    expect(find(CORE, 'FS-CORE-17.7.2').replacedBy).toBeUndefined();
+    // Rules 0.2 retired two statements of Rules 0.1.
+    expect(find(RULES, 'FS-RULES-1.2.1')).toMatchObject({ chapter: 'evaluation', was: { version: '0.1', href: '/floorspec/rules/0.1/evaluation#FS-RULES-1.2.1' } });
+    expect(find(RULES, 'FS-RULES-8.5.1')).toMatchObject({ chapter: 'wall-lines', was: { version: '0.1' } });
   });
 
   it('refuses what is not a page under /floorspec', () => {
@@ -590,6 +672,8 @@ describe('the Worker and the schemas', () => {
       '/floorspec/schema/core/0.3/floorspec.schema.json',
       '/floorspec/schema/ops/0.3/request.schema.json',
       '/floorspec/schema/rules/0.1/rule.schema.json',
+      '/floorspec/schema/core/0.4/wall.schema.json',
+      '/floorspec/schema/rules/0.2/rule.schema.json',
       '/floorspec/schema/ext/FS_electrical/0.1.0/electrical.schema.json',
       '/floorspec/schema/ext/FS_furniture/0.1.0/furniture.schema.json',
     ]) {
@@ -647,29 +731,35 @@ describe('the Worker and the schemas', () => {
   it('serves a chapter page with its own head, and a 404 for a chapter that does not exist', async () => {
     const page = await get('/floorspec/core/walls');
     expect(page.status).toBe(200);
-    expect(await page.text()).toContain('<title>5. Walls — Floorspec Core 0.3 — D3 Cloud</title>');
+    expect(await page.text()).toContain(`<title>5. Walls — Floorspec Core ${NOW.core} — D3 Cloud</title>`);
     const old = await get('/floorspec/core/0.1/walls');
     expect(old.status).toBe(200);
     expect(await old.text()).toContain('<title>5. Walls — Floorspec Core 0.1 — D3 Cloud</title>');
     expect((await get('/floorspec/core/0.2/walls')).status).toBe(200);
-    const versioned = await get('/floorspec/core/0.3/walls');
+    // The current draft's versioned URL is the unversioned page, by a 301.
+    const versioned = await get(`/floorspec/core/${NOW.core}/walls`);
     expect(versioned.status).toBe(301);
     expect(versioned.headers.get('Location')).toBe('https://d3cloud.io/floorspec/core/walls');
     expect((await get('/floorspec/core/nope')).status).toBe(404);
     expect((await get('/floorspec/core/0.1/program')).status).toBe(404);
     const ops = await get('/floorspec/ops/transactions');
     expect(ops.status).toBe(200);
-    expect(await ops.text()).toContain('<title>1. Operations, batches and transactions — Floorspec Ops 0.3 — D3 Cloud</title>');
+    expect(await ops.text()).toContain(`<title>1. Operations, batches and transactions — Floorspec Ops ${NOW.ops} — D3 Cloud</title>`);
     expect((await get('/floorspec/ops/nope')).status).toBe(404);
     expect((await get('/floorspec/ops')).status).toBe(404);
   });
 
-  it('serves 0.3, the 0.2 and 0.1 pages, Rules, the registry and the libraries, each with its own head (DI-T-10.6)', async () => {
+  it('serves the current drafts, every earlier one, Rules, the registry and the libraries, each with its own head (DI-T-10.6, DI-T-10.7)', async () => {
     const pages: [string, string][] = [
-      ['/floorspec/core/stairs', '17. Stairs — Floorspec Core 0.3 — D3 Cloud'],
+      ['/floorspec/core/stairs', `17. Stairs — Floorspec Core ${NOW.core} — D3 Cloud`],
+      ['/floorspec/core/arcs', `21. Arc edges — Floorspec Core ${NOW.core} — D3 Cloud`],
+      ['/floorspec/core/0.3/walls', '5. Walls — Floorspec Core 0.3 — D3 Cloud'],
+      ['/floorspec/core/0.3/stairs', '17. Stairs — Floorspec Core 0.3 — D3 Cloud'],
+      ['/floorspec/ops/0.3/transactions', '1. Operations, batches and transactions — Floorspec Ops 0.3 — D3 Cloud'],
       ['/floorspec/core/0.2/walls', '5. Walls — Floorspec Core 0.2 — D3 Cloud'],
       ['/floorspec/ops/0.2/references', '3. References — Floorspec Ops 0.2 — D3 Cloud'],
-      ['/floorspec/rules/conventions', '0. Conventions — Floorspec Rules 0.1 — D3 Cloud'],
+      ['/floorspec/rules/conventions', `0. Conventions — Floorspec Rules ${NOW.rules} — D3 Cloud`],
+      ['/floorspec/rules/0.1/measures', '4. Measures — Floorspec Rules 0.1 — D3 Cloud'],
       ['/floorspec/registry', 'Extension registry — Floorspec — D3 Cloud'],
       ['/floorspec/registry/FS_electrical', 'FS_electrical 0.1.0 — Floorspec registry — D3 Cloud'],
       ['/floorspec/library/us-starter', 'Floorspec US starter type library — Floorspec — D3 Cloud'],
@@ -682,15 +772,17 @@ describe('the Worker and the schemas', () => {
       expect(res.headers.get('Access-Control-Allow-Origin'), path).toBeNull();
     }
     for (const [path, to] of [
-      ['/floorspec/core/0.3/walls', '/floorspec/core/walls'],
-      ['/floorspec/rules/0.1/measures', '/floorspec/rules/measures'],
+      [`/floorspec/core/${NOW.core}/walls`, '/floorspec/core/walls'],
+      [`/floorspec/ops/${NOW.ops}/references`, '/floorspec/ops/references'],
+      [`/floorspec/rules/${NOW.rules}/measures`, '/floorspec/rules/measures'],
       ['/floorspec/library/us-starter/0.1.0/', '/floorspec/library/us-starter/0.1.0'],
     ]) {
       const res = await get(path!);
       expect(res.status, path).toBe(301);
       expect(res.headers.get('Location')).toBe(`https://d3cloud.io${to}`);
     }
-    for (const path of ['/floorspec/registry/nope', '/floorspec/library/us-starter/9.9.9', '/floorspec/rules/nope']) expect((await get(path)).status, path).toBe(404);
+    for (const path of ['/floorspec/registry/nope', '/floorspec/library/us-starter/9.9.9', '/floorspec/rules/nope', '/floorspec/core/0.3/arcs', '/floorspec/rules/0.1/nope'])
+      expect((await get(path)).status, path).toBe(404);
   });
 });
 

@@ -4,8 +4,356 @@
    "spec": "core",
    "name": "Floorspec Core",
    "short": "Core",
-   "version": "0.3",
+   "version": "0.4",
    "base": "/floorspec/core",
+   "commit": "244d8b3989d25da6224b48a028d8c519eb506093",
+   "chapters": [
+    {
+     "slug": "conventions",
+     "number": "0",
+     "title": "Conventions",
+     "summary": "normative language, conformance classes, notation, what this draft does not define, changes from 0.3, from 0.2 and from 0.1",
+     "statements": 0
+    },
+    {
+     "slug": "model",
+     "number": "1",
+     "title": "Document model",
+     "summary": "the document, version, spatial structure, collections, defaults, extensions, extras",
+     "statements": 27
+    },
+    {
+     "slug": "units",
+     "number": "2",
+     "title": "Units, quantities and coordinates",
+     "summary": "base unit, exact derivation and rounding, axes, angles, polygons",
+     "statements": 5
+    },
+    {
+     "slug": "identity",
+     "number": "3",
+     "title": "Identity and references",
+     "summary": "IDs, references, level consistency",
+     "statements": 8
+    },
+    {
+     "slug": "taxonomy",
+     "number": "4",
+     "title": "Taxonomies",
+     "summary": "room functions, extension terms, layer functions",
+     "statements": 3
+    },
+    {
+     "slug": "walls",
+     "number": "5",
+     "title": "Walls",
+     "summary": "junctions, walls, separators, planarity, face lines, wedges, outlines, joins, heights",
+     "statements": 22
+    },
+    {
+     "slug": "rooms",
+     "number": "6",
+     "title": "Rooms",
+     "summary": "faces, room polygons, anchors and identity, net area, a room's floor and ceiling members, slabs",
+     "statements": 9
+    },
+    {
+     "slug": "openings",
+     "number": "7",
+     "title": "Openings",
+     "summary": "hosted openings, typed dimensions and clear openings, placement",
+     "statements": 11
+    },
+    {
+     "slug": "types",
+     "number": "8",
+     "title": "Types, materials and assets",
+     "summary": "types and overrides, layers, door and window types, their operation and clear opening, materials, assets",
+     "statements": 15
+    },
+    {
+     "slug": "serialization",
+     "number": "9",
+     "title": "Serialization",
+     "summary": "encoding, canonical form, content hash",
+     "statements": 6
+    },
+    {
+     "slug": "diagnostics",
+     "number": "10",
+     "title": "Validation and diagnostics",
+     "summary": "tiers, diagnostics, order of evaluation, the catalogue, fixes",
+     "statements": 4
+    },
+    {
+     "slug": "program",
+     "number": "11",
+     "title": "The program",
+     "summary": "program items, the adjacency graph, rooms that fulfil items, adjacent and connected rooms",
+     "statements": 9
+    },
+    {
+     "slug": "extensions",
+     "number": "12",
+     "title": "Extensions",
+     "summary": "declarations, the registry and known extensions, dependencies, extension elements, fallbacks",
+     "statements": 18
+    },
+    {
+     "slug": "hosting",
+     "number": "13",
+     "title": "Hosting and clearances",
+     "summary": "local frames, boxes, hosts and placement, clearance envelopes, the overlap measure",
+     "statements": 12
+    },
+    {
+     "slug": "circulation",
+     "number": "14",
+     "title": "Circulation",
+     "summary": "the door graph, entries, reachable rooms, sleeping rooms reached through another",
+     "statements": 5
+    },
+    {
+     "slug": "floors-ceilings-slabs",
+     "number": "15",
+     "title": "Floors, ceilings and slabs",
+     "summary": "floors, sunken and raised; flat, tray and vaulted ceilings; hosting on them; slabs",
+     "statements": 11
+    },
+    {
+     "slug": "roofs",
+     "number": "16",
+     "title": "Roofs",
+     "summary": "footprints, gables, pitches and overhangs; the eave outline; flat, shed and equal-pitch surfaces; faces, ridges, hips and valleys",
+     "statements": 10
+    },
+    {
+     "slug": "stairs",
+     "number": "17",
+     "title": "Stairs",
+     "summary": "straight, L, U, winder and spiral stairs; foot, head, rise and risers; steps, run and walkline; headroom and the opening a stair needs; winders, a newel and spiral treads, their walkline and goings; circulation",
+     "statements": 18
+    },
+    {
+     "slug": "materials",
+     "number": "18",
+     "title": "Materials, assets and finishes",
+     "summary": "metallic-roughness materials; textures, their maps and real-world size; texture space; the package and the package validator; room, face and region finishes, resolved",
+     "statements": 13
+    },
+    {
+     "slug": "options",
+     "number": "19",
+     "title": "Design options",
+     "summary": "option sets, options and their primary; membership; designs and their views; references across options; the checked designs; deriving a design, and comparing options side by side",
+     "statements": 12
+    },
+    {
+     "slug": "migration",
+     "number": "20",
+     "title": "Migration",
+     "summary": "migrating a document to a later draft: the steps from 0.1 to 0.2, from 0.2 to 0.3 and from 0.3 to 0.4, moved members and their record, what a migration preserves, the previous major",
+     "statements": 14
+    },
+    {
+     "slug": "arcs",
+     "number": "21",
+     "title": "Arc edges",
+     "summary": "walls and separators along circular arcs: the sagitta; the polyline by iterated snap rounding; arc edges in the graph, wall outlines and curved rooms; lengths and stations, openings on their chords",
+     "statements": 12
+    },
+    {
+     "slug": "ifc",
+     "number": "A",
+     "title": "IFC4 mapping",
+     "summary": "every core kind and its IFC4 entity",
+     "statements": 0
+    }
+   ],
+   "statements": 244,
+   "mandatory": 225,
+   "covered": 225,
+   "tests": 947,
+   "retired": 10
+  },
+  {
+   "spec": "ops",
+   "name": "Floorspec Ops",
+   "short": "Ops",
+   "version": "0.4",
+   "base": "/floorspec/ops",
+   "commit": "244d8b3989d25da6224b48a028d8c519eb506093",
+   "chapters": [
+    {
+     "slug": "conventions",
+     "number": "0",
+     "title": "Conventions",
+     "summary": "what Ops is, the applier, elements (program items and extension elements too), changes from 0.3, from 0.2 and from 0.1, what this draft does not cover",
+     "statements": 0
+    },
+    {
+     "slug": "transactions",
+     "number": "1",
+     "title": "Operations, batches and transactions",
+     "summary": "the request, the six-step transaction, the result, the echo, minting IDs, the inverse",
+     "statements": 10
+    },
+    {
+     "slug": "primitives",
+     "number": "2",
+     "title": "Primitive operations",
+     "summary": "addElement and its shorthands, removeElement and cascades, setProperty, unsetProperty, moveJunction, setAdjacency, removeAdjacency, hosted elements following their hosts, design options and the edit design",
+     "statements": 12
+    },
+    {
+     "slug": "references",
+     "number": "3",
+     "title": "References",
+     "summary": "lengths in feet-inches-fractions and metric, points, vectors, selectors (program items too), sides, positions, areas",
+     "statements": 6
+    },
+    {
+     "slug": "composites",
+     "number": "4",
+     "title": "Composite operations",
+     "summary": "drawWall, moveWall, moveRoom, resizeRoom, addOpening, moveOpening, addRoom, setRoomFinish, setRoomBrief, removeWall, addLevel, addProgramItem, placeElement, moveElement",
+     "statements": 13
+    },
+    {
+     "slug": "normalization",
+     "number": "5",
+     "title": "Normalization",
+     "summary": "merging junctions, planarizing by snap rounding, re-hosting openings and hosted elements, join cleanup, design options",
+     "statements": 8
+    },
+    {
+     "slug": "locks",
+     "number": "6",
+     "title": "Locks",
+     "summary": "element, length and distance locks",
+     "statements": 2
+    },
+    {
+     "slug": "diagnostics",
+     "number": "7",
+     "title": "Diagnostics",
+     "summary": "the FS-OPS catalogue",
+     "statements": 3
+    }
+   ],
+   "statements": 54,
+   "mandatory": 53,
+   "covered": 53,
+   "tests": 483,
+   "retired": 3
+  },
+  {
+   "spec": "rules",
+   "name": "Floorspec Rules",
+   "short": "Rules",
+   "version": "0.2",
+   "base": "/floorspec/rules",
+   "commit": "244d8b3989d25da6224b48a028d8c519eb506093",
+   "chapters": [
+    {
+     "slug": "conventions",
+     "number": "0",
+     "title": "Conventions",
+     "summary": "what Rules is, conformance classes, relation to Core and Ops, the RASE shape, what this draft does not define, code text, changes from 0.1",
+     "statements": 0
+    },
+    {
+     "slug": "evaluation",
+     "number": "1",
+     "title": "Evaluation",
+     "summary": "the evaluation request, the document, the order of evaluation, a pure function, advice never a gate",
+     "statements": 7
+    },
+    {
+     "slug": "packs",
+     "number": "2",
+     "title": "Rule packs",
+     "summary": "the pack object, names, the CC BY 4.0 licence, coverage, wording and the assurance pattern",
+     "statements": 3
+    },
+    {
+     "slug": "rules",
+     "number": "3",
+     "title": "Rule records",
+     "summary": "citation, paraphrase, applicability, selection, requirement, exceptions, tests, typing, extension data, severity, provenance",
+     "statements": 9
+    },
+    {
+     "slug": "measures",
+     "number": "4",
+     "title": "Measures",
+     "summary": "targets, types, exactness, the room of an element, extension members and matches, measure results, deferred measures",
+     "statements": 4
+    },
+    {
+     "slug": "rooms",
+     "number": "5",
+     "title": "Measures of rooms",
+     "summary": "function, net area, least width, circulation, neighbours, elements in a room, ceiling height",
+     "statements": 7
+    },
+    {
+     "slug": "openings",
+     "number": "6",
+     "title": "Measures of openings",
+     "summary": "kind and operation, size as drawn, heights above the floor, outside, net clear opening",
+     "statements": 5
+    },
+    {
+     "slug": "elements",
+     "number": "7",
+     "title": "Measures of elements and clearance envelopes",
+     "summary": "members, room, heights, protection, envelopes as declared, obstructions, clear depth in front, overlaps",
+     "statements": 8
+    },
+    {
+     "slug": "wall-lines",
+     "number": "8",
+     "title": "Wall lines, receptacles, circuits, levels and stairs",
+     "summary": "the wall line of a room, receptacle reach, wall run between receptacles, circuits, levels, stairs",
+     "statements": 5
+    },
+    {
+     "slug": "findings",
+     "number": "9",
+     "title": "Findings and the report",
+     "summary": "the report, findings, measured conditions, location, wording, display, order, serialization, the notice",
+     "statements": 12
+    },
+    {
+     "slug": "profiles",
+     "number": "10",
+     "title": "Jurisdiction profiles",
+     "summary": "adoptions and editions in force, rules in force, packs, amendments, the default profile",
+     "statements": 6
+    },
+    {
+     "slug": "diagnostics",
+     "number": "11",
+     "title": "Diagnostics",
+     "summary": "the FS-RULES catalogue",
+     "statements": 1
+    }
+   ],
+   "statements": 67,
+   "mandatory": 65,
+   "covered": 65,
+   "tests": 112,
+   "retired": 2
+  }
+ ],
+ "earlier": [
+  {
+   "spec": "core",
+   "name": "Floorspec Core",
+   "short": "Core",
+   "version": "0.3",
+   "base": "/floorspec/core/0.3",
    "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
    "chapters": [
     {
@@ -166,180 +514,8 @@
    "statements": 222,
    "mandatory": 205,
    "covered": 205,
-   "tests": 845,
-   "retired": 4
+   "tests": 845
   },
-  {
-   "spec": "ops",
-   "name": "Floorspec Ops",
-   "short": "Ops",
-   "version": "0.3",
-   "base": "/floorspec/ops",
-   "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
-   "chapters": [
-    {
-     "slug": "conventions",
-     "number": "0",
-     "title": "Conventions",
-     "summary": "what Ops is, the applier, elements (program items and extension elements too), changes from 0.2 and from 0.1, what this draft does not cover",
-     "statements": 0
-    },
-    {
-     "slug": "transactions",
-     "number": "1",
-     "title": "Operations, batches and transactions",
-     "summary": "the request, the six-step transaction, the result, the echo, minting IDs, the inverse",
-     "statements": 10
-    },
-    {
-     "slug": "primitives",
-     "number": "2",
-     "title": "Primitive operations",
-     "summary": "addElement and its shorthands, removeElement and cascades, setProperty, unsetProperty, moveJunction, setAdjacency, removeAdjacency, hosted elements following their hosts, design options and the edit design",
-     "statements": 12
-    },
-    {
-     "slug": "references",
-     "number": "3",
-     "title": "References",
-     "summary": "lengths in feet-inches-fractions and metric, points, vectors, selectors (program items too), sides, positions, areas",
-     "statements": 6
-    },
-    {
-     "slug": "composites",
-     "number": "4",
-     "title": "Composite operations",
-     "summary": "drawWall, moveWall, moveRoom, resizeRoom, addOpening, moveOpening, addRoom, setRoomFinish, setRoomBrief, removeWall, addLevel, addProgramItem, placeElement, moveElement",
-     "statements": 13
-    },
-    {
-     "slug": "normalization",
-     "number": "5",
-     "title": "Normalization",
-     "summary": "merging junctions, planarizing by snap rounding, re-hosting openings and hosted elements, join cleanup, design options",
-     "statements": 7
-    },
-    {
-     "slug": "locks",
-     "number": "6",
-     "title": "Locks",
-     "summary": "element, length and distance locks",
-     "statements": 2
-    },
-    {
-     "slug": "diagnostics",
-     "number": "7",
-     "title": "Diagnostics",
-     "summary": "the FS-OPS catalogue",
-     "statements": 3
-    }
-   ],
-   "statements": 53,
-   "mandatory": 52,
-   "covered": 52,
-   "tests": 459,
-   "retired": 3
-  },
-  {
-   "spec": "rules",
-   "name": "Floorspec Rules",
-   "short": "Rules",
-   "version": "0.1",
-   "base": "/floorspec/rules",
-   "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
-   "chapters": [
-    {
-     "slug": "conventions",
-     "number": "0",
-     "title": "Conventions",
-     "summary": "what Rules is, conformance classes, relation to Core and Ops, the RASE shape, what this draft does not define, code text",
-     "statements": 0
-    },
-    {
-     "slug": "evaluation",
-     "number": "1",
-     "title": "Evaluation",
-     "summary": "the evaluation request, the document, the order of evaluation, a pure function, advice never a gate",
-     "statements": 7
-    },
-    {
-     "slug": "packs",
-     "number": "2",
-     "title": "Rule packs",
-     "summary": "the pack object, names, the CC BY 4.0 licence, coverage, wording and the assurance pattern",
-     "statements": 3
-    },
-    {
-     "slug": "rules",
-     "number": "3",
-     "title": "Rule records",
-     "summary": "citation, paraphrase, applicability, selection, requirement, exceptions, tests, typing, extension data, severity, provenance",
-     "statements": 9
-    },
-    {
-     "slug": "measures",
-     "number": "4",
-     "title": "Measures",
-     "summary": "targets, types, exactness, the room of an element, extension members and matches, measure results, deferred measures",
-     "statements": 4
-    },
-    {
-     "slug": "rooms",
-     "number": "5",
-     "title": "Measures of rooms",
-     "summary": "function, net area, least width, circulation, neighbours, elements in a room, ceiling height",
-     "statements": 7
-    },
-    {
-     "slug": "openings",
-     "number": "6",
-     "title": "Measures of openings",
-     "summary": "kind and operation, size as drawn, heights above the floor, outside, net clear opening",
-     "statements": 5
-    },
-    {
-     "slug": "elements",
-     "number": "7",
-     "title": "Measures of elements and clearance envelopes",
-     "summary": "members, room, heights, protection, envelopes as declared, obstructions, clear depth in front, overlaps",
-     "statements": 8
-    },
-    {
-     "slug": "wall-lines",
-     "number": "8",
-     "title": "Wall lines, receptacles, circuits, levels and stairs",
-     "summary": "the wall line of a room, receptacle reach, wall run between receptacles, circuits, levels, stairs",
-     "statements": 5
-    },
-    {
-     "slug": "findings",
-     "number": "9",
-     "title": "Findings and the report",
-     "summary": "the report, findings, measured conditions, location, wording, display, order, serialization, the notice",
-     "statements": 12
-    },
-    {
-     "slug": "profiles",
-     "number": "10",
-     "title": "Jurisdiction profiles",
-     "summary": "adoptions and editions in force, rules in force, packs, amendments, the default profile",
-     "statements": 6
-    },
-    {
-     "slug": "diagnostics",
-     "number": "11",
-     "title": "Diagnostics",
-     "summary": "the FS-RULES catalogue",
-     "statements": 1
-    }
-   ],
-   "statements": 67,
-   "mandatory": 65,
-   "covered": 65,
-   "tests": 103
-  }
- ],
- "earlier": [
   {
    "spec": "core",
    "name": "Floorspec Core",
@@ -568,6 +744,76 @@
    "spec": "ops",
    "name": "Floorspec Ops",
    "short": "Ops",
+   "version": "0.3",
+   "base": "/floorspec/ops/0.3",
+   "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
+   "chapters": [
+    {
+     "slug": "conventions",
+     "number": "0",
+     "title": "Conventions",
+     "summary": "what Ops is, the applier, elements (program items and extension elements too), changes from 0.2 and from 0.1, what this draft does not cover",
+     "statements": 0
+    },
+    {
+     "slug": "transactions",
+     "number": "1",
+     "title": "Operations, batches and transactions",
+     "summary": "the request, the six-step transaction, the result, the echo, minting IDs, the inverse",
+     "statements": 10
+    },
+    {
+     "slug": "primitives",
+     "number": "2",
+     "title": "Primitive operations",
+     "summary": "addElement and its shorthands, removeElement and cascades, setProperty, unsetProperty, moveJunction, setAdjacency, removeAdjacency, hosted elements following their hosts, design options and the edit design",
+     "statements": 12
+    },
+    {
+     "slug": "references",
+     "number": "3",
+     "title": "References",
+     "summary": "lengths in feet-inches-fractions and metric, points, vectors, selectors (program items too), sides, positions, areas",
+     "statements": 6
+    },
+    {
+     "slug": "composites",
+     "number": "4",
+     "title": "Composite operations",
+     "summary": "drawWall, moveWall, moveRoom, resizeRoom, addOpening, moveOpening, addRoom, setRoomFinish, setRoomBrief, removeWall, addLevel, addProgramItem, placeElement, moveElement",
+     "statements": 13
+    },
+    {
+     "slug": "normalization",
+     "number": "5",
+     "title": "Normalization",
+     "summary": "merging junctions, planarizing by snap rounding, re-hosting openings and hosted elements, join cleanup, design options",
+     "statements": 7
+    },
+    {
+     "slug": "locks",
+     "number": "6",
+     "title": "Locks",
+     "summary": "element, length and distance locks",
+     "statements": 2
+    },
+    {
+     "slug": "diagnostics",
+     "number": "7",
+     "title": "Diagnostics",
+     "summary": "the FS-OPS catalogue",
+     "statements": 3
+    }
+   ],
+   "statements": 53,
+   "mandatory": 52,
+   "covered": 52,
+   "tests": 459
+  },
+  {
+   "spec": "ops",
+   "name": "Floorspec Ops",
+   "short": "Ops",
    "version": "0.2",
    "base": "/floorspec/ops/0.2",
    "commit": "6f9bc07b08dfc229719a9b93e344bd47f33b3ccd",
@@ -703,6 +949,104 @@
    "mandatory": 36,
    "covered": 36,
    "tests": 230
+  },
+  {
+   "spec": "rules",
+   "name": "Floorspec Rules",
+   "short": "Rules",
+   "version": "0.1",
+   "base": "/floorspec/rules/0.1",
+   "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
+   "chapters": [
+    {
+     "slug": "conventions",
+     "number": "0",
+     "title": "Conventions",
+     "summary": "what Rules is, conformance classes, relation to Core and Ops, the RASE shape, what this draft does not define, code text",
+     "statements": 0
+    },
+    {
+     "slug": "evaluation",
+     "number": "1",
+     "title": "Evaluation",
+     "summary": "the evaluation request, the document, the order of evaluation, a pure function, advice never a gate",
+     "statements": 7
+    },
+    {
+     "slug": "packs",
+     "number": "2",
+     "title": "Rule packs",
+     "summary": "the pack object, names, the CC BY 4.0 licence, coverage, wording and the assurance pattern",
+     "statements": 3
+    },
+    {
+     "slug": "rules",
+     "number": "3",
+     "title": "Rule records",
+     "summary": "citation, paraphrase, applicability, selection, requirement, exceptions, tests, typing, extension data, severity, provenance",
+     "statements": 9
+    },
+    {
+     "slug": "measures",
+     "number": "4",
+     "title": "Measures",
+     "summary": "targets, types, exactness, the room of an element, extension members and matches, measure results, deferred measures",
+     "statements": 4
+    },
+    {
+     "slug": "rooms",
+     "number": "5",
+     "title": "Measures of rooms",
+     "summary": "function, net area, least width, circulation, neighbours, elements in a room, ceiling height",
+     "statements": 7
+    },
+    {
+     "slug": "openings",
+     "number": "6",
+     "title": "Measures of openings",
+     "summary": "kind and operation, size as drawn, heights above the floor, outside, net clear opening",
+     "statements": 5
+    },
+    {
+     "slug": "elements",
+     "number": "7",
+     "title": "Measures of elements and clearance envelopes",
+     "summary": "members, room, heights, protection, envelopes as declared, obstructions, clear depth in front, overlaps",
+     "statements": 8
+    },
+    {
+     "slug": "wall-lines",
+     "number": "8",
+     "title": "Wall lines, receptacles, circuits, levels and stairs",
+     "summary": "the wall line of a room, receptacle reach, wall run between receptacles, circuits, levels, stairs",
+     "statements": 5
+    },
+    {
+     "slug": "findings",
+     "number": "9",
+     "title": "Findings and the report",
+     "summary": "the report, findings, measured conditions, location, wording, display, order, serialization, the notice",
+     "statements": 12
+    },
+    {
+     "slug": "profiles",
+     "number": "10",
+     "title": "Jurisdiction profiles",
+     "summary": "adoptions and editions in force, rules in force, packs, amendments, the default profile",
+     "statements": 6
+    },
+    {
+     "slug": "diagnostics",
+     "number": "11",
+     "title": "Diagnostics",
+     "summary": "the FS-RULES catalogue",
+     "statements": 1
+    }
+   ],
+   "statements": 67,
+   "mandatory": 65,
+   "covered": 65,
+   "tests": 103
   }
  ],
  "extensions": [
