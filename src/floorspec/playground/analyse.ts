@@ -11,6 +11,7 @@
  */
 import {
   CATALOGUE,
+  CORE_VERSION,
   DOCUMENT_NAME,
   OFFICIAL_READER,
   Package,
@@ -201,7 +202,7 @@ export function analyse(file: Dropped): Analysis {
   } else if (declared === undefined) {
     notFloorspec = {
       title: 'This is JSON, but not a Floorspec document.',
-      detail: 'A Floorspec document is a JSON object whose "floorspec" member names the draft it is written to, as "floorspec": "0.3" (Core 1.1).',
+      detail: `A Floorspec document is a JSON object whose "floorspec" member names the draft it is written to, as "floorspec": "${CORE_VERSION}" (Core 1.1).`,
     };
   }
 

@@ -1,11 +1,11 @@
 {
  "repository": "matdemers1/floorspec",
- "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
- "committedAt": "2026-10-05T07:54:58-04:00",
+ "commit": "244d8b3989d25da6224b48a028d8c519eb506093",
+ "committedAt": "2026-10-05T23:47:21-04:00",
  "specifications": {
-  "core": "0.3",
-  "ops": "0.3",
-  "rules": "0.1"
+  "core": "0.4",
+  "ops": "0.4",
+  "rules": "0.2"
  },
  "earlier": {
   "core": {
@@ -16,6 +16,10 @@
    "0.2": {
     "commit": "6f9bc07b08dfc229719a9b93e344bd47f33b3ccd",
     "committedAt": "2026-10-04T22:09:02-04:00"
+   },
+   "0.3": {
+    "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
+    "committedAt": "2026-10-05T07:54:58-04:00"
    }
   },
   "ops": {
@@ -26,6 +30,16 @@
    "0.2": {
     "commit": "6f9bc07b08dfc229719a9b93e344bd47f33b3ccd",
     "committedAt": "2026-10-04T22:09:02-04:00"
+   },
+   "0.3": {
+    "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
+    "committedAt": "2026-10-05T07:54:58-04:00"
+   }
+  },
+  "rules": {
+   "0.1": {
+    "commit": "8a99d02b3a2111aacd9ed81c3e415af47f73505e",
+    "committedAt": "2026-10-05T07:54:58-04:00"
    }
   }
  }

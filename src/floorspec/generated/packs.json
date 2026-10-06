@@ -2,11 +2,11 @@
  "packs": [
   {
    "name": "example",
-   "version": "0.1.0",
+   "version": "0.2.0",
    "title": "Example pack (synthetic codes)",
    "description": "A tiny pack that exercises the rule-pack format end to end: build, lint, fixtures and the coverage matrix. It cites only the synthetic codes TEST-CODE and TEST-ELEC, which stand for no real code, and its thresholds are invented.",
    "synthetic": true,
-   "rules": 3,
+   "rules": 9,
    "license": "CC-BY-4.0"
   }
  ],
