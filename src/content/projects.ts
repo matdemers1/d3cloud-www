@@ -62,15 +62,6 @@ export interface Project {
     steps: string[];
     note?: string;
   };
-  /** Newest first. Rendered on the project page as "What's new". */
-  changelog?: {
-    version: string;
-    date: string;
-    /** The release's own page, when it has one. */
-    href?: string;
-    summary: string;
-    notes: string[];
-  }[];
 }
 
 export const PROJECTS: Project[] = [
@@ -140,39 +131,14 @@ export const PROJECTS: Project[] = [
       'Worst-case-wins verdicts — if it rains at all in your window, it says rain',
       'Plain-language timing: "Storms 6–10 PM · 4 hrs", not just "storms today"',
       'Optional morning briefing covering only the weather that hits your windows',
-      'Apple Watch app, Home Screen widgets, and Lock Screen complications',
+      'Apple Watch app, Home Screen widgets, and Lock Screen widgets',
       'Severe weather alerts from Apple Weather and the National Weather Service',
       'Optional calendar access — see the forecast during the events you have booked',
     ],
     privacyLine:
-      'Location is used only to request a forecast. Calendar access is optional and read on-device. No accounts, no analytics, no tracking.',
+      'Location is used only to get a forecast and name your city. Calendar access is optional and read on-device. No accounts, no analytics, no tracking.',
     // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#7EB6FF',
-    changelog: [
-      {
-        version: '1.1',
-        date: '2026-08-09',
-        summary: 'Calendar events, and the whole day.',
-        notes: [
-          "Optional calendar access pairs each of the day's events with the forecast for exactly its hours — the same worst-case-wins verdict a window gets. Off by default, read on-device, never uploaded.",
-          'Days now cover all of their hours. Forecast providers only look forward, so "today" used to empty out behind you as the day passed.',
-          'Your current location shows its real city name, and the name stays pinned at the top while you scroll.',
-          'The week view repeats itself less: the condition and its timing share one line, and days ahead show their windows as compact chips without dropping any.',
-          'Voice Control: every control has a name of its own, and windows and cities can be deleted by voice.',
-        ],
-      },
-      {
-        version: '1.0',
-        date: '2026-08-01',
-        summary: 'Initial release.',
-        notes: [
-          'Up to five custom time windows with per-weekday scheduling.',
-          'Worst-case-wins verdicts and plain-language precipitation timing.',
-          'Apple Watch app, Home Screen widgets, and Lock Screen complications.',
-          'Optional morning briefing covering only the weather that hits your windows.',
-        ],
-      },
-    ],
   },
   {
     slug: 'qr',
@@ -281,7 +247,7 @@ export const PROJECTS: Project[] = [
     ],
     highlights: [
       'Authorization code with PKCE only, on node-oidc-provider \u2014 four OpenID conformance plans run in CI on every push',
-      'Invite-only accounts with passkeys, authenticator codes and trusted devices; nobody can sign themselves up',
+      'Invite-only accounts with passkeys, authenticator codes and trusted devices; nobody can sign themselves up, and an invite can carry groups and app access so a new person arrives ready',
       'Deny by default: no grant, no sign-in \u2014 refused before any consent screen, and written to the audit trail',
       'Per-app roles in the token, so an app learns its own roles and never what else somebody can open',
       'Presets for apps it already knows: give Immich\u2019s address and it shows exactly what to paste into Immich',
@@ -292,7 +258,7 @@ export const PROJECTS: Project[] = [
     selfHost: {
       intro:
         'Docker and a domain that reaches the machine over HTTPS \u2014 a tunnel or a reverse proxy. Three secrets, generated once and kept in a password manager.',
-      code: 'git clone https://github.com/matdemers1/d3-auth.git && cd d3-auth\ncp .env.example .env\n\n# KEK, PEPPER, COOKIE_KEYS, POSTGRES_PASSWORD\nopenssl rand -base64 32\n\ndocker compose up -d\ndocker compose logs server | grep setupCode',
+      code: 'git clone https://github.com/matdemers1/d3-auth.git && cd d3-auth\ncp .env.example .env\n\n# KEK, PEPPER, COOKIE_KEYS, POSTGRES_PASSWORD — then set ISSUER to the public address\nopenssl rand -base64 32\n\ndocker compose up -d\ndocker compose logs server | grep setupCode',
       steps: [
         'Open /login/setup, enter the one-time code from the log, and claim the owner account.',
         'Add an app \u2014 from a preset, or from a manifest that declares its roles.',
@@ -301,21 +267,9 @@ export const PROJECTS: Project[] = [
       note: 'Keep the KEK. It wraps every authenticator secret and signing key at rest, and no backup contains it \u2014 lose it and those are gone.',
     },
     privacyLine:
-      'Runs on your machine; nothing is sent anywhere. It holds the accounts you create and an audit trail of what happened, and phones nobody \u2014 no telemetry, no update checks.',
+      'Runs on your machine. It sends only what you set up \u2014 invite and alert emails, and the encrypted nightly backup to your own bucket \u2014 and phones nobody: no telemetry, no update checks.',
     // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#8B7CF6',
-    changelog: [
-      {
-        version: '0.1.0',
-        date: '2026-09-17',
-        summary: 'First public release, under Apache-2.0.',
-        notes: [
-          'Running in production with Immich and a reference Express app signing in through it.',
-          'Passed its own security gate first: four conformance plans, 74 adversarial tests, an ASVS Level 2 self-assessment, Semgrep at zero and a nightly authenticated ZAP scan \u2014 nineteen defects found and fixed, four of them High.',
-          'Console rebuilt: sidebar shell, System/Light/Dark, and a strict content security policy with nothing inline.',
-        ],
-      },
-    ],
   },
   {
     slug: 'bindery',
@@ -374,19 +328,19 @@ export const PROJECTS: Project[] = [
       'Claude files against the tags and correspondents you already have; auto-filing is gated on structural signals, never on the model’s own confidence',
       'Click any field for the sentence and page it came from, and undo any automated decision, un-filing included',
       'Ask answers only with a citation — an uncited answer is thrown away, and you get the matching pages instead',
-      'A private vault behind a second passphrase: encrypted at rest and invisible to search while locked',
-      'Nothing is ever deleted automatically; nightly backups, an offsite copy and a restore drill that searches the restored archive',
+      'A private vault behind a second passphrase: encrypted at rest, and kept out of search and every other view whether it is locked or not',
+      'Nothing is deleted unless someone asks — only the vault and a deleted account’s purge, after a week’s grace, may remove anything; nightly backups, an offsite copy and a restore drill that searches the restored archive',
     ],
     selfHost: {
       intro:
         'Docker and a disk for the originals. No host ports are published — people reach it through a Cloudflare Tunnel.',
-      code: "git clone https://github.com/matdemers1/bindery.git && cd bindery\ncp .env.example .env    # fill in secrets; set HOST_DATA_ROOT\n\nmake build && make up\nmake migrate && make seed-forms\ndocker compose --env-file .env -f infra/docker-compose.yml logs api | grep 'bindery setup'",
+      code: "git clone https://github.com/matdemers1/bindery.git && cd bindery\ncp .env.example .env    # fill in secrets; set HOST_DATA_ROOT, CLOUDFLARE_TUNNEL_TOKEN, BINDERY_HOSTNAME\n\nmake build && make up\nmake migrate && make seed-forms\ndocker compose --env-file .env -f infra/docker-compose.yml logs api | grep 'bindery setup'\nmake tunnel             # the only way in — no host port is ever published",
       steps: [
         'Open Bindery and enter the setup code from the log, then choose the owner’s email and password, enrol an authenticator and save the recovery codes.',
         'Drop files into the watched folder, or use Add files. Each one is OCR’d, paged, split and indexed.',
         'Optionally add an Anthropic key in Settings for classification and Ask. Search works without one.',
       ],
-      note: 'Migrations are applied explicitly with make migrate, never on container boot.',
+      note: 'Migrations are applied explicitly with make migrate, never on container boot. Without a tunnel, the README’s socat sidecar is the sanctioned way in for local work.',
     },
     privacyLine:
       'Runs on your machine. Nothing leaves it unless you add an AI key — then a document’s text is sent to Claude to be filed. Search never needs it.',
@@ -446,6 +400,8 @@ export const PROJECTS: Project[] = [
       'Requirements, phases, tasks, decisions, risks and audit findings as records with IDs — cite one anywhere and the backlink is built for you',
       'An MCP server that is an equal peer to the console: an AI agent reads where a project stands and records what it did, from inside a coding session',
       'The server never calls a language model. Agents are users of Foreman, not a part of it',
+      'Tasks depend on tasks, and the brief offers only work that is ready; status rolls up from tasks to phases to projects',
+      'Guidelines — standing decisions that belong to no one project — ride along in every brief',
       'Drift is one engine behind every screen that shows it, so the badge and the page it links to cannot disagree',
       'A phase cannot be marked complete while its exit gate fails, and the refusal names what is in the way',
       'Requirements are linted against EARS, tuned on 591 real ones — it warns and never blocks',
@@ -461,10 +417,10 @@ export const PROJECTS: Project[] = [
         'Look around the seeded Example Project, then create your own — or bring in an existing Markdown plan with pnpm run import.',
         'Connect your AI agent over MCP: the stdio shim in packages/mcp, or the remote endpoint at /mcp.',
       ],
-      note: 'For a real deployment, replace the generated secrets and put it behind a tunnel or reverse proxy. docs/runbooks covers deploying, backups and the restore drill.',
+      note: 'For a real deployment, replace the generated secrets and put it behind a tunnel or reverse proxy. docs/runbooks covers deploying, backups and the restore drill, importing a plan, the GitHub App, and running it as an ideas board.',
     },
     privacyLine:
-      'Runs on your machine and calls no AI model itself. It talks to GitHub only if you connect it, and to your own mail relay for alerts.',
+      'Runs on your machine and calls no AI model itself. It talks to GitHub only if you connect it, to your own mail relay for alerts, and to a push relay only when a native app registers — with every notification encrypted to that device.',
     // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#F2937A',
   },
@@ -474,7 +430,7 @@ export const PROJECTS: Project[] = [
     kind: 'ecosystem',
     role: 'Deploys',
     star: { x: 92, y: 42 },
-    // What it deploys (D3 Auth, Bindery, Foreman) is said in words below, not
+    // What it deploys (D3 Auth, Bindery, Foreman, Postroom) is said in words below, not
     // as relations: the map's lines take the colour of the project depended on,
     // and a line to three different stars would say nothing in one colour.
     relations: [
@@ -534,8 +490,10 @@ export const PROJECTS: Project[] = [
       'Backs up, runs a one-shot migration, swaps to tag@digest, then checks the running digest, the revision label and the /health schema before it soaks',
       'Rolls the images back on its own. A contract migration is never rolled back automatically — restoring data is a person’s decision, guided and typed to confirm',
       'Per-app locks that name who holds them: a second session is refused with the holder, the commit and the step',
-      'MCP at /mcp for AI coding agents — status, dry run, deploy, deploy status and rollback — and a deploy of an approval-required app waits for a person in the console',
+      'MCP at /mcp for AI coding agents — status, dry run, deploy, deploy status, rollback, build and build status — with a Connect Claude Code page that makes the scoped token and the exact command; a deploy of an approval-required app waits for a person in the console',
       'A phone-first console: set up in the browser on first run, then password and authenticator or single sign-on; freezes, group deploys with a canary, schedules and drift detection',
+      'Roll all: every app with something waiting ships at its own commit, one at a time after the last one’s soak, a group’s canary first and Shipyard’s own server last — stopping at the first failure',
+      'Optional builds: Shipyard can fetch the exact commit, run its tests and build it with rootless BuildKit on a firewalled network, triggered by a signed GitHub webhook — then auto-deploy each green build through every gate',
       'Every deploy recorded in a hash-chained ledger, and optionally against the tasks it ships in your planning tool, with a nightly database dump and a restore drill',
       'It can deploy itself — the agent is upgraded by hand, so a bad release can never remove the thing that rolls back',
     ],
@@ -551,23 +509,9 @@ export const PROJECTS: Project[] = [
       note: 'Claim it right after the first start. Until the first account exists, whoever reaches the address can create it — so do it before a tunnel points at it.',
     },
     privacyLine:
-      'Runs on your machine and phones nobody — no telemetry, and it stores no app secrets. It talks to GitHub and your image registry to check a deploy, and to a planning tool only if you connect one.',
+      'Runs on your machine and phones nobody — no telemetry, and it stores no app secrets (a build secret, if you use builds, is sealed on your own host). It talks to GitHub and your image registry to check a deploy, to your own mail relay for alerts if you set one, and to a planning tool only if you connect one.',
     // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#5EEAD4',
-    changelog: [
-      {
-        version: '0.1.0',
-        date: '2026-09-25',
-        href: 'https://github.com/matdemers1/shipyard/releases/tag/v0.1.0',
-        summary: 'First public release, under Apache-2.0.',
-        notes: [
-          'Proven in production across six stacks: one that needs a person’s approval for every deploy, a two-app canary group that soaks the canary first, and Shipyard’s own server.',
-          'First-run account setup in the browser, and single sign-on configured in Settings, its secret encrypted at rest.',
-          'Every console screen’s empty, loading, error and denied states tested, and axe-clean in both themes.',
-          'CI checks a clean-machine install on an internal-only network, scans for secrets, and allows no third-party origin in the console bundle.',
-        ],
-      },
-    ],
   },
   {
     slug: 'postroom',
@@ -654,20 +598,6 @@ export const PROJECTS: Project[] = [
       'Runs on your own machines, with no telemetry and no third-party scripts. Mail is encrypted at rest and never sent to an AI model — sorting runs on the server, from rules and a model trained on your own moves. Outbound mail goes straight to the recipient’s server, or through Amazon SES only if you switch that fallback on.',
     // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#E06AB8',
-    changelog: [
-      {
-        version: 'Unreleased',
-        date: '2026-10-02',
-        href: 'https://github.com/matdemers1/d3-postroom/blob/main/CHANGELOG.md',
-        summary: 'No tagged release yet: main is what runs, under Apache-2.0.',
-        notes: [
-          'Serving its first domain since 28 September: MX published, the edge open on ports 25, 465, 587 and 993, and outbound relayed through Amazon SES until the edge may send on port 25 itself.',
-          'Passed its own security gate before anything listened: an adversarial suite, fuzzing for every parser, Semgrep, gitleaks, an authenticated ZAP scan and an OWASP ASVS 5.0 Level 2 self-assessment — 253 requirements, no open fail.',
-          'The webmail rebuilt as a finished product: Mail, Settings and Admin as three separate places, compose attachments streamed into the encrypted store, and every screen laid out for a 390-pixel phone.',
-          'Single sign-on links to an account that already exists, and never creates one.',
-        ],
-      },
-    ],
   },
   {
     slug: 'ui',
@@ -679,7 +609,7 @@ export const PROJECTS: Project[] = [
     headline: 'One design language for every app.',
     summary:
       'A React component library whose rules are enforced by gates, not guidance — every story swept by axe.',
-    proof: ['38 components', '909 tests', 'axe on every story'],
+    proof: ['49 components', '1,297 tests', 'axe on every story'],
     tagline: 'One design system and component library for every app you build.',
     blurb:
       'Apps built without a shared system drift: an audit of five real apps found 176 distinct colour values, 19 type sizes and 170 button recipes — with no Button component anywhere. @d3cloud/ui replaces all of that with one visual language and a React component library whose rules are enforced by gates, not guidance.',
@@ -716,85 +646,16 @@ export const PROJECTS: Project[] = [
       },
     ],
     highlights: [
-      '38 components — primitives, forms, layers, the app frame and page patterns — covered by 909 tests',
+      '49 components — primitives, forms, layers, the app frame and page patterns, with toasts, a command palette, switches and settings rows — covered by 1,297 tests',
       'Every story swept by axe, so a component with stories is a component with an accessibility check',
       'Dark-first OKLCH colour on a single violet accent, with a light theme that can be applied per subtree',
       'A 7-step type scale on self-hosted Inter, with JetBrains Mono for metadata',
-      'No shadow token: elevation is tone, detachment is a boundary',
-      'Ships the d3-check-usage gate, which bans raw hex, off-scale values and shadows in any app',
+      'Two shadows, and only two: one for the content sheet and one for anything that floats — everything else is tone and boundary',
+      'Ships the d3-check-usage gate, which bans raw hex, off-scale values and any other shadow in any app',
     ],
     privacyLine: 'A component library — no telemetry, nothing phones home.',
     // d3-allow: a product's own brand colour, used only as its decorative mark — identity of the product, not interface colour.
     accent: '#B9A6FF',
-    changelog: [
-      {
-        version: '1.2.2',
-        date: '2026-09-18',
-        summary: 'Finishing the keyboard fix 1.2.1 started.',
-        notes: [
-          'A table with no height limit still scrolls sideways when its columns are wider than the page — the usual case on a dense screen — and 1.2.1 had decided the tab stop from the prop, which left exactly those tables unreachable.',
-          'Whether the scroll region takes focus is now measured against the box it sits in, and re-measured on resize. A table that fits adds no tab stop.',
-        ],
-      },
-      {
-        version: '1.2.1',
-        date: '2026-09-18',
-        summary: 'A bounded Table could only be scrolled with a mouse.',
-        notes: [
-          'Found by running axe over a real app rather than by reading the spec: a height limit makes the table a scroll container, and rows below the fold have to be reachable by keyboard (WCAG 2.1.1).',
-          'The scroll region now takes focus and is named by the table’s own caption.',
-        ],
-      },
-      {
-        version: '1.2.0',
-        date: '2026-09-18',
-        summary: 'Table — the component DataList deliberately is not.',
-        notes: [
-          'A list of like things is rows, not a table — which left nothing for the case a table is actually for: columns that line up, so a value can be compared down one or ordered by it.',
-          'Sorting cycles ascending, descending, then back to the order the caller passed \u2014 the given order is often the meaningful one, and a control that cannot return to it quietly destroys information.',
-          'Virtualization uses spacer rows rather than a transform, so it stays a real table: the browser\u2019s own column sizing and cell semantics still apply, and the row count reported to a screen reader is the whole set rather than the handful in the DOM.',
-          'Measured at 439 rows \u2014 fewer than forty in the DOM across a full scroll, and the 90th-percentile frame under 50ms.',
-        ],
-      },
-      {
-        version: '1.1.0',
-        date: '2026-09-17',
-        summary: 'The frame and the page patterns.',
-        notes: [
-          'v1.0 gave apps good parts and no guidance on putting them together, so each app improvised its own shell, lists and forms.',
-          'AppShell, SideNav, Menu and AccountMenu, with System/Light/Dark theming; Page, Stack, Grid, Section and AuthLayout; DescriptionList, DataList, FormActions and FilterBar.',
-          'Nine full-screen patterns with written rules, and strict-CSP support so dialogs work without unsafe-inline.',
-        ],
-      },
-      {
-        version: '1.0.0',
-        date: '2026-09-15',
-        summary: 'The first stable release; the public API is frozen.',
-        notes: [
-          'From here a rename or a removal is a major version.',
-          'Verified rendered in two production apps, in both themes and with keyboard focus.',
-          'CodeInput arrived with it: one-time codes and recovery codes, one character per box, with a single labelled input underneath so paste, autofill and screen readers see one field.',
-        ],
-      },
-      {
-        version: '0.1.1',
-        date: '2026-09-04',
-        summary: 'The usage gate ships inside the package.',
-        notes: [
-          'Run it from any app with npx d3-check-usage src — it no longer depends on the design-system repository being checked out alongside.',
-          'No component or token changes.',
-        ],
-      },
-      {
-        version: '0.1.0',
-        date: '2026-09-04',
-        summary: 'First tag.',
-        notes: [
-          '21 components, 361 tests, and an accessibility sweep over every story.',
-          'Colour, type, spacing and motion tokens, with a light theme alongside the dark default.',
-        ],
-      },
-    ],
   },
 ];
 

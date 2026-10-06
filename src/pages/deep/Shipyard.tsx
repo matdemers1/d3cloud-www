@@ -15,8 +15,15 @@ import { Accent, Quiet } from '../../components/Marketing';
  * (G1–G11), the agent's 25 s long-poll in apps/agent/src/loop.ts, the soak's
  * 10 s interval in packages/sequence/src/machine.ts, the one-hour approval in
  * apps/server/src/approvals/service.ts and the 90 s status wait in
- * apps/server/src/deploys/service.ts. App names, SHAs and messages drawn in
- * the "screens" are illustrations, and are captioned as such.
+ * apps/server/src/deploys/service.ts. The seven MCP tools are the ones
+ * registered in apps/server/src/mcp/tools.ts. Roll all's order (groups
+ * together with the canary first, Shipyard's own server last, stop at the
+ * first failure) is apps/server/src/rollouts/service.ts. Builds — the five
+ * stages, the firewalled network, sealed build secrets, one build at a time
+ * with deploys first, the 30-day log prune and the 20 GB cache cap — are
+ * docs/runbooks/build.md, docs/install/build-network.sh and
+ * packages/schema/src/build.ts, as of origin/main 7243711. App names, SHAs and
+ * messages drawn in the "screens" are illustrations, and are captioned as such.
  */
 
 const ENTRIES: DeepEntry[] = [
@@ -26,8 +33,9 @@ const ENTRIES: DeepEntry[] = [
   { id: 'gates', label: 'Gates' },
   { id: 'architecture', label: 'Architecture' },
   { id: 'locks', label: 'Locks' },
-  { id: 'people', label: 'Approvals & canaries' },
+  { id: 'people', label: 'Approvals & roll all' },
   { id: 'rollback', label: 'Rollback' },
+  { id: 'builds', label: 'Builds' },
   { id: 'itself', label: 'Deploys itself' },
   { id: 'why', label: 'Why this way' },
 ];
@@ -255,7 +263,7 @@ function steps(accent: string): Step[] {
     {
       title: 'Or let your agent ask',
       who: 'A coding agent, over MCP',
-      body: 'The same deploy is a tool call. The agent names itself, so anyone it locks out can see who it was.',
+      body: 'The same deploy is a tool call — the console makes the scoped token and the exact command to connect. The agent names itself, so anyone it locks out can see who it was.',
       screen: (
         <Screen>
           <Quiet>›</Quiet> <span className="text-fg">shipyard_deploy</span>
@@ -586,7 +594,8 @@ function Architecture({ accent }: { accent: string }) {
               The console, built phone-first
             </Box>
             <Box kicker="Coding agents" title="MCP">
-              Status, dry run, deploy, deploy status, rollback — with a token scoped to named apps
+              Status, dry run, deploy, deploy status, rollback, build, build status — with a token scoped to named
+              apps
             </Box>
           </div>
           <FlowDown accent={accent} />
@@ -604,7 +613,7 @@ function Architecture({ accent }: { accent: string }) {
               </Box>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Box title="PostgreSQL 16">Deploys, locks, approvals, audit</Box>
+              <Box title="PostgreSQL 16">Deploys, builds, locks, approvals, audit</Box>
               <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border-field p-5">
                 <span className="text-16 font-semibold text-fg line-through decoration-danger decoration-2">
                   Docker socket
@@ -644,7 +653,7 @@ function Architecture({ accent }: { accent: string }) {
 
         <aside className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-5">
-            <Tag>All that crosses to the host</Tag>
+            <Tag>What a request names</Tag>
             <div className="flex flex-wrap gap-2">
               {['an app name', 'a 40-character commit SHA'].map((item) => (
                 <span
@@ -657,7 +666,8 @@ function Architecture({ accent }: { accent: string }) {
               ))}
             </div>
             <span className="text-13 text-fg-muted">
-              Nothing else in a request reaches your server. What to run is decided by the manifest already on the host.
+              The rest is bookkeeping — IDs, who asked, a dry-run flag. What to run is decided by the manifest already on
+              the host.
             </span>
           </div>
           <div className="flex flex-col gap-3 rounded-lg border border-dashed border-border-field p-5">
@@ -774,7 +784,7 @@ function Locks({ accent }: { accent: string }) {
   );
 }
 
-/* ---------------------------------------------------------------- 07 Approvals & canaries */
+/* ---------------------------------------------------------------- 07 Approvals, canaries & roll all */
 
 function Pill({ children, tone = 'plain', accent }: { children: ReactNode; tone?: 'plain' | 'lit' | 'stop'; accent: string }) {
   return (
@@ -818,18 +828,24 @@ const GROUP_RUNS = [
   },
 ] as const;
 
+const ROLL_ALL = [
+  { app: 'notes', sha: '8e41c07', note: 'Every app is locked when you confirm — nobody deploys one halfway through.', last: false },
+  { app: 'wiki', sha: '2b7d9f0', note: 'Starts only once the app before it has passed its soak.', last: false },
+  { app: 'Shipyard', sha: 'c4a10e3', note: 'Always last, so its own restart never interrupts another app.', last: true },
+];
+
 function People({ accent }: { accent: string }) {
   return (
     <DeepSection
       id="people"
       code={code(7)}
-      label="Approvals & canaries"
+      label="Approvals, canaries & roll all"
       title={
         <>
           Some apps wait for a person. <Accent>Some go first.</Accent>
         </>
       }
-      lede="Mark an app as needing approval and its deploys stop before anything runs, until someone with the right to deploy approves them in the console. Put related apps in a group and they ship one at a time — the canary first — stopping at the first that fails."
+      lede="Mark an app as needing approval and its deploys stop before anything runs, until someone with the right to deploy approves them in the console. Put related apps in a group and they ship one at a time — the canary first — stopping at the first that fails. And when several apps have something waiting, Roll all ships them in one go, each at its own commit."
     >
       <div className="grid gap-16 lg:grid-cols-2">
         <Figure caption="An approval-required app. A coding agent asking is told it is waiting, and should say so rather than poll for an hour.">
@@ -895,6 +911,30 @@ function People({ accent }: { accent: string }) {
           </div>
         </Figure>
       </div>
+      <Figure caption="Roll all, drawn once. Each app ships at its own newest commit, one at a time, each through every gate and its own soak. Group-mates sit together with the canary first; Shipyard’s own server always goes last; the first failure leaves the rest untouched. App names and commits are illustrative.">
+        <div
+          role="img"
+          aria-label="Roll all: every app is locked when you confirm. Notes at 8e41c07 ships and soaks, then wiki at 2b7d9f0, each starting only once the one before it has passed its soak, then the Shipyard server at c4a10e3, always last. If any fails, every app after it is cancelled before it is touched."
+          className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-stretch"
+        >
+          {ROLL_ALL.map((item, i) => (
+            <div key={item.app} aria-hidden="true" className="contents">
+              {i > 0 && <Arrow accent={accent} />}
+              <span
+                className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4"
+                style={item.last ? { borderTopColor: accent, borderTopWidth: 3 } : undefined}
+              >
+                <span className="flex items-center gap-2 text-14 font-semibold text-fg">
+                  <Mark accent={accent} className="size-2" />
+                  {item.app}
+                </span>
+                <span className="font-mono text-11 text-fg-muted">{item.sha} · soaked</span>
+                <span className="text-13 text-fg-muted">{item.note}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </Figure>
       <ul className="grid gap-4 sm:grid-cols-3">
         {[
           { t: 'Freeze', d: 'Freeze an app and every deploy of it is refused until you unfreeze it.' },
@@ -984,20 +1024,111 @@ function Rollback({ accent }: { accent: string }) {
   );
 }
 
-/* ---------------------------------------------------------------- 09 Deploys itself */
+/* ---------------------------------------------------------------- 09 Builds */
+
+const BUILD_STAGES = [
+  { name: 'Fetch', note: 'The exact commit, only if it is on the default branch' },
+  { name: 'Test', note: 'The Dockerfile’s test target. Fails? Nothing is pushed' },
+  { name: 'Integration', note: 'Optional, in a network of its own' },
+  { name: 'Build', note: 'Each release target, with rootless BuildKit' },
+  { name: 'Push', note: 'Labelled with the commit; digests recorded' },
+];
+
+const BUILD_GUARDS = [
+  {
+    t: 'A build step cannot reach your house',
+    d: 'Builds run on a firewalled network: the public internet for package registries, but not the host, not a private address, not your other stacks.',
+  },
+  {
+    t: 'Secrets by name only',
+    d: 'The manifest names a build secret; its value is set on the host, never as an argument, sealed with the agent’s key and redacted from every log.',
+  },
+  {
+    t: 'Deploys come first',
+    d: 'One build at a time, and a deploy in flight holds a build’s next stage — a build never delays a deploy.',
+  },
+  {
+    t: 'Auto-deploy is just a request',
+    d: 'Opt in and each green build asks for one deploy, which passes every gate, freeze, lock and approval like any other.',
+  },
+];
+
+function Builds({ accent }: { accent: string }) {
+  return (
+    <DeepSection
+      id="builds"
+      code={code(9)}
+      label="Builds"
+      title={
+        <>
+          Bring your own CI — <Accent>or let Shipyard build it.</Accent>
+        </>
+      }
+      lede="Most apps keep the CI they have, and Shipyard only checks its result. An app can opt in to Shipyard building it instead: a push to the default branch, through a signed webhook, and the agent fetches that exact commit, runs its tests, builds the images and pushes them to your registry. A reconcile loop catches any push the webhook missed."
+    >
+      <Figure caption="An opt-in build, stage by stage. Any stage that fails ends the build; a deploy of that commit is then refused at G5, because the gate reads the agent’s own record of the build — and refuses again if the registry’s digest no longer matches it.">
+        <div
+          role="img"
+          aria-label="Build stages: fetch the exact commit on the default branch, run the test target, an optional integration stage in its own network, build each release target with rootless BuildKit, push the images labelled with the commit. Then gate G5 reads the build record, and the deploy follows the usual path."
+          className="flex flex-col gap-6"
+        >
+          <ol aria-hidden="true" className="grid gap-3 sm:grid-cols-5">
+            {BUILD_STAGES.map((stage, i) => (
+              <li key={stage.name} className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4">
+                <span className="flex items-center gap-2">
+                  <span className="font-mono text-11 text-fg-faint">{i + 1}</span>
+                  <span className="text-14 font-semibold text-fg">{stage.name}</span>
+                </span>
+                <span className="text-13 text-fg-muted">{stage.note}</span>
+              </li>
+            ))}
+          </ol>
+          <FlowDown accent={accent} />
+          <div
+            aria-hidden="true"
+            className="mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-lg border border-border-field bg-bg px-5 py-2.5 text-center text-14 text-fg"
+          >
+            <Mark accent={accent} />
+            <span className="font-mono text-12 text-fg-muted">G5</span>
+            reads the build record, then the deploy runs as always
+          </div>
+        </div>
+      </Figure>
+      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {BUILD_GUARDS.map((item) => (
+          <li key={item.t} className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-5">
+            <span className="text-16 font-semibold text-fg">{item.t}</span>
+            <span className="text-14 text-fg-muted">{item.d}</span>
+          </li>
+        ))}
+      </ul>
+      <Figure caption="Build defaults from Shipyard’s runbook. An admin changes the limits in Settings → Builds; the agent applies them on its next poll.">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+          <Stat value="1" label="build at a time" />
+          <Stat value="20 GB" label="build-cache cap, collected after every build" />
+          <Stat value="30" label="days a build’s log is kept" />
+          <Stat value="7" label="MCP tools, build and build status among them" />
+        </div>
+      </Figure>
+    </DeepSection>
+  );
+}
+
+/* ---------------------------------------------------------------- 10 Deploys itself */
 
 function Itself({ accent }: { accent: string }) {
   return (
     <DeepSection
       id="itself"
-      code={code(9)}
+      code={code(10)}
       label="Deploys itself"
       title={
         <>
           It ships its own updates — <Accent>except the part that rolls back.</Accent>
         </>
       }
-      lede="Shipyard’s server is just another app with a manifest: new versions go through the same gates, backup, migration, checks and soak. The agent is deliberately left out. You upgrade it by hand, so a bad release can never take away the one process able to undo it."
+      lede="Shipyard’s server is just another app with a manifest: new versions go through the same gates, backup, migration, checks and soak — and in a Roll all it always goes last. The agent is deliberately left out. You upgrade it by hand, so a bad release can never take away the one process able to undo it."
+      sunken
     >
       <div className="grid gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-center">
         <Figure caption="The server deploys through the agent like any app. If the new server fails, the agent rolls it back on its own — with the server unreachable.">
@@ -1034,7 +1165,7 @@ function Itself({ accent }: { accent: string }) {
   );
 }
 
-/* ---------------------------------------------------------------- 10 Why this way */
+/* ---------------------------------------------------------------- 11 Why this way */
 
 const BENEFITS = [
   { t: 'The careful path is the only path', d: 'Every deploy runs every check, whether it comes from you at midnight or a coding agent at noon.' },
@@ -1043,7 +1174,10 @@ const BENEFITS = [
   { t: 'Crashes are recoverable', d: 'Each step is journaled before it runs. After a crash, an unfinished deploy goes back to its last verified release — never forward blind.' },
   { t: 'Nothing new is exposed', d: 'The Docker-facing agent opens no port, and no request can carry a command to your host.' },
   { t: 'No lock-in to a platform', d: 'Your apps stay plain Docker Compose stacks on any Linux machine. Stop using Shipyard and they still run.' },
-  { t: 'Your secrets stay put', d: 'It stores no app secrets, redacts step output, never stores backup output, and sends no telemetry.' },
+  {
+    t: 'Your secrets stay put',
+    d: 'It stores no app secrets — a build secret, if you use builds, is sealed on your own host — redacts step output, never stores backup output, and sends no telemetry.',
+  },
   { t: 'Every deploy on the record', d: 'Who asked, which commit, each step and its result — in an audit log you can read back later.' },
 ];
 
@@ -1051,15 +1185,14 @@ function Why({ accent }: { accent: string }) {
   return (
     <DeepSection
       id="why"
-      code={code(10)}
+      code={code(11)}
       label="Why it is built this way"
       title={
         <>
           Boring on purpose, <Accent>so deploys stay boring.</Accent>
         </>
       }
-      lede="Shipyard does a few things and refuses the rest. It is not a platform for creating servers or editing your compose files — it takes the commit you already built and makes shipping it safe."
-      sunken
+      lede="Shipyard does a few things and refuses the rest. It is not a platform for creating servers or editing your compose files — it takes a commit that has been built and tested and makes shipping it safe."
     >
       <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {BENEFITS.map((b) => (
@@ -1099,6 +1232,7 @@ export function ShipyardDeepDive({ project }: { project: Project }) {
       <Locks accent={accent} />
       <People accent={accent} />
       <Rollback accent={accent} />
+      <Builds accent={accent} />
       <Itself accent={accent} />
       <Why accent={accent} />
     </>

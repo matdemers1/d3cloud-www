@@ -14,6 +14,8 @@ export interface LegalDoc {
 }
 
 const EFFECTIVE = 'July 24, 2026';
+/** Clearwhen 1.1 names your city through Apple Maps; the policy now says so. */
+const REVISED = 'October 6, 2026';
 
 /**
  * App Review 5.1.1(i) requires a privacy policy to explicitly state what is
@@ -23,7 +25,7 @@ const EFFECTIVE = 'July 24, 2026';
  */
 export const CLEARWHEN_PRIVACY: LegalDoc = {
   title: 'Clearwhen — Privacy Policy',
-  effective: EFFECTIVE,
+  effective: REVISED,
   intro:
     'Clearwhen has no accounts, no analytics, no advertising, and no third-party tracking SDKs. There is no Clearwhen server. This policy explains the data the app can access and exactly what happens to it.',
   sections: [
@@ -36,8 +38,9 @@ export const CLEARWHEN_PRIVACY: LegalDoc = {
     {
       heading: 'How your location is used',
       paragraphs: [
-        'With your permission, Clearwhen reads your device location for exactly one purpose: asking a weather service for a forecast at that spot. Location access is "While Using the App" only.',
-        'Your coordinates are sent to Apple Weather (Apple\'s WeatherKit service) and, in the United States, to the National Weather Service at api.weather.gov. They are used to answer that single request and are never sent anywhere else.',
+        'With your permission, Clearwhen reads your device location for two purposes: asking a weather service for a forecast at that spot, and showing the name of the city you are in. Location access is "While Using the App" only.',
+        'Your coordinates are sent to Apple Weather (Apple\'s WeatherKit service) and, in the United States, to the National Weather Service at api.weather.gov, to get the forecast. They are also sent to Apple\'s geocoding service (Apple Maps) to look up the name of the city shown at the top of the screen. They are used to answer those requests and are never sent anywhere else.',
+        'When you search for a city to add, what you type is sent to Apple Maps to find matching places. Saved cities are stored only on your device.',
         'Your coordinates are never attached to an account, a user ID, an advertising identifier, or any other persistent identifier, because Clearwhen does not create any.',
       ],
     },
@@ -52,11 +55,12 @@ export const CLEARWHEN_PRIVACY: LegalDoc = {
     {
       heading: 'Third parties',
       paragraphs: [
-        'Clearwhen relies on two weather data providers. Each handles requests under its own privacy policy:',
+        'Clearwhen relies on these services. Each handles requests under its own privacy policy:',
       ],
       bullets: [
         'Apple Weather (WeatherKit) — apple.com/legal/privacy',
         'US National Weather Service (NOAA) — weather.gov/privacy',
+        'Apple Maps (place names and city search) — apple.com/legal/privacy',
       ],
     },
     {
@@ -95,7 +99,7 @@ export const CLEARWHEN_PRIVACY: LegalDoc = {
 
 export const QR_PRIVACY: LegalDoc = {
   title: 'D3 QR — Privacy Policy',
-  effective: EFFECTIVE,
+  effective: 'October 6, 2026',
   intro:
     'D3 QR runs entirely in your browser. There is no backend, no account, and no analytics.',
   sections: [
@@ -120,7 +124,7 @@ export const QR_PRIVACY: LegalDoc = {
     {
       heading: 'Hosting',
       paragraphs: [
-        'The site is served as static files by Cloudflare. Cloudflare may process standard request metadata (such as IP address) to deliver and protect the site, under its own privacy policy. We do not receive, store, or analyse that data.',
+        'The site is served as static files by Cloudflare. Cloudflare may process standard request metadata (such as IP address) to deliver and protect the site, and keeps short-lived request logs we can see for troubleshooting, under its own privacy policy. We use that data for nothing else, and it never includes the content you encode.',
       ],
     },
     {

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { themeBootScript } from '@d3cloud/ui';
 import { LEGAL_DOCS } from './content/legal';
 import { PROJECTS } from './content/projects';
+import { CHANGELOGS } from './content/changelogs';
 import {
   BUILD_LOG,
   WORKSHOP,
@@ -278,6 +279,22 @@ describe('screenshots', () => {
   });
 });
 
+describe('Release notes (DI-T-11.1)', () => {
+  it('belong to a known product, newest first, each with a summary and notes', () => {
+    for (const [slug, releases] of Object.entries(CHANGELOGS)) {
+      expect(PROJECTS.some((p) => p.slug === slug), slug).toBe(true);
+      const dates = releases!.map((r) => r.date);
+      expect(dates, slug).toEqual([...dates].sort().reverse());
+      for (const r of releases!) expect(r.summary && r.notes.length > 0, `${slug} ${r.version}`).toBeTruthy();
+    }
+  });
+
+  it('stay out of the entry bundle: only the lazy release-notes page imports them', () => {
+    expect(readFileSync('src/pages/Project.tsx', 'utf8')).not.toMatch(/content\/changelogs/);
+    expect(readFileSync('src/pages/Project.tsx', 'utf8')).toMatch(/lazy\(\(\) => import\('\.\/ReleaseNotes'\)/);
+  });
+});
+
 describe('Shipyard launch (DI-T-018)', () => {
   const shipyard = PROJECTS.find((p) => p.slug === 'shipyard');
 
@@ -299,7 +316,7 @@ describe('Shipyard launch (DI-T-018)', () => {
   });
 
   it('ships 0.1.0 with its release page, and logs the launch', () => {
-    expect(shipyard?.changelog?.[0]).toMatchObject({
+    expect(CHANGELOGS.shipyard?.find((c) => c.version === '0.1.0')).toMatchObject({
       version: '0.1.0',
       date: '2026-09-25',
       href: 'https://github.com/matdemers1/shipyard/releases/tag/v0.1.0',
@@ -405,14 +422,17 @@ describe('D3 Floorspec on the bench (DI-T-10.3)', () => {
       'Floorspec Core and Ops Draft 0.4, and Rules Draft 0.2, published at d3cloud.io/floorspec',
       'A reference engine with exact geometry, a validator and a CLI, passing every conformance test',
       'Draw walls and rooms in 2D, by pointer or keyboard alone',
-      'Claude edits over MCP, as reviewable changesets you accept or reject',
+      'Claude starts a project and edits it over MCP, as reviewable changesets you accept or reject',
+      'An agent eval of the whole bet: 68 of 72 runs passed, against an 80% bar',
       'Every edit validated by the exact engine, with coded diagnostics and fixes',
       'From a program of rooms to a bubble diagram to layout candidates',
       'Building systems — electrical, plumbing, mechanical — as devices on walls',
+      'Floorspec Rules in the engine — profiles, and advisory findings with citations on the plan, which never say “compliant”',
       'Arc walls, winder and spiral stairs, and mixed-pitch roofs, all derived exactly',
       'A 3D walkthrough with materials, textures and furniture',
       'An advisory energy estimate and path-traced stills, clearly labelled',
-      'Export to IFC, glTF, PDF and DXF',
+      'Export to IFC, glTF, USDZ, PDF and DXF, and the whole house as a .floorspec package',
+      'Share links that show the plan, 3D and findings without an account, with comments pinned to elements',
       'Its own login and Sign in with D3 Auth, side by side',
       'Self-hosted with Docker Compose, with no telemetry',
     ]);

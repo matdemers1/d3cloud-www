@@ -12,7 +12,12 @@ import { Accent, Quiet } from '../../components/Marketing';
  * Written for the reader, not the maker: examples use an illustrative project
  * coded APP. Product facts — the attribution weights, the five drift
  * categories, the twelve tools, the test and latency figures — come from
- * Foreman's repository.
+ * Foreman's repository. Refreshed 2026-10-06 against origin/main fd13023
+ * (DI-T-11.1): 47 Prisma models; 146 Playwright tests and 26 axe screens per
+ * theme, from CI run 37260334882; task dependencies, status rollup and
+ * guidelines (FRM-T-11.1, FRM-T-11.5, FRM-T-009); the ideas-board boundary
+ * (FRM-ADR-016, board-stays-in-its-lane.test.ts). The p95 figure is the
+ * Phase 9 measurement recorded in Foreman.
  */
 
 const ENTRIES: DeepEntry[] = [
@@ -131,7 +136,7 @@ const STEPS: Step[] = [
   {
     title: 'Ask where it stands',
     who: 'An agent, over MCP',
-    body: 'A coding session opens with one call. The brief is a few hundred tokens: the phase in flight, what is next, what is blocked and why, CI, drift.',
+    body: 'A coding session opens with one call. The brief is a few hundred tokens: the phase in flight, the next tasks whose dependencies are done, what is blocked and why, CI, drift — and the standing rules every project follows.',
     screen: (
       <>
         <Quiet>›</Quiet> foreman_brief APP{'\n'}
@@ -319,7 +324,7 @@ function Architecture({ accent }: { accent: string }) {
           <FlowDown accent={accent} />
           <div aria-hidden="true" className="grid items-stretch gap-3 lg:grid-cols-[minmax(0,3fr)_auto_minmax(0,2fr)]">
             <Box kicker="State" title="PostgreSQL 16" strong>
-              43 models. Every write leaves an audit event and can be undone. The job queue lives here too — no Redis.
+              47 models. Every write leaves an audit event and can be undone. The job queue lives here too — no Redis.
             </Box>
             <span className="hidden items-center font-mono text-16 text-fg-faint lg:flex">⇄</span>
             <Box kicker="Worker" title="Drains the queue" strong>
@@ -585,7 +590,8 @@ function Drift({ accent }: { accent: string }) {
             </div>
             <p className="mt-6 text-14 text-fg-muted">
               And the strongest check of all: <span className="text-fg">a phase cannot be marked complete while its
-              exit gate fails</span> — the refusal names exactly what is in the way.
+              exit gate fails</span> — the refusal names exactly what is in the way. Status rolls up on its own: close
+              a phase’s last task and the phase completes if its gate passes, or stays open and says why.
             </p>
           </div>
         </Figure>
@@ -669,6 +675,20 @@ function Mcp({ accent }: { accent: string }) {
                   </span>
                 );
               })}
+            </div>
+          </Figure>
+          <Figure caption="Guidelines: standing decisions that belong to no single project ride along in every brief, so each session starts with the house rules. Illustrative.">
+            <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-5 font-mono text-12">
+              <span className="text-fg">
+                <Quiet>›</Quiet> foreman_brief APP
+              </span>
+              <span className="text-fg-faint">guidelines</span>
+              {['GL-001 · PostgreSQL for every database', 'GL-002 · Two ways to sign in, always'].map((rule) => (
+                <span key={rule} className="flex items-center gap-2 text-fg-muted">
+                  <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: accent }} />
+                  {rule}
+                </span>
+              ))}
             </div>
           </Figure>
           <Figure caption="Forward progress just happens. Anything regressive or irreversible asks you first, through the protocol's own round-trip.">
@@ -801,8 +821,8 @@ function Bring({ accent }: { accent: string }) {
       </div>
       <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
         <Stat value="12" label="MCP tools, and not one more — a contract test holds the ceiling" />
-        <Stat value="107" label="end-to-end tests, run in a real browser" />
-        <Stat value="20" label="screens checked with axe, in light and dark" />
+        <Stat value="146" label="end-to-end tests, run in a real browser on every push to main" />
+        <Stat value="26" label="screens checked with axe, in light and dark" />
         <Stat value="<15ms" label="every endpoint at p95, over 210 real requirements" />
       </div>
     </DeepSection>
@@ -814,7 +834,7 @@ function Bring({ accent }: { accent: string }) {
 const NOT = [
   'Sprints, velocity, story points',
   'Time tracking',
-  'Assignees, comments, notifications',
+  'Assignees and comment threads',
   'Due dates and Gantt charts',
   'A freeform wiki',
   'Public or shareable views',
@@ -834,7 +854,7 @@ function Not() {
           The refusals are <Accent>requirements too.</Accent>
         </>
       }
-      lede="Foreman is a ledger for a plan, not a team tracker. Each of these is recorded as a requirement asserting its absence, so none can quietly arrive. The one that matters most: no freeform wiki — the guardrail that keeps it a set of records rather than another pile of notes."
+      lede="Foreman is a ledger for a plan, not a team tracker. Each of these is recorded as a requirement asserting its absence, so none can quietly arrive. The one that matters most: no freeform wiki — the guardrail that keeps it a set of records rather than another pile of notes. One exception is opt-in and fenced: a deployment can run as an ideas board, where several people submit, discuss and score ideas, and a test fails if a comment or a score ever points at a requirement, task or finding."
       sunken
     >
       <ul className="flex flex-wrap gap-3">

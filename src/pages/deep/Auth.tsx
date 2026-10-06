@@ -10,7 +10,8 @@ import { Accent, Quiet } from '../../components/Marketing';
  *
  * Every number is a property of the product, traceable to the d3-auth repo:
  * token and session lifetimes (apps/server/src/oidc/provider.ts,
- * session-lifetime.ts, security/trusted-device.ts), throttling
+ * session-lifetime.ts, security/trusted-device.ts), the login states and
+ * what the screens offer (interaction/machine.ts, console/src/login/), throttling
  * (security/throttle.ts), the secret envelope (security/kek.ts), key rotation
  * (oidc/keys.ts), back-channel delivery (oidc/backchannel.ts), and the
  * security gate (README, test/adversarial/). People, apps and roles drawn
@@ -224,7 +225,7 @@ function Walkthrough({ accent }: { accent: string }) {
     {
       title: 'Give access',
       who: 'You, per person',
-      body: 'Choose a person, an app and their roles in it. Or give a group access, and everyone in it has it. Until you do, that person cannot sign in to that app at all.',
+      body: 'Choose a person, an app and their roles in it. Or give a group access, and everyone in it has it — or put it in the invite, so they arrive already holding it. Until you do, that person cannot sign in to that app at all.',
       screen: (
         <>
           <span className="text-fg">Sam → Photos</span>
@@ -242,7 +243,7 @@ function Walkthrough({ accent }: { accent: string }) {
     {
       title: 'Sign in',
       who: 'Them, anywhere',
-      body: 'In the app, a second button sits beside its own login. One tap, a passkey or a password and code, and they are back in the app — with the roles you picked.',
+      body: 'In the app, a second button sits beside its own login. One tap, a password — then a passkey or a code, if they have one — and they are back in the app — with the roles you picked.',
       screen: (
         <>
           <Field label="Password" value="••••••••" />
@@ -322,7 +323,7 @@ const MESSAGES: Message[] = [
     from: 2,
     to: 0,
     label: 'Who are you?',
-    detail: 'A passkey signs you in outright. Otherwise a password, then an authenticator code.',
+    detail: 'A password, then a passkey or an authenticator code on any account that has one — every admin must. A browser you said to trust skips that second step.',
   },
   {
     from: 2,
@@ -575,7 +576,7 @@ function Token({ app, roles, accent }: { app: string; roles: string; accent: str
         <TokenLine k="iss" v='"https://auth.example.home"' accent={accent} />
         <TokenLine k="sub" v='"u_7Hq2…"' accent={accent} />
         <TokenLine k="aud" v={`"${app.toLowerCase()}"`} accent={accent} />
-        <TokenLine k="amr" v='["hwk"]' accent={accent} />
+        <TokenLine k="amr" v='["pwd", "hwk"]' accent={accent} />
         <TokenLine k="roles" v={roles} lit accent={accent} />
       </code>
     </div>
@@ -660,8 +661,8 @@ function StateMachine({ accent }: { accent: string }) {
       <p className="flex items-start gap-3 rounded-lg border border-dashed border-border-field px-4 py-3 text-13 text-fg-muted">
         <Dot accent={accent} className="mt-1 size-2" />
         <span>
-          <span className="text-fg">The shortcut:</span> a passkey on the first screen goes straight from 1 to 5. Nothing
-          to type, nothing to phish.
+          <span className="text-fg">Next:</span> a passkey on the first screen, straight from 1 to 5 — nothing to type,
+          nothing to phish. The state machine already has that path; the sign-in screen does not offer it yet.
         </span>
       </p>
     </div>
@@ -934,7 +935,7 @@ function Architecture({ accent }: { accent: string }) {
             Sign-in screens built phone-first; the console works on both
           </Box>
           <Box kicker="Your apps" title="Anything that speaks OIDC">
-            Immich from a preset, or your own app — with TypeScript and Python client libraries
+            Immich from a preset, or your own app — with TypeScript (on npm) and Python client libraries
           </Box>
         </div>
         <FlowDown accent={accent} />
@@ -1159,8 +1160,11 @@ function Gate({ accent }: { accent: string }) {
           </ul>
         </div>
         <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-5">
-          <Stat value="74" label="attacks in an adversarial suite, in five classes" />
-          <span className="text-13 text-fg-muted">Plus cases against the client libraries and login forgery.</span>
+          <Stat value="74" label="attacks in an adversarial suite, in five classes, when it was published" />
+          <span className="text-13 text-fg-muted">
+            Plus cases against the client libraries and login forgery. Routes added since are walked too, with unsigned,
+            self-signed and borrowed tokens.
+          </span>
         </div>
         <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-5">
           <Stat value="L2" label="OWASP ASVS 5.0 self-assessment, with no open failure" />

@@ -19,8 +19,13 @@ import { Accent, Quiet } from '../../components/Marketing';
  *   - the nine Inspect sections: web/src/mail/InspectDrawer.tsx;
  *   - the gate: 82 adversarial tests in nine files (security/adversarial/test/integration), 14 active
  *     fuzz targets (fuzz/targets.json), the ASVS 5.0 L2 breakdown (docs/security/asvs-l2.md);
- *   - 18 phases, 204 requirements, 219 tasks and 15 decisions: the plan of record;
- *   - code counts, computed at commit f133de6 — see the captions for how.
+ *   - 21 phases, 204 requirements, 231 tasks and 16 decisions: the plan of record, read 2026-10-06;
+ *   - the ports the edge opens: docs/dns.md (25, 465, 587 and 993; 4190 stays closed until a
+ *     ManageSieve daemon runs in production);
+ *   - code counts, computed at commit 7827a55 (origin/main, 2026-10-06 audit; production runs the
+ *     same revision per mail.d3cloud.io/health) — see the captions for how. The unit-test figure is
+ *     3,945 at f133de6 plus the 61 it()/test() calls added since; every counting variant gives the
+ *     same +61. The browser count (171) is unchanged since f133de6.
  * Sessions, addresses and timelines drawn as "screens" are illustrations, and are captioned so.
  */
 
@@ -198,12 +203,12 @@ function Why({ accent }: { accent: string }) {
           </div>
         </Figure>
       </div>
-      <Figure caption="Counted at commit f133de6 over the TypeScript files git tracks under apps/ and packages/: source excludes *.test.*, test/ folders and type declarations; tests are it() and test() calls in the test files. The browser and adversarial suites are counted the same way, further down.">
+      <Figure caption="Counted at commit 7827a55 over the TypeScript files git tracks under apps/ and packages/: source excludes *.test.*, test/ folders and type declarations; tests are it() and test() calls in the test files. The browser and adversarial suites are counted the same way, further down.">
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
           <Stat value="10" label="apps — the daemons, the webmail and the edge forwarder" />
-          <Stat value="33" label="packages — parsers, checks and shared libraries" />
-          <Stat value="146k" label="lines of TypeScript, tests not included" />
-          <Stat value="3,945" label="unit and integration tests beside them" />
+          <Stat value="34" label="packages — parsers, checks and shared libraries" />
+          <Stat value="150k" label="lines of TypeScript, tests not included" />
+          <Stat value="4,006" label="unit and integration tests beside them" />
         </div>
       </Figure>
     </DeepSection>
@@ -240,8 +245,8 @@ function Path({ accent }: { accent: string }) {
             </Box>
             <FlowDown accent={accent} />
             <Box kicker="The edge · a $5 VPS" title="Forwards, and keeps nothing">
-              Ports 25, 465, 587, 993 and 4190, sent home over WireGuard with PROXY v2 so home sees the real client
-              address. No mail, no keys — TLS ends at home.
+              Ports 25, 465, 587 and 993 — and 4190 for ManageSieve, once you open it — sent home over WireGuard
+              with PROXY v2 so home sees the real client address. No mail, no keys — TLS ends at home.
             </Box>
             <FlowDown accent={accent} />
             <div className="flex flex-col gap-3 rounded-lg border border-border-field bg-bg p-4">
@@ -729,7 +734,7 @@ function Decisions({ accent }: { accent: string }) {
           Why it is built <Accent>this way.</Accent>
         </>
       }
-      lede="Fifteen decisions are recorded in its plan. These six shape everything else — each trades some convenience for a server you can reason about."
+      lede="Sixteen decisions are recorded in its plan. These six shape everything else — each trades some convenience for a server you can reason about."
       sunken
     >
       <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -770,6 +775,9 @@ const PHASES: { name: string; closed: string | null }[] = [
   { name: 'The finished webmail', closed: '30 Sep' },
   { name: 'Design audit close-out', closed: null },
   { name: 'Phone admin and polish', closed: '2 Oct' },
+  { name: 'Its own mark', closed: '2 Oct' },
+  { name: 'Native app contract', closed: null },
+  { name: 'Accounts, links and push', closed: null },
 ];
 
 function Build({ accent }: { accent: string }) {
@@ -789,7 +797,7 @@ function Build({ accent }: { accent: string }) {
       <Figure
         caption={`The ${PHASES.length} phases. ${closed} are closed; each of the other ${PHASES.length - closed} still holds an open task, most of them steps only an operator can take on real hardware — a device check, a restore drill on a clean machine.`}
       >
-        <ol className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
+        <ol className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-7">
           {PHASES.map((phase, index) => (
             <li key={phase.name} className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4">
               <span className="flex items-center justify-between gap-2">
@@ -804,9 +812,9 @@ function Build({ accent }: { accent: string }) {
       </Figure>
       <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
         <Stat value="204" label="requirements in its plan" />
-        <Stat value="219" label="tasks, each tied to what it satisfies" />
+        <Stat value="231" label="tasks, each with its own test of done" />
         <Stat value="171" label="browser tests against the composed stack" />
-        <Stat value="774" label="commits on main, as of 2 October 2026" />
+        <Stat value="787" label="commits on main, as of 4 October 2026" />
       </div>
     </DeepSection>
   );

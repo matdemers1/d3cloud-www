@@ -14,7 +14,9 @@ import { Accent, Quiet } from '../../components/Marketing';
  * and AMBIGUOUS_FLOOR in worker/stages/segment.py), the filing gate's weights
  * (worker/classify/gate.py), Ask's page limit (api/ask.py), the known forms
  * (api/forms/seed/), the vault's lock and chunking (api/vault/session.py,
- * chunked.py, crypto.py). Example documents and page numbers are illustrations,
+ * chunked.py, crypto.py, and store.py for the lock → check → unlink rule), the
+ * two delete paths (tests/test_no_destructive_paths.py; api/account_purge.py and
+ * api/account_deletion.py for the week's grace). Example documents and page numbers are illustrations,
  * and their captions say so.
  */
 
@@ -1113,7 +1115,9 @@ function Vault({ accent }: { accent: string }) {
             </li>
             <li className="border-t border-border pt-3">
               <span className="text-fg">Moved in, then verified.</span> The plain copy is removed only after the
-              encrypted one has been written, read back from disk and checked against it.
+              encrypted one has been written, read back from disk and checked against it — and only if no file
+              outside the vault holds the same bytes, asked again under the lock every upload takes, so another
+              library’s copy of the same file is never the one removed.
             </li>
           </ul>
         </div>
@@ -1134,7 +1138,7 @@ const BACKUP = [
 
 const PRINCIPLES = [
   ['Your originals are never modified', 'Every split, tag and correction is a record about the file, not a change to it. Export hands back exactly what you added.'],
-  ['Nothing is deleted automatically', 'No unattended code path removes a document or a record, and a test scans the code to keep it that way. Removing is always your decision.'],
+  ['Nothing is deleted unless someone asked', 'Only two code paths remove anything, and a test scans the code to keep it to those two: moving a document into the vault replaces its plain copy, and deleting an account waits a week, which an administrator can cancel, then takes only what nobody else could see. Documents in a library other people share stay.'],
   ['Search never depends on AI', 'OCR, splitting and search run locally. If the AI service is down or you never add a key, the archive still finds everything.'],
   ['Every automatic decision can be undone', 'Filing, splitting, tagging — each shows its evidence and reverses in one click. Your own corrections are never quietly overwritten later.'],
   ['Nothing fails silently', 'A file that could not be read, a stalled queue, a missed backup — each shows up on a screen you will see, not in a log you won’t.'],

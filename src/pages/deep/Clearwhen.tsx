@@ -16,7 +16,9 @@ import { Accent, Quiet } from '../../components/Marketing';
  * chain and its seven days (ForecastChain.swift), the briefing
  * (BriefingScheduler.swift, SettingsView.swift), calendar handling
  * (CalendarService.swift, CalendarEvent.swift), widget families
- * (ClearwhenWidget.swift) and the watch payload (WatchPayload.swift).
+ * (ClearwhenWidget.swift), the watch payload (WatchPayload.swift), and what
+ * else leaves the phone: naming your place with Apple's geocoder
+ * (LocationService.placeName) and city search (LocationsListView.swift).
  * Every forecast drawn is an illustration and is captioned as one.
  */
 
@@ -1050,12 +1052,12 @@ function Private({ accent }: { accent: string }) {
           One thing goes out. <Accent>A forecast comes back.</Accent>
         </>
       }
-      lede="To get a forecast, a weather service has to know where you are. That is the only thing Clearwhen sends anywhere, and only while you’re using it. There is no account to make."
+      lede="To get a forecast, a weather service has to know where you are. Your location is the only thing about you that Clearwhen sends anywhere — for the forecast, and to Apple Maps to put a city name on it — and only while you’re using it. There is no account to make."
       sunken
     >
       <div
         role="img"
-        aria-label="Your phone holds your windows, your calendar, every verdict and your briefings. It sends a location to Apple Weather, or to the National Weather Service, and receives an hourly forecast and alerts. Nothing else crosses."
+        aria-label="Your phone holds your windows, your calendar, every verdict and your briefings. It sends a location to Apple Weather, or to the National Weather Service, and receives an hourly forecast and alerts; it asks Apple Maps for the location's city name, and for the cities you search for. Nothing else crosses."
         className="grid items-center gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,1.3fr)_minmax(0,2fr)]"
       >
         <div aria-hidden="true" className="flex flex-col gap-3 rounded-lg border-2 border-border-field bg-bg p-5">
@@ -1073,7 +1075,7 @@ function Private({ accent }: { accent: string }) {
         <div aria-hidden="true" className="flex flex-col gap-4 py-2">
           {[
             { label: 'a location', dir: 'out' },
-            { label: 'an hourly forecast, and alerts', dir: 'in' },
+            { label: 'a forecast, alerts and a city name', dir: 'in' },
           ].map((a) => (
             <div key={a.label} className="flex flex-col items-center gap-1 text-center">
               <span className="text-13 text-fg">{a.label}</span>
@@ -1102,10 +1104,13 @@ function Private({ accent }: { accent: string }) {
         </div>
 
         <div aria-hidden="true" className="flex flex-col gap-3 rounded-lg border border-dashed border-border-field p-5">
-          <span className="font-mono text-11 tracking-label text-fg-faint uppercase">Weather services</span>
+          <span className="font-mono text-11 tracking-label text-fg-faint uppercase">Where it goes</span>
           <span className="text-16 font-semibold text-fg">Apple Weather</span>
           <span className="text-16 font-semibold text-fg">
             National Weather Service <Quiet>· US backup</Quiet>
+          </span>
+          <span className="text-16 font-semibold text-fg">
+            Apple Maps <Quiet>· names the place, finds cities</Quiet>
           </span>
         </div>
       </div>
@@ -1133,7 +1138,7 @@ const WHY: { title: string; body: string; mark: string }[] = [
   },
   {
     title: 'Nothing to sign up for',
-    body: 'No account, and nothing about your day on anyone’s server. Your windows and calendar stay where they are; only a location leaves, to ask for weather.',
+    body: 'No account, and nothing about your day on anyone’s server. Your windows and calendar stay where they are; only a location leaves, to ask for weather and a city name.',
     mark: 'lock',
   },
 ];

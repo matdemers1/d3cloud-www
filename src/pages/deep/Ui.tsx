@@ -20,18 +20,30 @@ import { Accent, Quiet } from '../../components/Marketing';
  * the real token classes, rendered in both themes at once, and the component
  * board is real components imported from @d3cloud/ui.
  *
- * Numbers, and where they come from (d3-design-system repo):
+ * Numbers, and where they come from (d3-design-system repo, origin/main at
+ * 147dfea = release v1.5.0):
  *  - The audit: design-system/AUDIT.md — 176 colour values by hue family, 19
  *    rendered type sizes (listed), 170 button recipes, 433 hand-rolled buttons,
  *    5 CSS approaches, 0 shared code, 4 of 5 apps declaring an unloaded face.
- *  - Tokens: src/tokens/build/*.css as installed — 24 semantic colour tokens per
- *    theme, 7 type steps, 12 spacing steps, 5 radii, 0 shadow tokens with the 7
- *    Tailwind shadow utilities switched off.
- *  - Components: d3-ui/src/components — 38.
- *  - Tests: `npx vitest run` in d3-ui on 2026-09-27 — 909 tests in 42 files, 489
- *    of them in stories.test.tsx (244 stories × renders + axe, plus a guard).
- *  - Browser checks: d3-ui/browser — 11 Playwright specs; a11y.spec runs axe on
- *    every story in dark and light.
+ *  - Tokens: design-system/tokens/color.semantic.*.json — 26 semantic colour
+ *    tokens per theme (the 24 drawn below, plus surface-card and fill-quiet)
+ *    and 6 avatar tint pairs; d3-ui/src/tokens/build/*.css — 7 type steps, 12
+ *    spacing steps, 5 radii, exactly 2 shadow tokens (shadow.sheet and
+ *    shadow.float in shape.json; DS-ADR-001 / D-075) with the 7 Tailwind shadow utilities
+ *    still switched off (theme.shape.css).
+ *  - This page installs an earlier release, so the two newest colour tokens
+ *    and the two shadows are not available to it as classes: the swatches draw
+ *    the 24 it has, and the Elevation plates draw each shadow with the scrim
+ *    token as its ink, at the offset, blur and strength shape.css gives it.
+ *  - Components: the component modules d3-ui/src/index.ts exports — 49 (the
+ *    50 folders in src/components less Kbd, which is internal).
+ *  - Tests: `npx vitest run` on a `git archive` of v1.5.0, 2026-10-06 — 1,297
+ *    tests in 54 files, 621 of them in stories.test.tsx (310 stories × renders
+ *    + axe, plus a guard). The published Storybook's index lists the same 310.
+ *  - Browser checks: d3-ui/browser — 18 Playwright specs; a11y.spec runs axe on
+ *    every story in dark and light, elevation.spec fails any stray shadow.
+ *  - Contrast figures: CHANGELOG.md, v1.4.0 (avatar tints), v1.4.2 (SideNav
+ *    bar) and v1.5.0 (field edge).
  */
 
 const ENTRIES: DeepEntry[] = [
@@ -157,7 +169,7 @@ function TokenGrid() {
   return (
     <div
       role="img"
-      aria-label={`${TOKEN_CELLS.length} squares, one per semantic colour token, drawn with the tokens themselves.`}
+      aria-label={`${TOKEN_CELLS.length} squares, one for each semantic colour token every screen uses, drawn with the tokens themselves.`}
       className="grid grid-cols-6 gap-1"
     >
       {TOKEN_CELLS.map((cls) => (
@@ -266,7 +278,7 @@ function Sprawl({ accent }: { accent: string }) {
       lede="An audit of five real apps built without a shared system counted what was actually on screen. Nothing in it was careless — it is what happens when the only thing between a developer and a new colour is a convention. D3 UI collapses each of these into a small, named set."
     >
       <div className="grid gap-10 lg:grid-cols-2">
-        <Plate slug="Colour" meta="176 → 24">
+        <Plate slug="Colour" meta="176 → 26">
           <div className="grid grid-cols-[minmax(0,3fr)_auto_minmax(0,1.3fr)] items-center gap-3 sm:gap-5">
             <ColourSprawl />
             <span aria-hidden="true" className="font-mono text-16 text-fg-faint">
@@ -275,10 +287,10 @@ function Sprawl({ accent }: { accent: string }) {
             <TokenGrid />
           </div>
           <p className="text-14 text-fg-muted">
-            176 distinct colour values, eighteen of them blues. They become 24 semantic tokens — named for what they do,
+            176 distinct colour values, eighteen of them blues. They become 26 semantic tokens — named for what they do,
             like <code className="font-mono text-13 text-fg">surface</code> or{' '}
-            <code className="font-mono text-13 text-fg">danger</code> — which the grid on the right is drawn with. Switch
-            the theme and it changes; the sprawl on the left cannot.
+            <code className="font-mono text-13 text-fg">danger</code> — and the grid on the right is drawn with the 24
+            that every screen uses. Switch the theme and it changes; the sprawl on the left cannot.
           </p>
         </Plate>
         <Plate slug="Type sizes" meta="19 → 7">
@@ -335,7 +347,7 @@ const STEPS: { title: string; body: string; code: ReactNode }[] = [
       <>
         <Quiet>$</Quiet> npm i{' '}
         <span className="break-all">
-          https://github.com/matdemers1/d3-design-system/releases/download/v1.2.2/d3cloud-ui-1.2.2.tgz
+          https://github.com/matdemers1/d3-design-system/releases/download/v1.5.0/d3cloud-ui-1.5.0.tgz
         </span>
       </>
     ),
@@ -354,11 +366,11 @@ const STEPS: { title: string; body: string; code: ReactNode }[] = [
   },
   {
     title: 'Frame the app',
-    body: 'ThemeProvider owns light, dark and system. AppShell owns the sidebar, the drawer below lg and the one main landmark.',
+    body: 'ThemeProvider owns light, dark and system. AppShell owns the sidebar, the drawer below lg and the one main landmark — raised, or recessed with the content on its own sheet.',
     code: (
       <>
         {'<ThemeProvider storageKey="app-theme">\n'}
-        {'  <AppShell\n'}
+        {'  <AppShell navTone="recessed"\n'}
         {'    brand={<AppShellBrand name="Acme" href="/" />}\n'}
         {'    nav={<SideNav aria-label="Main">…</SideNav>}>\n'}
         {'    <Page width="wide">…</Page>\n'}
@@ -369,7 +381,7 @@ const STEPS: { title: string; body: string; code: ReactNode }[] = [
   },
   {
     title: 'Compose, then gate',
-    body: 'Build pages from components, then add the usage gate to lint. It fails the build on a raw colour, an off-scale size or a shadow.',
+    body: 'Build pages from components, then add the usage gate to lint. It fails the build on a raw colour, an off-scale size or any shadow but the two the system names.',
     code: (
       <>
         {'<PageHeader title="Invoices"\n'}
@@ -483,7 +495,7 @@ function Architecture({ accent }: { accent: string }) {
         >
           <div aria-hidden="true" className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
             <Box kicker="Source" title="Token JSON">
-              Colour, type, space, radius, motion, icon — the only place a value is written
+              Colour, type, space, radius, shadow, motion, icon — the only place a value is written
             </Box>
             <div className="flex items-center justify-center rounded-lg border border-dashed border-border-field px-4 py-3 text-center font-mono text-12 text-fg-muted">
               check-tokens · values must agree
@@ -505,7 +517,7 @@ function Architecture({ accent }: { accent: string }) {
               <span className="font-mono text-fg">text-fg-muted</span>, <span className="font-mono text-fg">rounded-lg</span>.
               Shadow utilities are switched off.
             </Box>
-            <Box kicker="React" title="38 components" accent={accent}>
+            <Box kicker="React" title={`${COMPONENT_COUNT} components`} accent={accent}>
               Built on Radix where behaviour is hard, styled only from tokens, shipped in the{' '}
               <span className="font-mono text-fg">d3-ui</span> cascade layer.
             </Box>
@@ -624,10 +636,10 @@ function Colour() {
       label="Colour"
       title={
         <>
-          Twenty-four names, <Accent>two themes, one set of class names.</Accent>
+          A name for every job, <Accent>two themes, one set of class names.</Accent>
         </>
       }
-      lede="Components and screens never name a hue. They name a job — the ground, a raised surface, a line around a field, danger — and each theme answers with its own value. Dark is primary; light is the same names re-pointed."
+      lede="Components and screens never name a hue. They name a job — the ground, a raised surface, a line around a field, danger — and each theme answers with its own value. Twenty-four roles cover every screen; two more exist for cards on a recessed sheet, and six tints for avatars. Dark is primary; light is the same names re-pointed."
       sunken
     >
       <Figure caption="Both plates are the same component with the same classes, rendered at once. The only difference is data-theme on the wrapper — which works on any element, so one panel can be light inside a dark app.">
@@ -640,12 +652,12 @@ function Colour() {
           </Island>
         </div>
       </Figure>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Plate slug="Spent on meaning">
           <p className="text-14 text-fg-muted">
-            Colour carries state, not decoration. A Badge has three tones —{' '}
-            <span className="text-fg">neutral, attention, danger</span> — and no colour prop, so a status cannot quietly
-            become a fourth shade of green.
+            Colour carries state, not decoration. A Badge has four tones —{' '}
+            <span className="text-fg">neutral, attention, warning, danger</span> — and no colour prop, so a status cannot
+            quietly become a fifth shade of green. Warning means degraded or delayed: worth a look, not action now.
           </p>
         </Plate>
         <Plate slug="Checked in a browser">
@@ -658,6 +670,28 @@ function Colour() {
           <p className="text-14 text-fg-muted">
             The raw palette ships for tooling only. Reading a primitive directly from a component or an app is one of the
             things the usage gate fails on.
+          </p>
+        </Plate>
+        <Plate slug="Cards on a sheet">
+          <p className="text-14 text-fg-muted">
+            On a recessed frame a card painted in the sheet’s own colour disappears, and everything inside it with it.{' '}
+            <span className="font-mono text-13 text-fg">surface-card</span> and a one-pixel edge make the card read;{' '}
+            <span className="font-mono text-13 text-fg">fill-quiet</span> keeps a badge, a tab track or a count visible
+            on it.
+          </p>
+        </Plate>
+        <Plate slug="Identity tints">
+          <p className="text-14 text-fg-muted">
+            Six avatar tints, each a fill and an ink at <span className="text-fg">5.4:1 or better</span> in light and{' '}
+            <span className="text-fg">7.8:1</span> in dark, picked by a fixed hash of the name — so a person keeps the
+            same colour everywhere. Off unless an app asks for it.
+          </p>
+        </Plate>
+        <Plate slug="Edges, measured">
+          <p className="text-14 text-fg-muted">
+            A field’s edge just clears <span className="text-fg">3:1</span>, WCAG’s floor for a control’s boundary,
+            against both a filled field and a white card — enough to find, not enough to read as a heavy ring. The
+            current page in a sidebar carries an accent bar at 4.71:1 or better; a tint alone measures 1.08:1.
           </p>
         </Plate>
       </div>
@@ -758,23 +792,61 @@ function TypeAndSpace({ accent }: { accent: string }) {
 
 /* ---------------------------------------------------------------- 06 Elevation */
 
-/** Ground, card, raised row, a floating menu and a modal behind a scrim — all tone and boundary. */
-function Layers() {
+/*
+ * The two shadows, drawn. Their values are in shape.css (DS-ADR-001): a sheet
+ * shadow of 0 4px 16px at 5% black in light and 0 1px 2px at 35% in dark, and
+ * a float shadow of 0 8px 24px at 12% in light and 0 12px 32px at 50% in dark.
+ * (The light sheet adds a 0 1px 2px layer at 5%, too faint to draw apart.)
+ * Each is drawn here as a blurred copy of its box, inked with the scrim token
+ * (black at 58%) and scaled to that strength: offset, half the blur radius as
+ * the filter, and the alpha as a share of the scrim's.
+ */
+const CASTS = {
+  sheet: { light: { y: 4, blur: 8, alpha: 0.05 }, dark: { y: 1, blur: 1, alpha: 0.35 } },
+  float: { light: { y: 8, blur: 12, alpha: 0.12 }, dark: { y: 12, blur: 16, alpha: 0.5 } },
+} as const;
+const SCRIM_ALPHA = 0.58;
+
+function Cast({ kind, theme, radius }: { kind: keyof typeof CASTS; theme: 'dark' | 'light'; radius: string }) {
+  const c = CASTS[kind][theme];
   return (
-    <div className="flex flex-col gap-3 rounded-sm bg-bg-sunken p-3 sm:p-4">
-      <span className="font-mono text-11 text-fg-faint">bg-sunken</span>
-      <div className="flex flex-col gap-3 rounded-sm bg-bg p-3 sm:p-4">
-        <span className="font-mono text-11 text-fg-faint">bg</span>
-        <div className="relative flex flex-col gap-3 rounded-md bg-surface p-3 sm:p-4">
-          <span className="font-mono text-11 text-fg-faint">surface · a card, no border</span>
+    <span
+      aria-hidden="true"
+      className={`pointer-events-none absolute inset-0 ${radius}`}
+      style={{
+        backgroundColor: 'var(--scrim)',
+        opacity: c.alpha / SCRIM_ALPHA,
+        transform: `translateY(${c.y}px)`,
+        filter: `blur(${c.blur}px)`,
+      }}
+    />
+  );
+}
+
+/** A recessed frame: the ground, the content sheet, a resting row and a floating menu. */
+function Layers({ theme }: { theme: 'dark' | 'light' }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-sm bg-bg p-3 sm:p-4">
+      <span className="font-mono text-11 text-fg-faint">bg · the ground, under the sidebar</span>
+      <div className="relative">
+        <Cast kind="sheet" theme={theme} radius="rounded-lg" />
+        <div className="relative flex flex-col gap-3 rounded-lg bg-surface p-3 sm:p-4">
+          {/* d3-allow: the token's name as a label on a drawing; nothing on this page sets a box-shadow. */}
+          <span className="font-mono text-11 text-fg-faint">surface + shadow-sheet · the content sheet</span>
           <div className="flex items-center justify-between gap-3 rounded-sm bg-surface-raised px-3 py-2.5">
-            <span className="font-mono text-11 text-fg-muted">surface-raised</span>
+            <span className="font-mono text-11 text-fg-muted">surface-raised · resting, tone only</span>
             <span aria-hidden="true" className="h-1.5 w-12 rounded-full bg-fg-faint" />
           </div>
-          <div className="ml-auto flex w-3/4 flex-col gap-1.5 rounded-md border border-border-float bg-surface-raised p-3 sm:w-3/5">
-            <span className="font-mono text-11 text-fg-muted">floating · raised + border-float</span>
-            <span aria-hidden="true" className="h-1.5 w-3/4 rounded-full bg-fg-faint" />
-            <span aria-hidden="true" className="h-1.5 w-1/2 rounded-full bg-fg-faint" />
+          <div className="relative ml-auto w-3/4 sm:w-3/5">
+            <Cast kind="float" theme={theme} radius="rounded-md" />
+            <div
+              className={`relative flex flex-col gap-1.5 rounded-md border bg-surface-raised p-3 ${theme === 'light' ? 'border-border' : 'border-transparent'}`}
+            >
+              {/* d3-allow: the token's name as a label on a drawing; nothing on this page sets a box-shadow. */}
+              <span className="font-mono text-11 text-fg-muted">floating · raised + shadow-float</span>
+              <span aria-hidden="true" className="h-1.5 w-3/4 rounded-full bg-fg-faint" />
+              <span aria-hidden="true" className="h-1.5 w-1/2 rounded-full bg-fg-faint" />
+            </div>
           </div>
         </div>
       </div>
@@ -790,27 +862,27 @@ function Elevation() {
       label="Elevation"
       title={
         <>
-          Depth is a tone step. <Accent>There is no shadow token.</Accent>
+          Depth is a tone step. <Accent>Two shadows, and only two.</Accent>
         </>
       }
-      lede="A resting surface sits one tone above what is under it. Something that floats — a menu, a tooltip — takes the raised tone and a one-pixel boundary. A dialog adds a scrim. That is the whole elevation model, and it is the same in both themes."
+      lede="A resting surface sits one tone above what is under it, with no border and no shadow. Tone runs out in two places, and each gets one named shadow: the content sheet of a recessed app frame, barely a step off its ground, and anything that floats — a menu, a tooltip, a toast, a dialog. A dialog adds a scrim. Nothing else casts a shadow, and the gate fails any that tries."
       sunken
     >
-      <Figure caption="The same nesting in both themes. In light, the tonal ladder ends at white — a menu over a white card has no lighter step left — which is why floating layers carry a boundary rather than a second mechanism.">
+      <Figure caption="The same frame in both themes, each shadow drawn at its own offset, blur and strength. In light the tonal ladder ends at white, so the floating shadow opens with a one-pixel ring in the divider colour — the ring, not the blur, is what finds a white menu on a white card. In dark the raised tone already separates, so the shadow is only depth.">
         <div className="grid gap-4 lg:grid-cols-2">
           <Island theme="dark">
-            <Layers />
+            <Layers theme="dark" />
           </Island>
           <Island theme="light">
-            <Layers />
+            <Layers theme="light" />
           </Island>
         </div>
       </Figure>
       <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-        <Stat value="0" label="shadow tokens in the system" />
-        <Stat value="7" label="Tailwind shadow utilities switched off in the preset, so none can be reached for" />
-        <Stat value="3" label="elevation states: resting, floating, modal" />
-        <Stat value="1" label="mechanism, running unchanged in dark and light" />
+        <Stat value="2" label="shadow tokens, each named for one job: the content sheet, and anything that floats" />
+        <Stat value="7" label="Tailwind shadow utilities still switched off — neither shadow is a class, so neither can be put anywhere else" />
+        <Stat value="4" label="elevation states: resting, sheet, floating, modal" />
+        <Stat value="0" label="shadows under forced colours or a request for more contrast — the one-pixel boundary comes back instead" />
       </div>
     </DeepSection>
   );
@@ -819,17 +891,26 @@ function Elevation() {
 /* ---------------------------------------------------------------- 07 Components */
 
 const INVENTORY: { group: string; items: string[] }[] = [
-  { group: 'Primitives', items: ['Avatar', 'Badge', 'Button', 'IconButton', 'Link', 'Skeleton', 'Spinner'] },
+  {
+    group: 'Primitives',
+    items: ['Avatar', 'Badge', 'Button', 'IconButton', 'Link', 'Skeleton', 'Spinner', 'SplitButton', 'StatusDot'],
+  },
   {
     group: 'Forms',
-    items: ['Checkbox', 'CodeInput', 'FormField', 'Input', 'Label', 'PasswordInput', 'Select', 'Textarea', 'FormActions'],
+    items: [
+      'Checkbox', 'CodeInput', 'FormField', 'Input', 'Label', 'PasswordInput', 'PasswordStrength', 'RecipientField',
+      'SearchField', 'Select', 'Switch', 'Textarea', 'FormActions',
+    ],
   },
-  { group: 'Layers & containers', items: ['Alert', 'Card', 'Modal', 'Tabs', 'SegmentedControl', 'Tooltip'] },
-  { group: 'App frame', items: ['AppShell', 'SideNav', 'Menu', 'AccountMenu', 'Theme'] },
-  { group: 'Page', items: ['Page', 'PageHeader', 'Section', 'Stack', 'Grid', 'AuthLayout', 'EmptyState'] },
-  { group: 'Lists & records', items: ['DataList', 'DescriptionList', 'FilterBar', 'Table'] },
+  {
+    group: 'Layers & containers',
+    items: ['Alert', 'Card', 'CommandPalette', 'Modal', 'Tabs', 'SegmentedControl', 'Toast', 'Tooltip'],
+  },
+  { group: 'App frame', items: ['AppShell', 'SideNav', 'Menu', 'AccountMenu', 'ActionBar', 'Theme'] },
+  { group: 'Page', items: ['Page', 'PageHeader', 'Section', 'SettingsRow', 'Stack', 'Grid', 'AuthLayout', 'EmptyState'] },
+  { group: 'Lists & records', items: ['DataList', 'DescriptionList', 'FilterBar', 'Stat', 'Table'] },
 ];
-const COMPONENT_COUNT = INVENTORY.reduce((sum, g) => sum + g.items.length, 0); // 38
+const COMPONENT_COUNT = INVENTORY.reduce((sum, g) => sum + g.items.length, 0); // 49
 
 const CheckIcon = (
   <svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true">
@@ -921,10 +1002,10 @@ function Components({ accent }: { accent: string }) {
       label="Components"
       title={
         <>
-          Thirty-eight components, <Accent>from a badge to the app frame.</Accent>
+          Forty-nine components, <Accent>from a badge to the app frame.</Accent>
         </>
       }
-      lede="Primitives, a full form layer, dialogs and menus, the shell with its sidebar and account menu, and the page patterns that sit inside it. The board below is not a picture — it is the library, running on this page. Switch the theme in the header and watch it follow."
+      lede="Primitives, a full form layer, dialogs, menus, toasts and a command palette, the shell with its sidebar, account menu and phone action bar, and the page patterns that sit inside it. The board below is not a picture — it is the library, running on this page. Switch the theme in the header and watch it follow."
     >
       <LiveBoard />
       <Figure caption={`All ${COMPONENT_COUNT} components, by what they are for. Each ships with its types, a story per variant and per state, and an automated accessibility check.`}>
@@ -960,7 +1041,7 @@ function Components({ accent }: { accent: string }) {
 const CONTRACTS: { ok: boolean; code: string; why: string }[] = [
   { ok: true, code: '<Stack gap="16">', why: 'A step on the spacing scale, by name.' },
   { ok: false, code: '<Stack gap="15">', why: 'Type error. 15 is not a step, so it cannot be typed.' },
-  { ok: false, code: '<Badge tone="success">', why: 'Type error. A badge is neutral, attention or danger — nothing else.' },
+  { ok: false, code: '<Badge tone="success">', why: 'Type error. A badge is neutral, attention, warning or danger — nothing else.' },
   { ok: false, code: '<Checkbox />', why: 'Type error. It needs a visible label or an aria-label; one or the other.' },
   { ok: false, code: '<SegmentedControl items={…} />', why: 'Type error. A group of choices with no name cannot be placed.' },
   { ok: true, code: '<Alert tone="danger" dynamic>', why: 'Just happened, so it interrupts. Static alerts get no role at all.' },
@@ -1039,7 +1120,7 @@ const USAGE_RULES = [
   { id: 'palette-class', what: 'A raw Tailwind palette class, like a numbered blue' },
   { id: 'off-scale-value', what: 'An arbitrary size, gap, radius or weight on a scale the system owns' },
   { id: 'primitive-token', what: 'A primitive palette token read directly' },
-  { id: 'shadow', what: 'Any shadow — elevation is tone' },
+  { id: 'shadow', what: 'Any shadow but the two the system names, and those only as the whole value' },
   { id: 'unknown-token', what: 'A token that does not exist — the silent failure a rename causes' },
 ];
 
@@ -1047,13 +1128,14 @@ const PIPELINE = [
   { step: 'check-tokens', note: 'JSON and CSS agree' },
   { step: 'check-usage', note: 'The library passes its own gate' },
   { step: 'typecheck', note: 'Contracts compile' },
-  { step: 'test', note: '909 tests' },
+  { step: 'test', note: '1,297 tests' },
   { step: 'build', note: 'Plus a check of what ships' },
-  { step: 'browser', note: 'axe in both themes' },
+  { step: 'browser', note: 'axe in both themes, and no stray shadow' },
 ];
 
-const TESTS_TOTAL = 909;
-const STORY_TESTS = 489;
+const TESTS_TOTAL = 1297;
+const STORY_TESTS = 621;
+const STORIES = 310;
 
 function Gates({ accent }: { accent: string }) {
   return (
@@ -1094,14 +1176,14 @@ function Gates({ accent }: { accent: string }) {
             ))}
           </dl>
         </Figure>
-        <Figure caption={`${TESTS_TOTAL} tests in 42 files. Every story is rendered and swept by axe — a new story file is picked up automatically, and a guard fails the suite if none are found.`}>
+        <Figure caption={`${TESTS_TOTAL.toLocaleString('en')} tests in 54 files. Every story is rendered and swept by axe — a new story file is picked up automatically, and a guard fails the suite if none are found.`}>
           <div className="flex flex-col gap-6">
             <BarRow
               label="Story tests"
               value={STORY_TESTS}
               fraction={STORY_TESTS / TESTS_TOTAL}
               accent={accent}
-              note="244 stories, each rendered and checked by axe."
+              note={`${STORIES} stories, each rendered and checked by axe.`}
             />
             <BarRow
               label="Contract & unit"
@@ -1112,8 +1194,8 @@ function Gates({ accent }: { accent: string }) {
               note="The promises in each component’s spec."
             />
             <div className="grid grid-cols-2 gap-6 border-t border-border pt-6">
-              <Stat value="244" label="stories, every one an accessibility check" />
-              <Stat value="11" label="browser specs: axe in both themes, focus, geometry, CSP, visual" />
+              <Stat value={String(STORIES)} label="stories, every one an accessibility check" />
+              <Stat value="18" label="browser specs: axe in both themes, focus, geometry, CSP, shadows, visual" />
             </div>
           </div>
         </Figure>
@@ -1138,8 +1220,8 @@ const PRINCIPLES = [
     body: 'Tokens are scoped to any element with a data-theme, so a light panel can sit inside a dark app. The paired plates on this page do exactly that.',
   },
   {
-    title: 'One elevation mechanism',
-    body: 'Tone and a boundary work the same in dark and light. Shadows look different in each and vanish on dark grounds.',
+    title: 'Tone first, two shadows last',
+    body: 'Tone and a boundary work the same in dark and light. A shadow is kept for the two places tone runs out — a sheet barely off its ground, a layer floating over white — and gives way to the boundary under forced colours.',
   },
   {
     title: 'Accessibility in the API',
